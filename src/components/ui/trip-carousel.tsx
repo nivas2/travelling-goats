@@ -15,7 +15,7 @@ interface TripCarouselProps {
   interval?: number;
 }
 
-export function TripCarousel({ trips, interval = 5000 }: TripCarouselProps) {
+export function TripCarousel({ trips, interval = 3000 }: TripCarouselProps) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const count = trips.length;

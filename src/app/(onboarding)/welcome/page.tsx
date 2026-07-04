@@ -81,23 +81,42 @@ export default function WelcomePage() {
     if (Math.abs(diff) < threshold) return;
 
     if (diff > 0 && currentSlide < slides.length - 1) {
-      // Swipe left -> next slide
       goToSlide(currentSlide + 1);
+      pauseAutoRotate();
     } else if (diff < 0 && currentSlide > 0) {
-      // Swipe right -> previous slide
       goToSlide(currentSlide - 1);
+      pauseAutoRotate();
     }
   }
+
+  // Auto-rotate every 3 seconds, pause on touch
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused || slides.length <= 1) return;
+    const id = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [paused, currentSlide]);
+
+  // Pause auto-rotate on user interaction, resume after 5s
+  const pauseAutoRotate = useCallback(() => {
+    setPaused(true);
+    const id = setTimeout(() => setPaused(false), 5000);
+    return () => clearTimeout(id);
+  }, []);
 
   // Keyboard navigation
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "ArrowRight") goToSlide(currentSlide + 1);
       if (e.key === "ArrowLeft") goToSlide(currentSlide - 1);
+      pauseAutoRotate();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentSlide, goToSlide]);
+  }, [currentSlide, goToSlide, pauseAutoRotate]);
 
   const slide = slides[currentSlide];
 
@@ -164,7 +183,7 @@ export default function WelcomePage() {
             <button
               key={index}
               type="button"
-              onClick={() => goToSlide(index)}
+              onClick={() => { goToSlide(index); pauseAutoRotate(); }}
               className={cn(
                 "h-2 rounded-full transition-all duration-300",
                 index === currentSlide
