@@ -55,8 +55,8 @@ function StatCard({
   return (
     <Card variant="elevated" className="p-5">
       <div className="flex items-start justify-between">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ae2f34]/10">
-          <span className="material-symbols-outlined text-[24px] text-[#ae2f34]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+          <span className="material-symbols-outlined text-[24px] text-primary">
             {icon}
           </span>
         </div>
@@ -222,31 +222,31 @@ export default function AdminDashboardPage() {
             </h2>
             <Link
               href="/admin/bookings"
-              className="text-sm font-medium text-[#ae2f34] hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               View all
             </Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
-                <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                  <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                <tr className="border-b border-outline-variant/10 bg-surface-container-low">
+                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
                     Booking #
                   </th>
-                  <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
                     User
                   </th>
-                  <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
                     Trip
                   </th>
-                  <th className="px-5 py-3 text-right font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-right font-medium text-on-surface-variant whitespace-nowrap">
                     Amount
                   </th>
-                  <th className="px-5 py-3 text-center font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-center font-medium text-on-surface-variant whitespace-nowrap">
                     Status
                   </th>
-                  <th className="px-5 py-3 text-right font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-right font-medium text-on-surface-variant whitespace-nowrap">
                     Date
                   </th>
                 </tr>
@@ -265,7 +265,7 @@ export default function AdminDashboardPage() {
                   recentBookings.map((b) => (
                     <tr
                       key={b.id}
-                      className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors"
+                      className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/50 transition-colors"
                     >
                       <td className="px-5 py-3 font-mono text-xs">
                         {b.bookingNumber}
@@ -299,25 +299,25 @@ export default function AdminDashboardPage() {
             </h2>
             <Link
               href="/admin/users"
-              className="text-sm font-medium text-[#ae2f34] hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               View all
             </Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[500px]">
               <thead>
-                <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                  <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                <tr className="border-b border-outline-variant/10 bg-surface-container-low">
+                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
                     Name
                   </th>
-                  <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
                     Email
                   </th>
-                  <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
                     Phone
                   </th>
-                  <th className="px-5 py-3 text-right font-medium text-on-surface-variant">
+                  <th className="px-4 py-3 text-right font-medium text-on-surface-variant whitespace-nowrap">
                     Joined
                   </th>
                 </tr>
@@ -336,7 +336,7 @@ export default function AdminDashboardPage() {
                   recentUsers.map((u) => (
                     <tr
                       key={u.id}
-                      className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors"
+                      className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/50 transition-colors"
                     >
                       <td className="px-5 py-3 font-medium">
                         {u.name ?? "Unnamed"}

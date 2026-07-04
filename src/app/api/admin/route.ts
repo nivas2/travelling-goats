@@ -20,10 +20,12 @@ export async function GET() {
       totalBookings,
       activeTrips,
       pendingBookings,
-      recentUsers,
-      previousUsers,
+      recentUserCount,
+      previousUserCount,
       recentRevenue,
       previousRevenue,
+      recentBookings,
+      recentUsers,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.trip.count(),
@@ -40,12 +42,37 @@ export async function GET() {
         _sum: { amountPaise: true },
         where: { status: "CAPTURED", createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
       }),
+      prisma.booking.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          bookingNumber: true,
+          totalPricePaise: true,
+          status: true,
+          createdAt: true,
+          user: { select: { name: true } },
+          trip: { select: { title: true } },
+        },
+      }),
+      prisma.user.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        where: { role: "USER" },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          createdAt: true,
+        },
+      }),
     ]);
 
     const totalRevenuePaise = recentRevenue._sum.amountPaise ?? 0;
     const prevRevenuePaise = previousRevenue._sum.amountPaise ?? 0;
 
-    const userGrowth = previousUsers > 0 ? ((recentUsers - previousUsers) / previousUsers) * 100 : 100;
+    const userGrowth = previousUserCount > 0 ? ((recentUserCount - previousUserCount) / previousUserCount) * 100 : 100;
     const revenueGrowth = prevRevenuePaise > 0 ? ((totalRevenuePaise - prevRevenuePaise) / prevRevenuePaise) * 100 : 100;
 
     return NextResponse.json({
@@ -59,6 +86,8 @@ export async function GET() {
         pendingBookings,
         userGrowth: Math.round(userGrowth),
         revenueGrowth: Math.round(revenueGrowth),
+        recentBookings,
+        recentUsers,
       },
     });
   } catch (error) {

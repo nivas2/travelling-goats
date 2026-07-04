@@ -39,10 +39,10 @@ export function TopNavBar({
         {/* Logo / App Name */}
         <Link href="/" className="flex items-center gap-2">
           <span className="text-title-lg font-bold tracking-tight text-primary">
-            Pack
+            Meet
           </span>
           <span className="text-title-lg font-bold tracking-tight text-on-surface">
-            Along
+            MyRoute
           </span>
         </Link>
 

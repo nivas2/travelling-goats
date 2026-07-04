@@ -26,7 +26,8 @@ export default function AdminLoginPage() {
       if (res?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/admin/dashboard");
+        // Full page reload so the server-side layout picks up the new session
+        window.location.href = "/admin/dashboard";
       }
     } catch {
       setError("Something went wrong. Please try again.");

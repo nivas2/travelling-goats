@@ -50,7 +50,7 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    await signIn("google", { callbackUrl: "/welcome" });
+    await signIn("google", { callbackUrl: "/home" });
   }
 
   return (

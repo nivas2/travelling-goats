@@ -44,7 +44,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               },
             });
           }
-          return { id: user.id, name: user.name, email: user.email, image: user.avatar };
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.avatar,
+            role: user.role,
+            isOnboarded: user.isOnboarded,
+            isVerified: user.isVerified,
+            idVerified: user.idVerified,
+          };
         }
 
         // Verify OTP from database
@@ -76,7 +85,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
         }
 
-        return { id: user.id, name: user.name, email: user.email, image: user.avatar };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.avatar,
+          role: user.role,
+          isOnboarded: user.isOnboarded,
+          isVerified: user.isVerified,
+          idVerified: user.idVerified,
+        };
       },
     }),
     CredentialsProvider({
@@ -98,53 +116,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
 
-        return { id: user.id, name: user.name, email: user.email, image: user.avatar };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.avatar,
+          role: user.role,
+          isOnboarded: user.isOnboarded,
+          isVerified: user.isVerified,
+          idVerified: user.idVerified,
+        };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
-      // On sign-in (runs in Node.js, not Edge), fetch user data from DB
-      // and store in token so middleware/session don't need Prisma
+    async jwt({ token, user }) {
+      // On sign-in, copy user fields to the JWT token.
+      // authorize() and PrismaAdapter both return these fields.
+      // This runs in Node.js (not Edge), so all data is available.
+      // After this, NO database calls are needed — everything is in the token.
       if (user) {
         token.id = user.id;
-      }
-      // Refresh role from DB when missing or on explicit update
-      // Uses try/catch so it gracefully fails in Edge Runtime
-      if (token.id && (!token.role || trigger === "update")) {
-        try {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: token.id as string },
-            select: {
-              role: true,
-              isOnboarded: true,
-              isVerified: true,
-              idVerified: true,
-            },
-          });
-          if (dbUser) {
-            token.role = dbUser.role;
-            token.isOnboarded = dbUser.isOnboarded;
-            token.isVerified = dbUser.isVerified;
-            token.idVerified = dbUser.idVerified;
-          }
-        } catch {
-          // Edge Runtime — Prisma not available, keep existing token data
-        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const u = user as any;
+        token.role = u.role ?? "USER";
+        token.isOnboarded = u.isOnboarded ?? false;
+        token.isVerified = u.isVerified ?? false;
+        token.idVerified = u.idVerified ?? false;
       }
       return token;
     },
     async session({ session, token }) {
-      // Read everything from the JWT token — no Prisma needed
-      // This is Edge-compatible since it doesn't hit the database
+      // Read everything from the JWT token — zero database calls.
+      // Fully Edge-compatible.
       if (session.user) {
         session.user.id = token.id as string;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const u = session.user as any;
-        u.role = token.role;
-        u.isOnboarded = token.isOnboarded;
-        u.isVerified = token.isVerified;
-        u.idVerified = token.idVerified;
+        u.role = token.role ?? "USER";
+        u.isOnboarded = token.isOnboarded ?? false;
+        u.isVerified = token.isVerified ?? false;
+        u.idVerified = token.idVerified ?? false;
       }
       return session;
     },
@@ -153,8 +165,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 function generateReferralCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "PA";
-  for (let i = 0; i < 6; i++) {
+  let code = "MMR";
+  for (let i = 0; i < 5; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return code;
