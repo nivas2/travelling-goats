@@ -263,11 +263,11 @@ export default function DetailsPage() {
                   >
                     <span
                       className={cn(
-                        "material-symbols-outlined text-[20px]",
+                        "material-symbols-outlined filled text-[22px]",
                         gender === "male" ? "text-primary" : "text-on-surface-variant",
                       )}
                     >
-                      male
+                      man
                     </span>
                   </button>
                   <button
@@ -285,11 +285,11 @@ export default function DetailsPage() {
                   >
                     <span
                       className={cn(
-                        "material-symbols-outlined text-[20px]",
+                        "material-symbols-outlined filled text-[22px]",
                         gender === "female" ? "text-primary" : "text-on-surface-variant",
                       )}
                     >
-                      female
+                      woman
                     </span>
                   </button>
                 </div>
