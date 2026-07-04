@@ -203,7 +203,7 @@ export default function AdminReviewsPage() {
                         {!review.isVerified && (
                           <button
                             onClick={() => verifyReview(review.id)}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-green-50 transition-colors"
+                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-success/10 transition-colors"
                             title="Verify"
                           >
                             <span className="material-symbols-outlined text-[18px] text-success">check_circle</span>
@@ -211,7 +211,7 @@ export default function AdminReviewsPage() {
                         )}
                         <button
                           onClick={() => setDeleteTarget(review)}
-                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
+                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-error/10 transition-colors"
                           title="Delete"
                         >
                           <span className="material-symbols-outlined text-[18px] text-error">delete</span>

@@ -87,7 +87,7 @@ const Chip = forwardRef<HTMLDivElement, ChipProps>(
               e.stopPropagation();
               onClose?.();
             }}
-            className="ml-0.5 shrink-0 rounded-full p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10"
+            className="ml-0.5 shrink-0 rounded-full p-0.5 transition-colors hover:bg-black/10"
             aria-label="Remove"
             disabled={disabled}
           >

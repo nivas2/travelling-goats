@@ -416,7 +416,7 @@ export default function PaymentPage() {
           name: travelers[0]?.name ?? "",
           contact: travelers[0]?.phone ?? "",
         },
-        theme: { color: "#ae2f34" },
+        theme: { color: "#FF385C" },
         modal: {
           ondismiss: () => {
             setPaying(false);

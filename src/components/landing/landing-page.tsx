@@ -347,7 +347,7 @@ export default function LandingPage() {
                         backgroundImage: `url('${TRIP_IMAGES[trip.imgIdx]}')`,
                       }}
                     />
-                    <div className="absolute top-4 left-4 bg-[#7bd0ff] text-white px-3 py-1 rounded-full text-label-sm font-label-sm flex items-center gap-1">
+                    <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-label-sm font-label-sm flex items-center gap-1">
                       <span
                         className="material-symbols-outlined text-sm"
                         style={{ fontVariationSettings: "'FILL' 1" }}
@@ -365,7 +365,7 @@ export default function LandingPage() {
                         <h3 className="text-headline-md font-headline-md text-on-surface">
                           {trip.title}
                         </h3>
-                        <span className="bg-yellow-200 text-gray-800 px-3 py-1 rounded-full text-label-sm font-label-sm font-bold flex items-center gap-1 shrink-0 ml-2">
+                        <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-label-sm font-label-sm font-bold flex items-center gap-1 shrink-0 ml-2">
                           <span className="material-symbols-outlined text-sm">
                             person
                           </span>{" "}

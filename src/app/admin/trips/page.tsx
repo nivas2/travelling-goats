@@ -295,7 +295,7 @@ export default function AdminTripsPage() {
                         </button>
                         <button
                           onClick={() => setDeleteTarget(trip)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-error/10 transition-colors"
                           title="Delete"
                         >
                           <span className="material-symbols-outlined text-[18px] text-error">

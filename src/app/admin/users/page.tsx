@@ -27,9 +27,9 @@ interface User {
 
 function RoleBadge({ role }: { role: string }) {
   const colors: Record<string, string> = {
-    ADMIN: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    ADMIN: "bg-primary/10 text-primary",
     TRIP_CAPTAIN: "bg-primary/10 text-primary",
-    SUPPORT: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+    SUPPORT: "bg-surface-container text-on-surface-variant",
     USER: "bg-surface-container text-on-surface-variant",
   };
   return (
@@ -244,7 +244,7 @@ export default function AdminUsersPage() {
                         </button>
                         <button
                           onClick={() => { setActionUser(user); setActionType("suspend"); }}
-                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-yellow-50 transition-colors"
+                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-warning/10 transition-colors"
                           title={user.status === "SUSPENDED" ? "Activate" : "Suspend"}
                         >
                           <span className="material-symbols-outlined text-[18px] text-warning">
@@ -253,7 +253,7 @@ export default function AdminUsersPage() {
                         </button>
                         <button
                           onClick={() => { setActionUser(user); setActionType("delete"); }}
-                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
+                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-error/10 transition-colors"
                           title="Delete"
                         >
                           <span className="material-symbols-outlined text-[18px] text-error">delete</span>

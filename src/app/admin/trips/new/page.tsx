@@ -1019,7 +1019,7 @@ export default function CreateTripPage() {
                 </button>
                 <button
                   onClick={() => removeFaq(idx)}
-                  className="h-7 w-7 flex items-center justify-center rounded text-error/70 hover:text-error hover:bg-red-50 transition-colors"
+                  className="h-7 w-7 flex items-center justify-center rounded text-error/70 hover:text-error hover:bg-error/10 transition-colors"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     delete

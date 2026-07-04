@@ -25,14 +25,14 @@ interface Particle {
 }
 
 const CONFETTI_COLORS = [
-  "#ae2f34",
-  "#ff6b6b",
-  "#40c2fd",
-  "#cea700",
+  "#FF385C",
+  "#FF6B7D",
+  "#FF8FA0",
+  "#FFB3C1",
   "#2e7d32",
   "#f57c00",
-  "#ffb3b0",
-  "#7bd0ff",
+  "#222222",
+  "#717171",
 ];
 
 function generateConfetti(count: number): Particle[] {

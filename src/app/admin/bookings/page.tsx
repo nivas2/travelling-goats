@@ -45,8 +45,8 @@ function BookingStatusBadge({ status }: { status: string }) {
 function TypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
     SOLO: "bg-primary/10 text-primary",
-    COUPLE: "bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",
-    GROUP: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
+    COUPLE: "bg-primary/10 text-primary",
+    GROUP: "bg-surface-container text-on-surface-variant",
   };
   return (
     <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-label-sm font-label-sm capitalize", colors[type] ?? "bg-surface-container text-on-surface-variant")}>
@@ -203,7 +203,7 @@ export default function AdminBookingsPage() {
                         {booking.status === "PENDING" && (
                           <button
                             onClick={() => { setActionBooking(booking); setActionType("confirm"); }}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-green-50 transition-colors"
+                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-success/10 transition-colors"
                             title="Confirm"
                           >
                             <span className="material-symbols-outlined text-[18px] text-success">check_circle</span>
@@ -212,7 +212,7 @@ export default function AdminBookingsPage() {
                         {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
                           <button
                             onClick={() => { setActionBooking(booking); setActionType("cancel"); }}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
+                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-error/10 transition-colors"
                             title="Cancel"
                           >
                             <span className="material-symbols-outlined text-[18px] text-error">cancel</span>
@@ -221,7 +221,7 @@ export default function AdminBookingsPage() {
                         {booking.status === "CANCELLED" && (
                           <button
                             onClick={() => { setActionBooking(booking); setActionType("refund"); }}
-                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-blue-50 transition-colors"
+                            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-primary/10 transition-colors"
                             title="Refund"
                           >
                             <span className="material-symbols-outlined text-[18px] text-primary">currency_exchange</span>

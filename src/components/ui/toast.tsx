@@ -141,7 +141,7 @@ function ToastItem({ toast }: { toast: Toast }) {
       </div>
       <button
         onClick={() => removeToast(toast.id)}
-        className="shrink-0 rounded-full p-1 transition-colors hover:bg-black/10 dark:hover:bg-white/10"
+        className="shrink-0 rounded-full p-1 transition-colors hover:bg-black/10"
         aria-label="Dismiss"
       >
         <Icon name="close" size={16} />

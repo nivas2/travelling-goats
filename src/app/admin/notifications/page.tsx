@@ -33,12 +33,12 @@ const typeOptions = [
 function TypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
     SYSTEM: "bg-surface-container text-on-surface-variant",
-    PROMOTION: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    PROMOTION: "bg-primary/10 text-primary",
     TRIP_UPDATE: "bg-primary/10 text-primary",
     BOOKING: "bg-success/10 text-success",
     PAYMENT: "bg-success/10 text-success",
     REWARD: "bg-warning/10 text-warning",
-    REFERRAL: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300",
+    REFERRAL: "bg-primary/10 text-primary",
   };
   return (
     <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[type] ?? "bg-surface-container text-on-surface-variant")}>

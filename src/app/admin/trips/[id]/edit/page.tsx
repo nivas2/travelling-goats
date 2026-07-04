@@ -782,7 +782,7 @@ export default function EditTripPage() {
               <div className="flex items-center gap-1">
                 <button onClick={() => moveFaq(idx, "up")} disabled={idx === 0} className="h-7 w-7 flex items-center justify-center rounded hover:bg-surface-container-high disabled:opacity-30"><span className="material-symbols-outlined text-[16px]">arrow_upward</span></button>
                 <button onClick={() => moveFaq(idx, "down")} disabled={idx === faqs.length - 1} className="h-7 w-7 flex items-center justify-center rounded hover:bg-surface-container-high disabled:opacity-30"><span className="material-symbols-outlined text-[16px]">arrow_downward</span></button>
-                <button onClick={() => removeFaq(idx)} className="h-7 w-7 flex items-center justify-center rounded text-error/70 hover:text-error hover:bg-red-50"><span className="material-symbols-outlined text-[16px]">delete</span></button>
+                <button onClick={() => removeFaq(idx)} className="h-7 w-7 flex items-center justify-center rounded text-error/70 hover:text-error hover:bg-error/10"><span className="material-symbols-outlined text-[16px]">delete</span></button>
               </div>
             </div>
             <Input placeholder="Question" value={faq.question} onChange={(e) => updateFaq(idx, "question", e.target.value)} inputSize="sm" fullWidth />

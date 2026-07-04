@@ -137,8 +137,8 @@ export default function AdminAnalyticsPage() {
         </Card>
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-              <span className="material-symbols-outlined text-[24px] text-purple-700 dark:text-purple-300">group_add</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+              <span className="material-symbols-outlined text-[24px] text-primary">group_add</span>
             </div>
             <div>
               <p className="text-body-md text-on-surface-variant">New vs Returning</p>
