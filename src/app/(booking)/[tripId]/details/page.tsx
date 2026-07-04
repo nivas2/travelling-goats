@@ -5,15 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm, useFieldArray, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
 import { Input } from "@/components/ui/input";
-import { Dropdown } from "@/components/ui/dropdown";
 import { RadioCard } from "@/components/ui/radio-card";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
 
 // ---------------------------------------------------------------------------
@@ -23,29 +18,26 @@ import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
 const travelerSchema = z.object({
   name: z
     .string()
-    .min(2, "Name must be at least 2 characters")
+    .min(2, "Name is required")
     .max(50, "Name must be under 50 characters"),
   age: z
-    .number({ error: "Age is required" })
-    .int("Age must be a whole number")
-    .min(5, "Minimum age is 5")
-    .max(100, "Maximum age is 100"),
-  gender: z.string().min(1, "Please select a gender"),
-  phone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
+    .number({ error: "Required" })
+    .int()
+    .min(5, "Min 5")
+    .max(100, "Max 100"),
+  gender: z.string().min(1, "Required"),
 });
 
 const formSchema = z.object({
-  travelers: z.array(travelerSchema).min(1, "At least one traveler is required"),
-  contactPhone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
+  travelers: z.array(travelerSchema).min(1),
   contactEmail: z
     .string()
-    .email("Enter a valid email address")
+    .email("Enter a valid email")
     .optional()
     .or(z.literal("")),
+  contactPhone: z
+    .string()
+    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit number"),
   specialRequests: z.string().max(500).optional(),
   pickupPoint: z.string().min(1, "Please select a pickup point"),
 });
@@ -55,12 +47,6 @@ type FormValues = z.infer<typeof formSchema>;
 // ---------------------------------------------------------------------------
 //  Constants
 // ---------------------------------------------------------------------------
-
-const GENDER_OPTIONS = [
-  { label: "Male", value: "male", icon: "male" },
-  { label: "Female", value: "female", icon: "female" },
-  { label: "Other", value: "other", icon: "transgender" },
-];
 
 interface PickupPointOption {
   id: string;
@@ -107,7 +93,6 @@ export default function DetailsPage() {
 
   const {
     travelerCount,
-    bookingType,
     specialRequests: storedRequests,
     pickupPoint: storedPickup,
     travelers: storedTravelers,
@@ -123,12 +108,13 @@ export default function DetailsPage() {
 
   const [submitting, setSubmitting] = useState(false);
 
-  // Build default values from store
   const defaultTravelers = useMemo(() => {
     const defaults = [];
     for (let i = 0; i < travelerCount; i++) {
       defaults.push(
-        storedTravelers[i] ?? { name: "", age: "" as unknown as number, gender: "", phone: "" },
+        storedTravelers[i]
+          ? { name: storedTravelers[i].name, age: storedTravelers[i].age, gender: storedTravelers[i].gender }
+          : { name: "", age: "" as unknown as number, gender: "" },
       );
     }
     return defaults;
@@ -145,8 +131,8 @@ export default function DetailsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       travelers: defaultTravelers,
-      contactPhone: storedContactPhone ?? "",
       contactEmail: storedEmail ?? "",
+      contactPhone: storedContactPhone ?? storedTravelers[0]?.phone ?? "",
       specialRequests: storedRequests ?? "",
       pickupPoint: storedPickup ?? "",
     },
@@ -154,32 +140,20 @@ export default function DetailsPage() {
 
   const { fields } = useFieldArray({ control, name: "travelers" });
   const selectedPickup = watch("pickupPoint");
-  const primaryPhone = watch("travelers.0.phone");
 
   useEffect(() => {
     setStep(2);
   }, [setStep]);
 
-  // Auto-sync contact phone from primary traveler
-  useEffect(() => {
-    if (primaryPhone && /^[6-9]\d{9}$/.test(primaryPhone)) {
-      const current = watch("contactPhone");
-      if (!current) {
-        setValue("contactPhone", primaryPhone);
-      }
-    }
-  }, [primaryPhone, setValue, watch]);
-
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setSubmitting(true);
     try {
-      // Persist into the booking store
       setTravelers(
         data.travelers.map((t) => ({
           name: t.name,
           age: Number(t.age),
           gender: t.gender,
-          phone: t.phone,
+          phone: data.contactPhone,
         })),
       );
       setContactPhone(data.contactPhone || null);
@@ -196,112 +170,167 @@ export default function DetailsPage() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-6 p-5 pb-32"
+      className="flex flex-col gap-5 p-5 pb-32"
       noValidate
     >
-      {/* Heading */}
+      {/* Traveller Details */}
       <div>
-        <h2 className="text-headline-md font-headline-md text-on-surface">
-          Traveler Details
-        </h2>
-        <p className="mt-1 text-body-md text-on-surface-variant">
-          Fill in details for {travelerCount}{" "}
-          {travelerCount === 1 ? "traveler" : "travelers"}
+        <div className="flex items-center justify-between">
+          <h2 className="text-title-lg font-title-lg text-on-surface">
+            Traveller Details
+          </h2>
+          <span className="text-label-sm text-primary">
+            {travelerCount} {travelerCount === 1 ? "Seat" : "Seats"}
+          </span>
+        </div>
+        <p className="mt-0.5 text-label-sm text-on-surface-variant">
+          Fill passenger details for the seats
         </p>
       </div>
 
-      {/* Traveler forms */}
-      {fields.map((field, index) => (
-        <motion.div
-          key={field.id}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.06 }}
-        >
-          <Card variant="outlined" className="flex flex-col gap-4">
-            {/* Traveler header */}
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-on-primary text-label-lg font-label-lg">
-                {index + 1}
+      {/* Compact traveler rows */}
+      <div className="flex flex-col gap-3">
+        {fields.map((field, index) => {
+          const gender = watch(`travelers.${index}.gender`);
+          return (
+            <div
+              key={field.id}
+              className="rounded-xl border border-outline-variant p-3"
+            >
+              {/* Row label */}
+              {travelerCount > 1 && (
+                <p className="mb-2 text-label-sm text-on-surface-variant">
+                  Passenger {index + 1}
+                </p>
+              )}
+
+              {/* Inline: Name | Age | Gender toggles */}
+              <div className="flex items-start gap-2">
+                {/* Name */}
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="FULL NAME"
+                    className={cn(
+                      "w-full rounded-lg border bg-surface-container-low px-3 py-2.5",
+                      "text-body-md text-on-surface placeholder:text-on-surface-variant/50",
+                      "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
+                      errors.travelers?.[index]?.name
+                        ? "border-error"
+                        : "border-outline-variant",
+                    )}
+                    {...register(`travelers.${index}.name`)}
+                  />
+                  {errors.travelers?.[index]?.name && (
+                    <p className="mt-0.5 text-[11px] text-error">
+                      {errors.travelers[index].name.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Age */}
+                <div className="w-16">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="AGE"
+                    className={cn(
+                      "w-full rounded-lg border bg-surface-container-low px-2 py-2.5 text-center",
+                      "text-body-md text-on-surface placeholder:text-on-surface-variant/50",
+                      "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
+                      errors.travelers?.[index]?.age
+                        ? "border-error"
+                        : "border-outline-variant",
+                    )}
+                    {...register(`travelers.${index}.age`, { valueAsNumber: true })}
+                  />
+                </div>
+
+                {/* Gender toggle buttons */}
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setValue(`travelers.${index}.gender`, "male", { shouldValidate: true })
+                    }
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-lg border transition-all",
+                      gender === "male"
+                        ? "border-primary bg-primary/10"
+                        : "border-outline-variant bg-surface-container-low",
+                    )}
+                    title="Male"
+                  >
+                    <span
+                      className={cn(
+                        "material-symbols-outlined text-[20px]",
+                        gender === "male" ? "text-primary" : "text-on-surface-variant",
+                      )}
+                    >
+                      male
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setValue(`travelers.${index}.gender`, "female", { shouldValidate: true })
+                    }
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-lg border transition-all",
+                      gender === "female"
+                        ? "border-primary bg-primary/10"
+                        : "border-outline-variant bg-surface-container-low",
+                    )}
+                    title="Female"
+                  >
+                    <span
+                      className={cn(
+                        "material-symbols-outlined text-[20px]",
+                        gender === "female" ? "text-primary" : "text-on-surface-variant",
+                      )}
+                    >
+                      female
+                    </span>
+                  </button>
+                </div>
               </div>
-              <span className="text-title-md font-title-md text-on-surface">
-                {index === 0 && bookingType !== "GROUP"
-                  ? "Primary Traveler"
-                  : `Traveler ${index + 1}`}
-              </span>
+              {errors.travelers?.[index]?.gender && (
+                <p className="mt-1 text-[11px] text-error">Select gender</p>
+              )}
             </div>
+          );
+        })}
+      </div>
 
-            {/* Name */}
-            <Input
-              label="Full Name"
-              placeholder="As per govt. ID"
-              error={errors.travelers?.[index]?.name?.message}
-              {...register(`travelers.${index}.name`)}
-            />
+      {/* Contact Details */}
+      <div>
+        <h3 className="text-title-lg font-title-lg text-on-surface">
+          Contact Details
+        </h3>
+        <p className="mt-0.5 text-label-sm text-on-surface-variant">
+          We'll send your ticket here
+        </p>
+      </div>
 
-            {/* Age & Gender row */}
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Age"
-                type="number"
-                placeholder="e.g. 24"
-                inputMode="numeric"
-                error={errors.travelers?.[index]?.age?.message}
-                {...register(`travelers.${index}.age`, { valueAsNumber: true })}
-              />
-              <Dropdown
-                label="Gender"
-                placeholder="Select"
-                options={GENDER_OPTIONS}
-                value={watch(`travelers.${index}.gender`)}
-                onChange={(v) => setValue(`travelers.${index}.gender`, v, { shouldValidate: true })}
-                error={errors.travelers?.[index]?.gender?.message}
-              />
-            </div>
-
-            {/* Phone */}
-            <Input
-              label="Phone Number"
-              type="tel"
-              placeholder="10-digit mobile"
-              countryCode="+91"
-              inputMode="numeric"
-              maxLength={10}
-              error={errors.travelers?.[index]?.phone?.message}
-              {...register(`travelers.${index}.phone`)}
-            />
-          </Card>
-        </motion.div>
-      ))}
-
-      {/* Contact Details — compact card */}
-      <Card variant="outlined" className="flex flex-col gap-3">
-        <div>
-          <h3 className="text-title-md font-title-md text-on-surface">
-            Contact Details
-          </h3>
-          <p className="text-label-sm text-on-surface-variant">
-            Your ticket and trip info will be sent here
-          </p>
-        </div>
+      <div className="flex flex-col gap-3">
         <Input
-          label="Mobile Number"
+          label="Email Address"
+          type="email"
+          placeholder="EMAIL ADDRESS"
+          error={errors.contactEmail?.message}
+          {...register("contactEmail")}
+        />
+        <Input
+          label="Phone Number"
           type="tel"
-          placeholder="10-digit mobile"
+          placeholder="PHONE NUMBER"
           countryCode="+91"
           inputMode="numeric"
           maxLength={10}
           error={errors.contactPhone?.message}
           {...register("contactPhone")}
         />
-        <Input
-          label="Email ID"
-          type="email"
-          placeholder="your@email.com"
-          error={errors.contactEmail?.message}
-          {...register("contactEmail")}
-        />
-      </Card>
+      </div>
 
       {/* Special Requests */}
       <div className="flex flex-col gap-1.5">
@@ -314,11 +343,11 @@ export default function DetailsPage() {
         </label>
         <textarea
           id="special-requests"
-          rows={3}
-          placeholder="Dietary restrictions, medical conditions, accessibility needs..."
+          rows={2}
+          placeholder="Dietary restrictions, medical conditions..."
           className={cn(
             "w-full rounded-xl bg-surface-container-low text-on-surface",
-            "border border-outline-variant p-4 text-body-lg",
+            "border border-outline-variant p-3 text-body-md",
             "placeholder:text-on-surface-variant/50",
             "transition-all duration-200",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
@@ -326,9 +355,6 @@ export default function DetailsPage() {
           )}
           {...register("specialRequests")}
         />
-        {errors.specialRequests && (
-          <p className="text-label-sm text-error">{errors.specialRequests.message}</p>
-        )}
       </div>
 
       {/* Pickup Point */}
@@ -337,13 +363,13 @@ export default function DetailsPage() {
           <h3 className="text-title-lg font-title-lg text-on-surface">
             Pickup Point
           </h3>
-          <p className="mt-0.5 text-body-md text-on-surface-variant">
+          <p className="mt-0.5 text-label-sm text-on-surface-variant">
             Select your boarding location
           </p>
         </div>
 
         <div
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-2"
           role="radiogroup"
           aria-label="Pickup point"
         >
