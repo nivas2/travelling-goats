@@ -25,7 +25,7 @@ const travelerSchema = z.object({
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name must be under 50 characters"),
   age: z
-    .number()
+    .number({ error: "Age is required" })
     .int("Age must be a whole number")
     .min(5, "Minimum age is 5")
     .max(100, "Maximum age is 100"),
@@ -115,7 +115,7 @@ export default function DetailsPage() {
     const defaults = [];
     for (let i = 0; i < travelerCount; i++) {
       defaults.push(
-        storedTravelers[i] ?? { name: "", age: 0 as number, gender: "", phone: "" },
+        storedTravelers[i] ?? { name: "", age: "" as unknown as number, gender: "", phone: "" },
       );
     }
     return defaults;
@@ -176,7 +176,7 @@ export default function DetailsPage() {
         <h2 className="text-headline-md font-headline-md text-on-surface">
           Traveler Details
         </h2>
-        <p className="mt-1 text-body-md font-body-md text-on-surface-variant">
+        <p className="mt-1 text-body-md text-on-surface-variant">
           Fill in details for {travelerCount}{" "}
           {travelerCount === 1 ? "traveler" : "travelers"}
         </p>
@@ -219,7 +219,7 @@ export default function DetailsPage() {
                 placeholder="e.g. 24"
                 inputMode="numeric"
                 error={errors.travelers?.[index]?.age?.message}
-                {...register(`travelers.${index}.age`)}
+                {...register(`travelers.${index}.age`, { valueAsNumber: true })}
               />
               <Dropdown
                 label="Gender"
@@ -280,13 +280,13 @@ export default function DetailsPage() {
           <h3 className="text-title-lg font-title-lg text-on-surface">
             Pickup Point
           </h3>
-          <p className="mt-0.5 text-body-md font-body-md text-on-surface-variant">
+          <p className="mt-0.5 text-body-md text-on-surface-variant">
             Select your boarding location
           </p>
         </div>
 
         <div
-          className="flex flex-col gap-2.5"
+          className="flex flex-col gap-3"
           role="radiogroup"
           aria-label="Pickup point"
         >

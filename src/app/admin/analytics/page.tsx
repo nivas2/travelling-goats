@@ -37,7 +37,7 @@ function BarChart({
             </span>
             <div className="w-full flex flex-col justify-end h-32">
               <div
-                className="w-full rounded-t-md bg-[#ae2f34] transition-all duration-500"
+                className="w-full rounded-t-md bg-primary transition-all duration-500"
                 style={{ height: `${Math.max(heightPct, 2)}%` }}
               />
             </div>
@@ -94,20 +94,20 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">Analytics Dashboard</h1>
-        <p className="text-sm text-on-surface-variant">Key metrics and performance insights</p>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Analytics Dashboard</h1>
+        <p className="text-body-md text-on-surface-variant">Key metrics and performance insights</p>
       </div>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100">
-              <span className="material-symbols-outlined text-[24px] text-blue-700">person</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+              <span className="material-symbols-outlined text-[24px] text-primary">person</span>
             </div>
             <div>
-              <p className="text-sm text-on-surface-variant">DAU / MAU</p>
-              <p className="text-xl font-bold text-on-surface">
+              <p className="text-body-md text-on-surface-variant">DAU / MAU</p>
+              <p className="text-title-lg font-title-lg text-on-surface">
                 {analytics.dau.toLocaleString()} / {analytics.mau.toLocaleString()}
               </p>
             </div>
@@ -115,34 +115,34 @@ export default function AdminAnalyticsPage() {
         </Card>
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100">
-              <span className="material-symbols-outlined text-[24px] text-green-700">conversion_path</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-success/10">
+              <span className="material-symbols-outlined text-[24px] text-success">conversion_path</span>
             </div>
             <div>
-              <p className="text-sm text-on-surface-variant">Booking Conversion</p>
-              <p className="text-xl font-bold text-on-surface">{analytics.bookingConversionRate}%</p>
+              <p className="text-body-md text-on-surface-variant">Booking Conversion</p>
+              <p className="text-title-lg font-title-lg text-on-surface">{analytics.bookingConversionRate}%</p>
             </div>
           </div>
         </Card>
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ae2f34]/10">
-              <span className="material-symbols-outlined text-[24px] text-[#ae2f34]">shopping_cart</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+              <span className="material-symbols-outlined text-[24px] text-primary">shopping_cart</span>
             </div>
             <div>
-              <p className="text-sm text-on-surface-variant">Avg Order Value</p>
-              <p className="text-xl font-bold text-on-surface">{formatCurrency(analytics.avgOrderValuePaise)}</p>
+              <p className="text-body-md text-on-surface-variant">Avg Order Value</p>
+              <p className="text-title-lg font-title-lg text-on-surface">{formatCurrency(analytics.avgOrderValuePaise)}</p>
             </div>
           </div>
         </Card>
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100">
-              <span className="material-symbols-outlined text-[24px] text-purple-700">group_add</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
+              <span className="material-symbols-outlined text-[24px] text-purple-700 dark:text-purple-300">group_add</span>
             </div>
             <div>
-              <p className="text-sm text-on-surface-variant">New vs Returning</p>
-              <p className="text-xl font-bold text-on-surface">
+              <p className="text-body-md text-on-surface-variant">New vs Returning</p>
+              <p className="text-title-lg font-title-lg text-on-surface">
                 {analytics.newUsers} / {analytics.returningUsers}
               </p>
             </div>
@@ -153,7 +153,7 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Revenue Trend */}
         <Card variant="elevated" className="p-5">
-          <h3 className="text-base font-semibold text-on-surface mb-4">Revenue Trend</h3>
+          <h3 className="text-title-md font-title-md text-on-surface mb-4">Revenue Trend</h3>
           {revenueChartData.length > 0 ? (
             <BarChart data={revenueChartData} maxValue={maxRevenue} />
           ) : (
@@ -169,7 +169,7 @@ export default function AdminAnalyticsPage() {
 
         {/* Top Destinations */}
         <Card variant="elevated" className="p-5">
-          <h3 className="text-base font-semibold text-on-surface mb-4">Top Destinations</h3>
+          <h3 className="text-title-md font-title-md text-on-surface mb-4">Top Destinations</h3>
           {analytics.topDestinations.length > 0 ? (
             <div className="space-y-3">
               {analytics.topDestinations.map((dest, i) => {
@@ -178,16 +178,16 @@ export default function AdminAnalyticsPage() {
                 return (
                   <div key={dest.name} className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-on-surface">
+                      <span className="text-body-md font-label-lg text-on-surface">
                         {i + 1}. {dest.name}
                       </span>
-                      <span className="text-sm text-on-surface-variant">
+                      <span className="text-body-md text-on-surface-variant">
                         {dest.count} trips
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-2 rounded-full bg-surface-container overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-[#ae2f34] transition-all"
+                        className="h-full rounded-full bg-primary transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -208,29 +208,29 @@ export default function AdminAnalyticsPage() {
 
         {/* User Acquisition */}
         <Card variant="elevated" className="p-5">
-          <h3 className="text-base font-semibold text-on-surface mb-4">User Acquisition</h3>
+          <h3 className="text-title-md font-title-md text-on-surface mb-4">User Acquisition</h3>
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-[#ae2f34]" />
-                <span className="text-sm text-on-surface-variant">New Users</span>
+                <div className="h-3 w-3 rounded-full bg-primary" />
+                <span className="text-body-md text-on-surface-variant">New Users</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-blue-500" />
-                <span className="text-sm text-on-surface-variant">Returning</span>
+                <div className="h-3 w-3 rounded-full bg-primary" />
+                <span className="text-body-md text-on-surface-variant">Returning</span>
               </div>
             </div>
-            <div className="h-4 rounded-full bg-gray-100 overflow-hidden flex">
+            <div className="h-4 rounded-full bg-surface-container overflow-hidden flex">
               <div
-                className="h-full bg-[#ae2f34] transition-all"
+                className="h-full bg-primary transition-all"
                 style={{ width: `${newPct}%` }}
               />
               <div
-                className="h-full bg-blue-500 transition-all"
+                className="h-full bg-primary transition-all"
                 style={{ width: `${100 - newPct}%` }}
               />
             </div>
-            <div className="flex justify-between text-sm text-on-surface-variant">
+            <div className="flex justify-between text-body-md text-on-surface-variant">
               <span>{analytics.newUsers} new ({Math.round(newPct)}%)</span>
               <span>{analytics.returningUsers} returning ({Math.round(100 - newPct)}%)</span>
             </div>

@@ -19,12 +19,42 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
+    const now = new Date();
 
-    const where: Record<string, unknown> = { userId: session.user.id };
-    if (status) where.status = status;
+    // Build where clause — map tab values (UPCOMING/ONGOING/COMPLETED) to date-based queries
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let where: any = { userId: session.user.id };
+
+    if (status === "UPCOMING") {
+      where = {
+        ...where,
+        status: { in: ["PENDING", "CONFIRMED"] },
+        trip: { startDate: { gt: now } },
+      };
+    } else if (status === "ONGOING") {
+      where = {
+        ...where,
+        status: "CONFIRMED",
+        trip: {
+          startDate: { lte: now },
+          endDate: { gte: now },
+        },
+      };
+    } else if (status === "COMPLETED") {
+      where = {
+        ...where,
+        OR: [
+          { status: "COMPLETED" },
+          { status: "CONFIRMED", trip: { endDate: { lt: now } } },
+        ],
+      };
+    } else if (status) {
+      // Direct status filter (e.g., CANCELLED, REFUNDED)
+      where.status = status;
+    }
 
     const bookings = await prisma.booking.findMany({
-      where: where as Parameters<typeof prisma.booking.findMany>[0] extends { where?: infer W } ? W : never,
+      where,
       include: {
         trip: {
           select: {

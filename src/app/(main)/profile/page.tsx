@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { Card } from "@/components/ui/card";
@@ -53,13 +54,8 @@ export default function ProfilePage() {
     fetchUser();
   }, [fetchUser]);
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/signout", { method: "POST" });
-      router.push("/login");
-    } catch {
-      router.push("/login");
-    }
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
   };
 
   const MENU_ITEMS: MenuItem[] = [

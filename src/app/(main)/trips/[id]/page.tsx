@@ -175,7 +175,7 @@ interface ReviewData {
 
 function ReviewCard({ review }: { review: ReviewData }) {
   return (
-    <Card variant="outlined" className="p-3.5">
+    <Card variant="outlined" className="p-5">
       <div className="flex items-center gap-3">
         <Avatar
           src={review.userAvatar}
@@ -195,7 +195,7 @@ function ReviewCard({ review }: { review: ReviewData }) {
           <span className="text-label-lg font-semibold">{review.rating}</span>
         </div>
       </div>
-      <p className="mt-2.5 text-body-md text-on-surface-variant line-clamp-3">
+      <p className="mt-3 text-body-md text-on-surface-variant line-clamp-3">
         {review.comment}
       </p>
     </Card>
@@ -239,6 +239,7 @@ export default function TripDetailPage({
   const router = useRouter();
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -276,13 +277,14 @@ export default function TripDetailPage({
   const fetchTrip = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchError(false);
       const res = await fetch(`/api/trips/${id}`);
       const json: ApiResponse<TripDetail> = await res.json();
       if (json.success && json.data) {
         setTrip(json.data);
       }
     } catch {
-      // Handle error
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -324,14 +326,23 @@ export default function TripDetailPage({
           className="text-on-surface-variant/40"
         />
         <h2 className="mt-4 text-title-lg font-semibold text-on-surface">
-          Trip Not Found
+          {fetchError ? "Failed to Load Trip" : "Trip Not Found"}
         </h2>
         <p className="mt-2 text-body-md text-on-surface-variant">
-          This trip may no longer be available.
+          {fetchError
+            ? "Something went wrong. Please try again."
+            : "This trip may no longer be available."}
         </p>
-        <Button className="mt-6" onClick={() => router.push("/home")}>
-          Back to Home
-        </Button>
+        <div className="mt-6 flex gap-3">
+          {fetchError && (
+            <Button variant="secondary" onClick={fetchTrip}>
+              Retry
+            </Button>
+          )}
+          <Button onClick={() => router.push("/home")}>
+            Back to Home
+          </Button>
+        </div>
       </div>
     );
   }
@@ -344,7 +355,7 @@ export default function TripDetailPage({
       : trip.rating;
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-screen bg-background pb-40">
       {/* ===== Hero Image Carousel ===== */}
       <div className="relative">
         <ImageCarousel images={trip.images} title={trip.title} />
@@ -484,10 +495,10 @@ export default function TripDetailPage({
         {/* Inclusions */}
         {trip.inclusions.length > 0 && (
           <section className="mt-6">
-            <h3 className="text-title-lg font-semibold text-on-surface mb-3">
+            <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
               Inclusions
             </h3>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-3">
               {trip.inclusions.map((item, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <Icon
@@ -505,11 +516,11 @@ export default function TripDetailPage({
 
         {/* Exclusions */}
         {trip.exclusions.length > 0 && (
-          <section className="mt-5">
-            <h3 className="text-title-lg font-semibold text-on-surface mb-3">
+          <section className="mt-6">
+            <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
               Exclusions
             </h3>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-3">
               {trip.exclusions.map((item, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <Icon
@@ -541,11 +552,11 @@ export default function TripDetailPage({
             <TabPanel value="overview">
               {/* Highlights */}
               {trip.highlights.length > 0 && (
-                <div className="mb-5">
-                  <h3 className="text-title-md font-semibold text-on-surface mb-3">
+                <div className="mb-6">
+                  <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
                     Highlights
                   </h3>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-3">
                     {trip.highlights.map((highlight, i) => (
                       <div key={i} className="flex items-start gap-2.5">
                         <Icon
@@ -565,7 +576,7 @@ export default function TripDetailPage({
               {/* Description */}
               {trip.description && (
                 <div>
-                  <h3 className="text-title-md font-semibold text-on-surface mb-2">
+                  <h3 className="text-title-lg font-title-lg text-on-surface mb-2">
                     About This Trip
                   </h3>
                   <p className="text-body-md text-on-surface-variant leading-relaxed whitespace-pre-line">
@@ -582,7 +593,7 @@ export default function TripDetailPage({
                   {/* Timeline line */}
                   <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-outline-variant/40" />
 
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     {trip.itineraryDays.map((day) => (
                       <div key={day.id} className="relative flex gap-4">
                         {/* Timeline dot */}
@@ -601,9 +612,9 @@ export default function TripDetailPage({
                           )}
 
                           {/* Activities */}
-                          {day.activities.length > 0 && (
+                          {Array.isArray(day.activities) && day.activities.length > 0 && (
                             <div className="mt-2.5 space-y-2">
-                              {day.activities.map((activity, ai) => (
+                              {(day.activities as { time: string; title: string }[]).map((activity, ai) => (
                                 <div
                                   key={ai}
                                   className="flex items-start gap-2"
@@ -620,7 +631,7 @@ export default function TripDetailPage({
                           )}
 
                           {/* Meals */}
-                          {day.meals.length > 0 && (
+                          {Array.isArray(day.meals) && day.meals.length > 0 && (
                             <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                               <Icon
                                 name="restaurant"
@@ -671,7 +682,7 @@ export default function TripDetailPage({
             {/* Reviews Tab */}
             <TabPanel value="reviews">
               {/* Rating Summary */}
-              <div className="flex items-center gap-4 mb-5">
+              <div className="flex items-center gap-4 mb-6">
                 <div className="text-center">
                   <p className="text-display font-bold text-on-surface">
                     {averageRating.toFixed(1)}
@@ -756,10 +767,11 @@ export default function TripDetailPage({
       {/* ===== Sticky Bottom CTA Bar ===== */}
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-50",
+          "fixed left-0 right-0 z-40",
+          "bottom-[80px] md:bottom-0",
           "bg-surface/95 backdrop-blur-md",
           "border-t border-outline-variant/20",
-          "px-5 py-3 pb-safe",
+          "px-5 py-3 md:pb-safe",
           "shadow-nav"
         )}
       >
@@ -775,7 +787,7 @@ export default function TripDetailPage({
           </div>
           <Button
             size="lg"
-            onClick={() => router.push(`/trips/${id}/booking`)}
+            onClick={() => router.push(`/${id}/travelers`)}
             className="min-w-[160px]"
           >
             Book Now

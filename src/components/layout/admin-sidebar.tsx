@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -86,11 +87,8 @@ export function AdminSidebar() {
               className="flex items-center gap-1.5"
               onClick={() => setMobileOpen(false)}
             >
-              <span className="text-title-lg font-bold tracking-tight text-primary">
-                Meet
-              </span>
               <span className="text-title-lg font-bold tracking-tight text-on-surface">
-                MyRoute
+                Meet<span className="text-primary">MyRoute</span>
               </span>
               <span className="ml-1 text-label-sm text-on-surface-variant/60 font-medium">
                 Admin
@@ -106,13 +104,14 @@ export function AdminSidebar() {
             }}
             className={cn(
               "hidden md:flex items-center justify-center",
-              "h-8 w-8 rounded-lg",
-              "hover:bg-surface-container-high transition-colors",
+              "h-8 w-8 rounded-full",
+              "hover:bg-surface-container active:scale-95",
+              "transition-all duration-200",
               collapsed && "mx-auto"
             )}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <span className="material-symbols-outlined text-[20px] text-on-surface-variant">
+            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">
               {collapsed ? "chevron_right" : "chevron_left"}
             </span>
           </button>
@@ -148,8 +147,8 @@ export function AdminSidebar() {
                       "transition-all duration-200",
                       "group",
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
                       collapsed && "md:justify-center md:px-0"
                     )}
                     title={collapsed ? item.label : undefined}
@@ -181,14 +180,14 @@ export function AdminSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-outline-variant/10 px-3 py-3">
+        <div className="border-t border-outline-variant/10 px-3 py-3 flex flex-col gap-0.5">
           <Link
             href="/"
             onClick={() => setMobileOpen(false)}
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-xl",
-              "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
-              "transition-colors duration-200",
+              "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+              "transition-all duration-200",
               collapsed && "md:justify-center md:px-0"
             )}
             title={collapsed ? "Back to App" : undefined}
@@ -200,6 +199,23 @@ export function AdminSidebar() {
               <span className="text-body-md font-medium">Back to App</span>
             )}
           </Link>
+          <button
+            onClick={() => signOut({ callbackUrl: "/admin/login" })}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl w-full",
+              "text-error hover:bg-error/10",
+              "transition-all duration-200",
+              collapsed && "md:justify-center md:px-0"
+            )}
+            title={collapsed ? "Log Out" : undefined}
+          >
+            <span className="material-symbols-outlined text-[22px] shrink-0">
+              logout
+            </span>
+            {!collapsed && (
+              <span className="text-body-md font-medium">Log Out</span>
+            )}
+          </button>
         </div>
       </aside>
     </>

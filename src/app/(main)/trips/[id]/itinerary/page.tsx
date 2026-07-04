@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
 import type { TripDetail, ItineraryDayData, ApiResponse } from "@/types";
 
@@ -75,8 +76,8 @@ function ItineraryDayCard({
 
             {/* Activities */}
             {day.activities.length > 0 && (
-              <Card variant="outlined" className="p-3.5">
-                <h4 className="text-label-lg font-semibold text-on-surface mb-2.5 flex items-center gap-1.5">
+              <Card variant="outlined" className="p-5">
+                <h4 className="text-label-lg font-semibold text-on-surface mb-3 flex items-center gap-1.5">
                   <Icon name="directions_run" size={18} className="text-primary" />
                   Activities
                 </h4>
@@ -179,17 +180,19 @@ export default function ItineraryPage({
   const router = useRouter();
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchTrip = useCallback(async () => {
     try {
       setLoading(true);
+      setError(false);
       const res = await fetch(`/api/trips/${id}`);
       const json: ApiResponse<TripDetail> = await res.json();
       if (json.success && json.data) {
         setTrip(json.data);
       }
     } catch {
-      // Handle error
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -207,6 +210,15 @@ export default function ItineraryPage({
 
       {loading ? (
         <ItinerarySkeleton />
+      ) : error ? (
+        <div className="px-5 py-6">
+          <EmptyState
+            icon="error"
+            title="Failed to load itinerary"
+            description="Something went wrong. Please try again."
+            action={{ label: "Retry", onClick: fetchTrip }}
+          />
+        </div>
       ) : trip && trip.itineraryDays.length > 0 ? (
         <div className="px-5 py-5">
           {/* Trip summary header */}
@@ -235,7 +247,7 @@ export default function ItineraryPage({
           {/* Bottom note */}
           <Card
             variant="outlined"
-            className="mt-4 flex items-start gap-3 p-4"
+            className="mt-6 flex items-start gap-3 p-5"
           >
             <Icon name="info" size={22} className="text-secondary shrink-0 mt-0.5" />
             <div>

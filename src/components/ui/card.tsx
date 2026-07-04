@@ -10,8 +10,8 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<NonNullable<CardProps["variant"]>, string> = {
-  default: "bg-surface-container-lowest shadow-card",
-  elevated: "bg-surface-container-lowest shadow-elevated",
+  default: "bg-surface-container-lowest shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.04)] border border-outline-variant/10",
+  elevated: "bg-surface-container-lowest shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.08)]",
   outlined: "bg-surface-container-lowest border border-outline-variant shadow-none",
 };
 
@@ -28,10 +28,10 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     ref
   ) => {
     const classes = cn(
-      "rounded-[20px] p-4",
+      "rounded-2xl p-5",
       variantStyles[variant],
       clickable &&
-        "cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elevated active:scale-[0.99]",
+        "cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08),0_12px_32px_rgba(0,0,0,0.06)] active:scale-[0.99]",
       className
     );
 

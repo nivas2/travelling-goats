@@ -33,18 +33,18 @@ type StatusFilter = "ALL" | "DRAFT" | "PUBLISHED" | "ONGOING" | "COMPLETED" | "C
 
 function TripStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    PUBLISHED: "bg-green-100 text-green-800",
-    DRAFT: "bg-gray-100 text-gray-700",
-    ONGOING: "bg-blue-100 text-blue-800",
-    COMPLETED: "bg-emerald-100 text-emerald-800",
-    CANCELLED: "bg-red-100 text-red-800",
-    SOLD_OUT: "bg-orange-100 text-orange-800",
+    PUBLISHED: "bg-success/10 text-success",
+    DRAFT: "bg-surface-container text-on-surface-variant",
+    ONGOING: "bg-primary/10 text-primary",
+    COMPLETED: "bg-success/10 text-success",
+    CANCELLED: "bg-error/10 text-error",
+    SOLD_OUT: "bg-warning/10 text-warning",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
-        colors[status] ?? "bg-gray-100 text-gray-800"
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize",
+        colors[status] ?? "bg-surface-container text-on-surface-variant"
       )}
     >
       {status.toLowerCase().replace("_", " ")}
@@ -131,8 +131,8 @@ export default function AdminTripsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface">Trip Management</h1>
-          <p className="text-sm text-on-surface-variant">
+          <h1 className="text-headline-md font-headline-md text-on-surface">Trip Management</h1>
+          <p className="text-body-md text-on-surface-variant">
             Manage all trips, drafts, and schedules
           </p>
         </div>
@@ -185,28 +185,28 @@ export default function AdminTripsPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">
                   Trip
                 </th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">
                   Destination
                 </th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">
                   Dates
                 </th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">
                   Price
                 </th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">
                   Spots
                 </th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">
                   Status
                 </th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">
                   Actions
                 </th>
               </tr>
@@ -233,7 +233,7 @@ export default function AdminTripsPage() {
                 filtered.map((trip) => (
                   <tr
                     key={trip.id}
-                    className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors"
+                    className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors"
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export default function AdminTripsPage() {
                     <td className="px-5 py-3 text-on-surface-variant">
                       {trip.destination}
                     </td>
-                    <td className="px-5 py-3 text-on-surface-variant text-xs">
+                    <td className="px-4 py-3 text-on-surface-variant text-label-sm">
                       {formatDateRange(trip.startDate, trip.endDate)}
                     </td>
                     <td className="px-5 py-3 text-right font-medium">
@@ -298,7 +298,7 @@ export default function AdminTripsPage() {
                           className="inline-flex h-8 w-8 items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
-                          <span className="material-symbols-outlined text-[18px] text-red-500">
+                          <span className="material-symbols-outlined text-[18px] text-error">
                             delete
                           </span>
                         </button>

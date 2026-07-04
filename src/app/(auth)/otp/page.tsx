@@ -176,7 +176,7 @@ export default function OtpPage() {
   if (!phone) return null;
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5">
+    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6">
       {/* Decorative blobs */}
       <div
         className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-primary-container/30 blur-3xl"

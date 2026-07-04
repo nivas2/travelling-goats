@@ -105,7 +105,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
           >
             {/* Overlay */}
             <motion.div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               variants={overlayVariants}
               onClick={onClose}
               aria-hidden
@@ -119,7 +119,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
               aria-label={title}
               variants={panelVariants}
               className={cn(
-                "relative z-10 w-full rounded-2xl bg-surface-container-lowest p-6 shadow-elevated",
+                "relative z-10 w-full rounded-2xl bg-surface-container-lowest p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]",
                 sizeClasses[size],
                 className,
               )}
@@ -129,7 +129,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
                 <button
                   type="button"
                   onClick={onClose}
-                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-high active:bg-surface-container-highest"
                   aria-label="Close dialog"
                 >
                   <span className="material-symbols-outlined text-[20px]">

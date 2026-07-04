@@ -261,7 +261,7 @@ export default function AddonsPage() {
         <h2 className="text-headline-md font-headline-md text-on-surface">
           Add-ons & Snacks
         </h2>
-        <p className="mt-1 text-body-md font-body-md text-on-surface-variant">
+        <p className="mt-1 text-body-md text-on-surface-variant">
           Enhance your trip with extras (all optional)
         </p>
       </div>
@@ -315,7 +315,7 @@ export default function AddonsPage() {
                     )}
                   </div>
                   {addon.description && (
-                    <p className="mt-0.5 text-body-md font-body-md text-on-surface-variant">
+                    <p className="mt-0.5 text-body-md text-on-surface-variant">
                       {addon.description}
                     </p>
                   )}
@@ -390,7 +390,7 @@ export default function AddonsPage() {
       <div className="fixed inset-x-0 bottom-0 border-t border-outline-variant/10 bg-surface/95 backdrop-blur-md p-4 pb-safe">
         {runningTotal > 0 && (
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-body-md font-body-md text-on-surface-variant">
+            <span className="text-body-md text-on-surface-variant">
               Add-ons total
             </span>
             <span className="text-title-md font-title-md text-primary">
@@ -464,7 +464,7 @@ function SnackItem({
           {snack.name}
         </p>
         {snack.description && (
-          <p className="text-body-md font-body-md text-on-surface-variant">
+          <p className="text-body-md text-on-surface-variant">
             {snack.description}
           </p>
         )}

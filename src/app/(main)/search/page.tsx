@@ -171,9 +171,10 @@ export default function SearchPage() {
         setLoading(true);
         setHasSearched(true);
         const res = await fetch(`/api/trips?${params.toString()}`);
-        const json: ApiResponse<TripCardData[]> = await res.json();
+        const json = await res.json();
         if (json.success && json.data) {
-          setResults(json.data);
+          const items = Array.isArray(json.data) ? json.data : (json.data.items ?? []);
+          setResults(items);
         } else {
           setResults([]);
         }
@@ -273,7 +274,7 @@ export default function SearchPage() {
         </div>
 
         {/* Category Quick Filters */}
-        <div className="flex gap-2 overflow-x-auto px-4 pb-3 hide-scrollbar">
+        <div className="flex gap-3 overflow-x-auto px-4 pb-3 hide-scrollbar">
           {CATEGORY_FILTERS.map((cat) => (
             <Chip
               key={cat.value}
@@ -294,7 +295,7 @@ export default function SearchPage() {
         {!hasSearched && !loading && recentSearches.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-title-md font-semibold text-on-surface">
+              <h3 className="text-title-lg font-title-lg text-on-surface">
                 Recent Searches
               </h3>
               <button

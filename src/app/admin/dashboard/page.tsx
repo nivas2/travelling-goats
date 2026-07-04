@@ -62,10 +62,10 @@ function StatCard({
         </div>
         <span
           className={cn(
-            "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold",
+            "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-label-sm font-label-sm",
             isPositive
-              ? "bg-green-50 text-green-700"
-              : "bg-red-50 text-red-700"
+              ? "bg-success/10 text-success"
+              : "bg-error/10 text-error"
           )}
         >
           <span className="material-symbols-outlined text-[14px]">
@@ -74,8 +74,8 @@ function StatCard({
           {Math.abs(growth)}%
         </span>
       </div>
-      <p className="mt-3 text-sm text-on-surface-variant">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-on-surface">{value}</p>
+      <p className="mt-3 text-body-md text-on-surface-variant">{label}</p>
+      <p className="mt-1 text-headline-md font-headline-md text-on-surface">{value}</p>
     </Card>
   );
 }
@@ -84,17 +84,17 @@ function StatCard({
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    CONFIRMED: "bg-green-100 text-green-800",
-    COMPLETED: "bg-green-100 text-green-800",
-    PENDING: "bg-yellow-100 text-yellow-800",
-    CANCELLED: "bg-red-100 text-red-800",
-    REFUNDED: "bg-gray-100 text-gray-800",
+    CONFIRMED: "bg-success/10 text-success",
+    COMPLETED: "bg-success/10 text-success",
+    PENDING: "bg-warning/10 text-warning",
+    CANCELLED: "bg-error/10 text-error",
+    REFUNDED: "bg-surface-container text-on-surface-variant",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize",
-        colors[status] ?? "bg-gray-100 text-gray-800"
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize",
+        colors[status] ?? "bg-surface-container text-on-surface-variant"
       )}
     >
       {status.toLowerCase()}
@@ -132,8 +132,8 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-on-surface">Dashboard</h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <h1 className="text-headline-md font-headline-md text-on-surface">Dashboard</h1>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} variant="elevated" className="h-32 animate-pulse bg-surface-container-low" />
           ))}
@@ -158,8 +158,8 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface">Dashboard</h1>
-          <p className="text-sm text-on-surface-variant">
+          <h1 className="text-headline-md font-headline-md text-on-surface">Dashboard</h1>
+          <p className="text-body-md text-on-surface-variant">
             Welcome back. Here is what is happening today.
           </p>
         </div>
@@ -185,7 +185,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon="group"
           label="Total Users"
@@ -217,36 +217,36 @@ export default function AdminDashboardPage() {
         {/* Recent Bookings */}
         <Card variant="elevated" className="p-0 overflow-hidden">
           <div className="flex items-center justify-between border-b border-outline-variant/20 px-5 py-4">
-            <h2 className="text-lg font-semibold text-on-surface">
+            <h2 className="text-title-md font-title-md text-on-surface">
               Recent Bookings
             </h2>
             <Link
               href="/admin/bookings"
-              className="text-sm font-medium text-primary hover:underline"
+              className="text-label-sm font-label-lg text-primary hover:underline"
             >
               View all
             </Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[600px]">
+            <table className="w-full text-body-md min-w-[600px]">
               <thead>
                 <tr className="border-b border-outline-variant/10 bg-surface-container-low">
-                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant whitespace-nowrap">
                     Booking #
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant whitespace-nowrap">
                     User
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant whitespace-nowrap">
                     Trip
                   </th>
-                  <th className="px-4 py-3 text-right font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant whitespace-nowrap">
                     Amount
                   </th>
-                  <th className="px-4 py-3 text-center font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant whitespace-nowrap">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-right font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant whitespace-nowrap">
                     Date
                   </th>
                 </tr>
@@ -267,7 +267,7 @@ export default function AdminDashboardPage() {
                       key={b.id}
                       className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/50 transition-colors"
                     >
-                      <td className="px-5 py-3 font-mono text-xs">
+                      <td className="px-4 py-3 font-mono text-label-sm">
                         {b.bookingNumber}
                       </td>
                       <td className="px-5 py-3">{b.user.name ?? "N/A"}</td>
@@ -294,30 +294,30 @@ export default function AdminDashboardPage() {
         {/* Recent Users */}
         <Card variant="elevated" className="p-0 overflow-hidden">
           <div className="flex items-center justify-between border-b border-outline-variant/20 px-5 py-4">
-            <h2 className="text-lg font-semibold text-on-surface">
+            <h2 className="text-title-md font-title-md text-on-surface">
               Recent Users
             </h2>
             <Link
               href="/admin/users"
-              className="text-sm font-medium text-primary hover:underline"
+              className="text-label-sm font-label-lg text-primary hover:underline"
             >
               View all
             </Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[500px]">
+            <table className="w-full text-body-md min-w-[500px]">
               <thead>
                 <tr className="border-b border-outline-variant/10 bg-surface-container-low">
-                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant whitespace-nowrap">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant whitespace-nowrap">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant whitespace-nowrap">
                     Phone
                   </th>
-                  <th className="px-4 py-3 text-right font-medium text-on-surface-variant whitespace-nowrap">
+                  <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant whitespace-nowrap">
                     Joined
                   </th>
                 </tr>

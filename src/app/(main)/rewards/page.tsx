@@ -314,7 +314,7 @@ export default function RewardsPage() {
               description="Earn points by booking trips, writing reviews, and more"
             />
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {history.map((item) => (
                 <Card
                   key={item.id}

@@ -28,13 +28,13 @@ function StarRating({ rating }: { rating: number }) {
           key={i}
           className={cn(
             "material-symbols-outlined text-[16px]",
-            i < Math.round(rating) ? "text-yellow-500 filled" : "text-gray-300"
+            i < Math.round(rating) ? "text-warning filled" : "text-on-surface-variant/30"
           )}
         >
           star
         </span>
       ))}
-      <span className="ml-1 text-xs font-medium text-on-surface-variant">
+      <span className="ml-1 text-label-sm font-label-sm text-on-surface-variant">
         {rating.toFixed(1)}
       </span>
     </div>
@@ -53,26 +53,26 @@ function RatingDistribution({ reviews }: { reviews: Review[] }) {
 
   return (
     <Card variant="elevated" className="p-5">
-      <h3 className="text-base font-semibold text-on-surface mb-4">Rating Distribution</h3>
+      <h3 className="text-title-md font-title-md text-on-surface mb-4">Rating Distribution</h3>
       <div className="space-y-2">
         {[5, 4, 3, 2, 1].map((star) => {
           const count = counts[star - 1];
           const pct = (count / max) * 100;
           return (
             <div key={star} className="flex items-center gap-3">
-              <span className="text-sm font-medium text-on-surface-variant w-4">
+              <span className="text-body-md font-label-lg text-on-surface-variant w-4">
                 {star}
               </span>
-              <span className="material-symbols-outlined text-[14px] text-yellow-500 filled">
+              <span className="material-symbols-outlined text-[14px] text-warning filled">
                 star
               </span>
-              <div className="flex-1 h-2.5 rounded-full bg-gray-100 overflow-hidden">
+              <div className="flex-1 h-2.5 rounded-full bg-surface-container overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-yellow-500 transition-all"
+                  className="h-full rounded-full bg-warning transition-all"
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <span className="text-sm text-on-surface-variant w-8 text-right">
+              <span className="text-body-md text-on-surface-variant w-8 text-right">
                 {count}
               </span>
             </div>
@@ -138,8 +138,8 @@ export default function AdminReviewsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">Review Management</h1>
-        <p className="text-sm text-on-surface-variant">
+        <h1 className="text-headline-md font-headline-md text-on-surface">Review Management</h1>
+        <p className="text-body-md text-on-surface-variant">
           Manage and moderate user reviews
         </p>
       </div>
@@ -154,16 +154,16 @@ export default function AdminReviewsPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">User</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Trip</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Rating</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Comment</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Verified</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Date</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Actions</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Trip</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Rating</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Comment</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Verified</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -181,7 +181,7 @@ export default function AdminReviewsPage() {
                 </tr>
               ) : (
                 reviews.map((review) => (
-                  <tr key={review.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors">
+                  <tr key={review.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3 font-medium text-on-surface">{review.user.name ?? "N/A"}</td>
                     <td className="px-5 py-3 text-on-surface-variant max-w-[160px] truncate">{review.trip.title}</td>
                     <td className="px-5 py-3 text-center">
@@ -192,12 +192,12 @@ export default function AdminReviewsPage() {
                     </td>
                     <td className="px-5 py-3 text-center">
                       {review.isVerified ? (
-                        <span className="material-symbols-outlined text-[18px] text-green-600">verified</span>
+                        <span className="material-symbols-outlined text-[18px] text-success">verified</span>
                       ) : (
                         <span className="material-symbols-outlined text-[18px] text-on-surface-variant/40">cancel</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-right text-on-surface-variant text-xs">{formatDate(review.createdAt)}</td>
+                    <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">{formatDate(review.createdAt)}</td>
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {!review.isVerified && (
@@ -206,7 +206,7 @@ export default function AdminReviewsPage() {
                             className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-green-50 transition-colors"
                             title="Verify"
                           >
-                            <span className="material-symbols-outlined text-[18px] text-green-600">check_circle</span>
+                            <span className="material-symbols-outlined text-[18px] text-success">check_circle</span>
                           </button>
                         )}
                         <button
@@ -214,7 +214,7 @@ export default function AdminReviewsPage() {
                           className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
-                          <span className="material-symbols-outlined text-[18px] text-red-500">delete</span>
+                          <span className="material-symbols-outlined text-[18px] text-error">delete</span>
                         </button>
                       </div>
                     </td>

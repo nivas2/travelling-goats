@@ -185,7 +185,7 @@ export default function TravelersPage() {
         <h2 className="text-headline-md font-headline-md text-on-surface">
           How are you traveling?
         </h2>
-        <p className="mt-1 text-body-md font-body-md text-on-surface-variant">
+        <p className="mt-1 text-body-md text-on-surface-variant">
           Choose your booking type to get started
         </p>
       </div>
@@ -227,7 +227,7 @@ export default function TravelersPage() {
               <p className="text-title-md font-title-md text-on-surface">
                 Number of Travelers
               </p>
-              <p className="text-body-md font-body-md text-on-surface-variant">
+              <p className="text-body-md text-on-surface-variant">
                 {MIN_GROUP_SIZE}-{pricing.maxGroupSize} people
               </p>
             </div>
@@ -282,14 +282,14 @@ export default function TravelersPage() {
       {selectedOption && (
         <Card className="flex items-center justify-between bg-primary-fixed/10">
           <div>
-            <p className="text-body-md font-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant">
               Estimated total
             </p>
             <p className="text-headline-md font-headline-md text-primary">
               {formatCurrency(totalPricePaise)}
             </p>
           </div>
-          <span className="text-body-md font-body-md text-on-surface-variant">
+          <span className="text-body-md text-on-surface-variant">
             {travelerCount} {travelerCount === 1 ? "traveler" : "travelers"}
           </span>
         </Card>

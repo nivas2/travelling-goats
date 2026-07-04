@@ -89,7 +89,7 @@ function FormSection({
 }) {
   return (
     <Card variant="elevated" className="p-6">
-      <h2 className="text-lg font-semibold text-on-surface mb-5">{title}</h2>
+      <h2 className="text-title-md font-title-md text-on-surface mb-5">{title}</h2>
       <div className="space-y-4">{children}</div>
     </Card>
   );
@@ -404,8 +404,8 @@ export default function CreateTripPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface">Create Trip</h1>
-          <p className="text-sm text-on-surface-variant">
+          <h1 className="text-headline-md font-headline-md text-on-surface">Create Trip</h1>
+          <p className="text-body-md text-on-surface-variant">
             Fill in the details to create a new trip
           </p>
         </div>
@@ -673,7 +673,7 @@ export default function CreateTripPage() {
               </h3>
               <button
                 onClick={() => removeItineraryDay(dayIdx)}
-                className="text-red-500 hover:text-red-700 transition-colors"
+                className="text-error hover:text-error/80 transition-colors"
               >
                 <span className="material-symbols-outlined text-[20px]">
                   delete
@@ -707,7 +707,7 @@ export default function CreateTripPage() {
                 Description
               </label>
               <textarea
-                className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y text-sm"
+                className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y text-body-md"
                 placeholder="Day description..."
                 value={day.description}
                 onChange={(e) =>
@@ -728,10 +728,10 @@ export default function CreateTripPage() {
                     type="button"
                     onClick={() => toggleMeal(dayIdx, meal.toLowerCase())}
                     className={cn(
-                      "rounded-full px-3 py-1.5 text-xs font-medium border transition-colors",
+                      "rounded-full px-3 py-1.5 text-label-sm font-label-sm border transition-colors",
                       day.meals.includes(meal.toLowerCase())
-                        ? "bg-[#ae2f34] text-white border-[#ae2f34]"
-                        : "bg-transparent text-on-surface-variant border-outline-variant hover:border-[#ae2f34]"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-transparent text-on-surface-variant border-outline-variant hover:border-primary"
                     )}
                   >
                     {meal}
@@ -749,7 +749,7 @@ export default function CreateTripPage() {
                 <button
                   type="button"
                   onClick={() => addActivity(dayIdx)}
-                  className="text-sm text-[#ae2f34] font-medium hover:underline"
+                  className="text-body-md text-primary font-label-lg hover:underline"
                 >
                   + Add Activity
                 </button>
@@ -757,7 +757,7 @@ export default function CreateTripPage() {
               {day.activities.map((act, actIdx) => (
                 <div
                   key={actIdx}
-                  className="flex items-start gap-2 mb-2 p-3 rounded-lg bg-[#f9f9f9]"
+                  className="flex items-start gap-2 mb-2 p-3 rounded-lg bg-surface-container"
                 >
                   <Input
                     placeholder="Time"
@@ -793,7 +793,7 @@ export default function CreateTripPage() {
                   />
                   <button
                     onClick={() => removeActivity(dayIdx, actIdx)}
-                    className="mt-1 text-red-400 hover:text-red-600 transition-colors shrink-0"
+                    className="mt-1 text-error/70 hover:text-error transition-colors shrink-0"
                   >
                     <span className="material-symbols-outlined text-[18px]">
                       close
@@ -822,7 +822,7 @@ export default function CreateTripPage() {
         {addOns.map((addon, idx) => (
           <div
             key={idx}
-            className="flex items-start gap-3 p-3 rounded-lg bg-[#f9f9f9]"
+            className="flex items-start gap-3 p-3 rounded-lg bg-surface-container"
           >
             <Input
               placeholder="Name"
@@ -865,7 +865,7 @@ export default function CreateTripPage() {
             />
             <button
               onClick={() => removeAddOn(idx)}
-              className="mt-1 text-red-400 hover:text-red-600 transition-colors shrink-0"
+              className="mt-1 text-error/70 hover:text-error transition-colors shrink-0"
             >
               <span className="material-symbols-outlined text-[18px]">
                 close
@@ -890,7 +890,7 @@ export default function CreateTripPage() {
         {snacks.map((snack, idx) => (
           <div
             key={idx}
-            className="flex items-start gap-3 p-3 rounded-lg bg-[#f9f9f9]"
+            className="flex items-start gap-3 p-3 rounded-lg bg-surface-container"
           >
             <Input
               placeholder="Name"
@@ -926,7 +926,7 @@ export default function CreateTripPage() {
             />
             <button
               onClick={() => removeSnack(idx)}
-              className="mt-1 text-red-400 hover:text-red-600 transition-colors shrink-0"
+              className="mt-1 text-error/70 hover:text-error transition-colors shrink-0"
             >
               <span className="material-symbols-outlined text-[18px]">
                 close
@@ -951,10 +951,10 @@ export default function CreateTripPage() {
         {faqs.map((faq, idx) => (
           <div
             key={idx}
-            className="p-3 rounded-lg bg-[#f9f9f9] space-y-3"
+            className="p-3 rounded-lg bg-surface-container space-y-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-on-surface-variant">
+              <span className="text-label-sm font-label-lg text-on-surface-variant">
                 FAQ #{idx + 1}
               </span>
               <div className="flex items-center gap-1">
@@ -978,7 +978,7 @@ export default function CreateTripPage() {
                 </button>
                 <button
                   onClick={() => removeFaq(idx)}
-                  className="h-7 w-7 flex items-center justify-center rounded text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  className="h-7 w-7 flex items-center justify-center rounded text-error/70 hover:text-error hover:bg-red-50 transition-colors"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     delete
@@ -994,7 +994,7 @@ export default function CreateTripPage() {
               fullWidth
             />
             <textarea
-              className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y"
+              className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y"
               placeholder="Answer"
               value={faq.answer}
               onChange={(e) => updateFaq(idx, "answer", e.target.value)}

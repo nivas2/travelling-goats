@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import prisma from "./prisma";
@@ -13,10 +12,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     newUser: "/welcome",
   },
   providers: [
-    Google({
+    // Google configured as OAuth2 (not OIDC) with explicit issuer.
+    // oauth4webapi v3 validates the RFC 9207 "iss" parameter that Google
+    // includes in its authorization callback. We must set the issuer to
+    // match what Google sends, otherwise it defaults to "https://authjs.dev".
+    {
+      id: "google",
+      name: "Google",
+      type: "oauth",
+      issuer: "https://accounts.google.com",
+      authorization: {
+        url: "https://accounts.google.com/o/oauth2/v2/auth",
+        params: {
+          scope: "openid email profile",
+          response_type: "code",
+        },
+      },
+      token: { url: "https://oauth2.googleapis.com/token" },
+      userinfo: { url: "https://openidconnect.googleapis.com/v1/userinfo" },
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      profile(profile: any) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
+    },
     CredentialsProvider({
       id: "phone-otp",
       name: "Phone OTP",
@@ -130,19 +155,64 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      // On sign-in, copy user fields to the JWT token.
-      // authorize() and PrismaAdapter both return these fields.
-      // This runs in Node.js (not Edge), so all data is available.
-      // After this, NO database calls are needed — everything is in the token.
+    async jwt({ token, user, account }) {
+      // On sign-in, populate the JWT with custom user fields.
+      // This callback runs in Node.js during sign-in (API route handler),
+      // so Prisma calls are safe here. It also runs in Edge (middleware)
+      // for token refresh, but we only query the DB when `user` is present.
       if (user) {
         token.id = user.id;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const u = user as any;
-        token.role = u.role ?? "USER";
-        token.isOnboarded = u.isOnboarded ?? false;
-        token.isVerified = u.isVerified ?? false;
-        token.idVerified = u.idVerified ?? false;
+
+        if (account?.provider === "google") {
+          // Google profile() only returns id/name/email/image.
+          // Look up the DB user to get role, isOnboarded, etc.
+          // The PrismaAdapter has already created/linked the user by this point.
+          try {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: user.id },
+              select: {
+                role: true,
+                isOnboarded: true,
+                isVerified: true,
+                idVerified: true,
+                referralCode: true,
+              },
+            });
+            if (dbUser) {
+              token.role = dbUser.role;
+              token.isOnboarded = dbUser.isOnboarded;
+              token.isVerified = dbUser.isVerified;
+              token.idVerified = dbUser.idVerified;
+              // Ensure Google users get a referral code
+              if (!dbUser.referralCode) {
+                await prisma.user.update({
+                  where: { id: user.id as string },
+                  data: { referralCode: generateReferralCode() },
+                });
+              }
+            } else {
+              token.role = "USER";
+              token.isOnboarded = false;
+              token.isVerified = false;
+              token.idVerified = false;
+            }
+          } catch {
+            // Fallback if DB is unreachable
+            token.role = "USER";
+            token.isOnboarded = false;
+            token.isVerified = false;
+            token.idVerified = false;
+          }
+        } else {
+          // Credentials providers (phone-otp, admin-login) return full user data
+          // from authorize(), so we can read custom fields directly.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const u = user as any;
+          token.role = u.role ?? "USER";
+          token.isOnboarded = u.isOnboarded ?? false;
+          token.isVerified = u.isVerified ?? false;
+          token.idVerified = u.idVerified ?? false;
+        }
       }
       return token;
     },

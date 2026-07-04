@@ -53,6 +53,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
           className={cn(
             "flex items-center justify-center rounded-full overflow-hidden",
             "bg-primary-container text-on-primary-container font-semibold",
+            "ring-2 ring-surface-container-lowest",
             sizeStyles[size]
           )}
         >
@@ -65,7 +66,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
               {...props}
             />
           ) : (
-            <span aria-label={name ?? "Avatar"}>{initials}</span>
+            <span className="flex items-center justify-center font-semibold" aria-label={name ?? "Avatar"}>{initials}</span>
           )}
         </div>
 

@@ -41,7 +41,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("meetmyroute-theme") as Theme | null;
-    const initial = stored || "system";
+    const initial = stored || "light";
     setThemeState(initial);
     applyTheme(initial);
 

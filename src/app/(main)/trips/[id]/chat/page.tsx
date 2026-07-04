@@ -9,6 +9,7 @@ import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import type { ChatMessageData, ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -153,7 +154,7 @@ function ChatBubble({
 
         <div
           className={cn(
-            "relative rounded-2xl px-3.5 py-2",
+            "relative rounded-2xl px-4 py-2.5",
             isOwn
               ? "bg-primary-container text-on-primary-container rounded-br-md"
               : "bg-surface-container text-on-surface rounded-bl-md"
@@ -322,7 +323,7 @@ function MessageInputBar({
       )}
 
       {/* Input Row */}
-      <div className="flex items-end gap-2 px-3 py-2">
+      <div className="flex items-end gap-3 px-4 py-3">
         {/* Attach image */}
         <button
           onClick={() => fileInputRef.current?.click()}
@@ -448,6 +449,7 @@ const POLL_INTERVAL = 3000;
 export default function TripChatPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { error: toastError } = useToast();
   const tripId = params.id;
 
   const [room, setRoom] = useState<ChatRoom | null>(null);
@@ -560,13 +562,13 @@ export default function TripChatPage() {
         }
 
         setReplyTo(null);
-      } catch (err) {
-        console.error("Failed to send message:", err);
+      } catch {
+        toastError("Failed to send message");
       } finally {
         setSending(false);
       }
     },
-    [tripId, replyTo, scrollToBottom]
+    [tripId, replyTo, scrollToBottom, toastError]
   );
 
   // Initial load

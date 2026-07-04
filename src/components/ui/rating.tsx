@@ -80,9 +80,9 @@ const Rating = forwardRef<HTMLDivElement, RatingProps>(
               type="button"
               disabled={readonly}
               className={cn(
-                "transition-colors focus-visible:outline-none",
+                "transition-colors duration-150 focus-visible:outline-none",
                 readonly ? "cursor-default" : "cursor-pointer",
-                isFilled ? "text-tertiary" : "text-outline-variant",
+                isFilled ? "text-amber-500" : "text-outline-variant",
               )}
               onClick={() => handleClick(starNumber)}
               onMouseEnter={() => !readonly && setHovered(starNumber)}

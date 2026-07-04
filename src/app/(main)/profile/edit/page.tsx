@@ -13,6 +13,7 @@ import { Chip } from "@/components/ui/chip";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import type { UserProfile } from "@/types";
 
@@ -28,8 +29,8 @@ const editProfileSchema = z.object({
   email: z.string().email("Invalid email address").or(z.literal("")),
   dateOfBirth: z.string().optional(),
   gender: z.string().optional(),
-  city: z.string().max(50, "City name is too long").optional(),
-  bio: z.string().max(200, "Bio must be under 200 characters").optional(),
+  city: z.string().max(100, "City name is too long").optional(),
+  bio: z.string().max(500, "Bio must be under 500 characters").optional(),
 });
 
 type EditProfileFormData = z.infer<typeof editProfileSchema>;
@@ -42,7 +43,7 @@ const GENDER_OPTIONS = [
   { label: "Male", value: "MALE" },
   { label: "Female", value: "FEMALE" },
   { label: "Non-binary", value: "NON_BINARY" },
-  { label: "Prefer not to say", value: "UNSPECIFIED" },
+  { label: "Prefer not to say", value: "PREFER_NOT_TO_SAY" },
 ];
 
 const ALL_INTERESTS = [
@@ -73,6 +74,7 @@ const ALL_INTERESTS = [
 export default function EditProfilePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,8 +116,10 @@ export default function EditProfilePage() {
       reset({
         name: userData.name ?? "",
         email: userData.email ?? "",
-        dateOfBirth: "",
-        gender: "",
+        dateOfBirth: userData.dateOfBirth
+          ? new Date(userData.dateOfBirth).toISOString().split("T")[0]
+          : "",
+        gender: userData.gender ?? "",
         city: userData.city ?? "",
         bio: userData.bio ?? "",
       });
@@ -156,6 +160,10 @@ export default function EditProfilePage() {
         interests: selectedInterests,
       };
 
+      // Remove empty optional fields so they don't cause validation errors
+      if (!body.gender) delete body.gender;
+      if (!body.dateOfBirth) delete body.dateOfBirth;
+
       // If there is an avatar file, we would normally upload it first.
       // For now we include the preview (base64) or existing URL.
       if (avatarFile) {
@@ -168,10 +176,18 @@ export default function EditProfilePage() {
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) throw new Error("Failed to save profile");
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to save profile");
+      }
+
+      toastSuccess("Profile updated successfully");
       router.push("/profile");
-    } catch {
-      // production would show toast
+    } catch (err) {
+      toastError(
+        err instanceof Error ? err.message : "Failed to save profile"
+      );
     } finally {
       setSaving(false);
     }
@@ -225,7 +241,7 @@ export default function EditProfilePage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Avatar upload */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center mb-1">
           <div className="relative">
             <Avatar
               src={avatarPreview}
@@ -312,7 +328,7 @@ export default function EditProfilePage() {
           <textarea
             placeholder="Tell us a bit about yourself..."
             rows={3}
-            maxLength={200}
+            maxLength={500}
             className={cn(
               "w-full rounded-xl bg-surface-container-low text-on-surface",
               "border border-outline-variant px-4 py-3 text-body-lg",
@@ -331,10 +347,10 @@ export default function EditProfilePage() {
 
         {/* Interests */}
         <div>
-          <label className="text-label-lg font-semibold text-on-surface mb-2 block">
+          <label className="text-label-lg font-semibold text-on-surface mb-3 block">
             Interests
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {ALL_INTERESTS.map((interest) => {
               const isSelected = selectedInterests.includes(interest);
               return (
@@ -357,7 +373,7 @@ export default function EditProfilePage() {
             type="submit"
             fullWidth
             loading={saving}
-            disabled={!isDirty && selectedInterests.length === (user?.interests?.length ?? 0)}
+            disabled={!isDirty && !avatarFile && JSON.stringify([...selectedInterests].sort()) === JSON.stringify([...(user?.interests ?? [])].sort())}
           >
             Save Changes
           </Button>

@@ -186,7 +186,7 @@ export default function SettingsPage() {
       {/* Sections */}
       {sections.map((section) => (
         <section key={section.title}>
-          <h2 className="text-label-lg font-label-lg text-on-surface-variant mb-2 uppercase tracking-wide">
+          <h2 className="text-label-sm text-on-surface-variant mb-3 uppercase tracking-wide">
             {section.title}
           </h2>
           <Card variant="outlined" className="p-0 overflow-hidden">
@@ -197,7 +197,7 @@ export default function SettingsPage() {
                 <div
                   key={item.label}
                   className={cn(
-                    "flex items-center gap-4 px-4 py-3.5",
+                    "flex items-center gap-4 px-5 py-4",
                     !isLast && "border-b border-outline-variant/50",
                     item.type !== "toggle" &&
                       "cursor-pointer hover:bg-surface-container transition-colors"

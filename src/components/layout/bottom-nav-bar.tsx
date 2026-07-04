@@ -44,14 +44,14 @@ export function BottomNavBar() {
                 "flex flex-col items-center gap-0.5 min-w-[64px] transition-all duration-200",
                 active
                   ? "text-primary"
-                  : "text-on-surface-variant/70 hover:text-on-surface-variant"
+                  : "text-on-surface-variant/60 hover:text-on-surface-variant"
               )}
             >
               <span
                 className={cn(
                   "flex items-center justify-center transition-all duration-200",
                   active
-                    ? "bg-primary-container/20 rounded-xl px-4 py-1.5"
+                    ? "bg-primary/12 rounded-xl px-4 py-1.5"
                     : "px-4 py-1.5"
                 )}
               >
@@ -66,7 +66,7 @@ export function BottomNavBar() {
               </span>
               <span
                 className={cn(
-                  "text-[11px] font-medium leading-none",
+                  "text-[11px] leading-none",
                   active ? "font-semibold" : "font-normal"
                 )}
               >

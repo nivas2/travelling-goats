@@ -140,7 +140,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           className={cn(
-            "flex w-full items-center justify-between gap-2 rounded-xl border-2 bg-surface-container-lowest px-4 py-3 text-left transition-colors",
+            "flex h-12 w-full items-center justify-between gap-2 rounded-xl border-2 bg-surface-container-lowest px-4 text-left transition-colors",
             hasError
               ? "border-error"
               : isOpen
@@ -189,7 +189,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest py-1 shadow-card"
+              className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-outline-variant bg-surface-container-lowest py-1 shadow-[0_10px_38px_-10px_rgba(0,0,0,0.15),0_4px_11px_-2px_rgba(0,0,0,0.08)]"
             >
               {options.map((opt) => {
                 const isSelected = opt.value === selected;
@@ -204,7 +204,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                       "flex cursor-pointer items-center gap-3 px-4 py-2.5 text-body-lg font-body-lg transition-colors",
                       isSelected
                         ? "bg-primary-fixed/20 text-primary"
-                        : "text-on-surface hover:bg-surface-container",
+                        : "text-on-surface hover:bg-surface-container-high",
                       opt.disabled && "pointer-events-none opacity-40",
                     )}
                   >

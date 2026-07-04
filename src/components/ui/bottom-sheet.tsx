@@ -81,7 +81,7 @@ const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(
           <div className="fixed inset-0 z-50">
             {/* Overlay */}
             <motion.div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -96,7 +96,7 @@ const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(
               aria-modal="true"
               aria-label={title}
               className={cn(
-                "absolute bottom-0 left-0 right-0 rounded-t-2xl bg-surface-container-lowest shadow-elevated",
+                "absolute bottom-0 left-0 right-0 rounded-t-2xl border-t border-outline-variant/10 bg-surface-container-lowest shadow-[0_-10px_40px_-5px_rgba(0,0,0,0.15)]",
                 className,
               )}
               style={{ height: `${currentHeight}vh` }}
@@ -115,7 +115,7 @@ const BottomSheet = forwardRef<HTMLDivElement, BottomSheetProps>(
             >
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-2">
-                <div className="h-1 w-10 rounded-full bg-outline-variant" />
+                <div className="h-1.5 w-12 rounded-full bg-outline-variant/50" />
               </div>
 
               {/* Title */}

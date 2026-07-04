@@ -27,13 +27,13 @@ interface User {
 
 function RoleBadge({ role }: { role: string }) {
   const colors: Record<string, string> = {
-    ADMIN: "bg-purple-100 text-purple-800",
-    TRIP_CAPTAIN: "bg-blue-100 text-blue-800",
-    SUPPORT: "bg-cyan-100 text-cyan-800",
-    USER: "bg-gray-100 text-gray-700",
+    ADMIN: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    TRIP_CAPTAIN: "bg-primary/10 text-primary",
+    SUPPORT: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+    USER: "bg-surface-container text-on-surface-variant",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[role] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[role] ?? "bg-surface-container text-on-surface-variant")}>
       {role.toLowerCase().replace("_", " ")}
     </span>
   );
@@ -41,13 +41,13 @@ function RoleBadge({ role }: { role: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    ACTIVE: "bg-green-100 text-green-800",
-    SUSPENDED: "bg-yellow-100 text-yellow-800",
-    BANNED: "bg-red-100 text-red-800",
-    DELETED: "bg-gray-100 text-gray-500",
+    ACTIVE: "bg-success/10 text-success",
+    SUSPENDED: "bg-warning/10 text-warning",
+    BANNED: "bg-error/10 text-error",
+    DELETED: "bg-surface-container text-on-surface-variant",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[status] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[status] ?? "bg-surface-container text-on-surface-variant")}>
       {status.toLowerCase()}
     </span>
   );
@@ -125,8 +125,8 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">User Management</h1>
-        <p className="text-sm text-on-surface-variant">
+        <h1 className="text-headline-md font-headline-md text-on-surface">User Management</h1>
+        <p className="text-body-md text-on-surface-variant">
           Manage users, roles, and account status
         </p>
       </div>
@@ -174,18 +174,18 @@ export default function AdminUsersPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">User</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Email</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Phone</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Role</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Status</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Verified</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Joined</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Trips</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Actions</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Email</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Phone</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Role</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Verified</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Joined</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Trips</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -205,10 +205,10 @@ export default function AdminUsersPage() {
                 </tr>
               ) : (
                 filtered.map((user) => (
-                  <tr key={user.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors">
+                  <tr key={user.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ae2f34]/10 text-[#ae2f34] text-xs font-bold shrink-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary text-label-sm font-bold shrink-0">
                           {user.avatar ? (
                             <img src={user.avatar} alt="" className="h-full w-full rounded-full object-cover" />
                           ) : (
@@ -224,12 +224,12 @@ export default function AdminUsersPage() {
                     <td className="px-5 py-3 text-center"><StatusBadge status={user.status} /></td>
                     <td className="px-5 py-3 text-center">
                       {user.isVerified ? (
-                        <span className="material-symbols-outlined text-[18px] text-green-600">verified</span>
+                        <span className="material-symbols-outlined text-[18px] text-success">verified</span>
                       ) : (
                         <span className="material-symbols-outlined text-[18px] text-on-surface-variant/40">cancel</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-right text-on-surface-variant text-xs">
+                    <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">
                       {formatDate(user.createdAt)}
                     </td>
                     <td className="px-5 py-3 text-center">{user.totalTrips}</td>
@@ -247,7 +247,7 @@ export default function AdminUsersPage() {
                           className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-yellow-50 transition-colors"
                           title={user.status === "SUSPENDED" ? "Activate" : "Suspend"}
                         >
-                          <span className="material-symbols-outlined text-[18px] text-yellow-600">
+                          <span className="material-symbols-outlined text-[18px] text-warning">
                             {user.status === "SUSPENDED" ? "lock_open" : "lock"}
                           </span>
                         </button>
@@ -256,7 +256,7 @@ export default function AdminUsersPage() {
                           className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
-                          <span className="material-symbols-outlined text-[18px] text-red-500">delete</span>
+                          <span className="material-symbols-outlined text-[18px] text-error">delete</span>
                         </button>
                       </div>
                     </td>
@@ -283,7 +283,7 @@ export default function AdminUsersPage() {
       >
         {actionType === "role" && (
           <div className="space-y-4">
-            <p className="text-sm text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant">
               Change role for <strong>{actionUser?.name ?? "this user"}</strong>
             </p>
             <Dropdown
@@ -299,13 +299,13 @@ export default function AdminUsersPage() {
           </div>
         )}
         {actionType === "suspend" && (
-          <p className="text-sm text-on-surface-variant">
+          <p className="text-body-md text-on-surface-variant">
             Are you sure you want to {actionUser?.status === "SUSPENDED" ? "activate" : "suspend"}{" "}
             <strong>{actionUser?.name ?? "this user"}</strong>?
           </p>
         )}
         {actionType === "delete" && (
-          <p className="text-sm text-on-surface-variant">
+          <p className="text-body-md text-on-surface-variant">
             Are you sure you want to delete <strong>{actionUser?.name ?? "this user"}</strong>?
             This action cannot be undone.
           </p>

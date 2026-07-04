@@ -54,7 +54,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5">
+    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6">
       {/* Decorative background blobs */}
       <div
         className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-primary-container/30 blur-3xl md:h-96 md:w-96"

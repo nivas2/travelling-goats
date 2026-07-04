@@ -105,7 +105,7 @@ export default function WelcomePage() {
     <div className="flex flex-1 flex-col">
       {/* Skip button */}
       {!isLastSlide && (
-        <div className="flex justify-end px-5 pt-safe">
+        <div className="flex justify-end px-6 pt-safe">
           <button
             type="button"
             onClick={handleSkip}
@@ -118,7 +118,7 @@ export default function WelcomePage() {
 
       {/* Slide content area */}
       <div
-        className="flex flex-1 flex-col items-center justify-center px-8"
+        className="flex flex-1 flex-col items-center justify-center px-6"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -157,7 +157,7 @@ export default function WelcomePage() {
       </div>
 
       {/* Bottom section */}
-      <div className="px-8 pb-8 pb-safe">
+      <div className="px-6 pb-8 pb-safe">
         {/* Dot indicators */}
         <div className="mb-8 flex items-center justify-center gap-2">
           {slides.map((_, index) => (

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Rating } from "@/components/ui/rating";
+import { useToast } from "@/components/ui/toast";
 
 export default function TripFeedbackPage({
   params,
@@ -13,6 +14,7 @@ export default function TripFeedbackPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { error: toastError } = useToast();
   const [step, setStep] = useState(1);
   const [overallRating, setOverallRating] = useState(0);
   const [safetyRating, setSafetyRating] = useState(0);
@@ -42,7 +44,7 @@ export default function TripFeedbackPage({
         setSubmitted(true);
       }
     } catch {
-      console.error("Failed to submit review");
+      toastError("Failed to submit review. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -89,9 +91,9 @@ export default function TripFeedbackPage({
       </p>
 
       {step === 1 && (
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div className="text-center">
-            <p className="text-title-md font-title-md text-on-surface mb-4">
+            <p className="text-title-lg font-title-lg text-on-surface mb-4">
               Overall Experience
             </p>
             <Rating
@@ -116,21 +118,21 @@ export default function TripFeedbackPage({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Icon name="shield" size={20} className="text-secondary" />
-                <span className="text-title-md font-title-md">Safety</span>
+                <span className="text-title-lg font-title-lg">Safety</span>
               </div>
               <Rating value={safetyRating} onChange={setSafetyRating} size="sm" />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Icon name="payments" size={20} className="text-tertiary" />
-                <span className="text-title-md font-title-md">Value for Money</span>
+                <span className="text-title-lg font-title-lg">Value for Money</span>
               </div>
               <Rating value={valueRating} onChange={setValueRating} size="sm" />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Icon name="celebration" size={20} className="text-primary" />
-                <span className="text-title-md font-title-md">Fun Factor</span>
+                <span className="text-title-lg font-title-lg">Fun Factor</span>
               </div>
               <Rating value={funRating} onChange={setFunRating} size="sm" />
             </div>
@@ -149,7 +151,7 @@ export default function TripFeedbackPage({
       {step === 2 && (
         <div className="space-y-6">
           <div>
-            <p className="text-title-md font-title-md text-on-surface mb-3">
+            <p className="text-title-lg font-title-lg text-on-surface mb-3">
               Tell us more (optional)
             </p>
             <textarea
@@ -165,7 +167,7 @@ export default function TripFeedbackPage({
           </div>
 
           <div>
-            <p className="text-title-md font-title-md text-on-surface mb-3">
+            <p className="text-title-lg font-title-lg text-on-surface mb-3">
               Share a photo (optional)
             </p>
             <div className="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center">

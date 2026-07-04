@@ -36,13 +36,13 @@ type StatusFilter = "ALL" | "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
 
 function TicketStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    OPEN: "bg-blue-100 text-blue-800",
-    IN_PROGRESS: "bg-yellow-100 text-yellow-800",
-    RESOLVED: "bg-green-100 text-green-800",
-    CLOSED: "bg-gray-100 text-gray-600",
+    OPEN: "bg-primary/10 text-primary",
+    IN_PROGRESS: "bg-warning/10 text-warning",
+    RESOLVED: "bg-success/10 text-success",
+    CLOSED: "bg-surface-container text-on-surface-variant",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[status] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[status] ?? "bg-surface-container text-on-surface-variant")}>
       {status.toLowerCase().replace("_", " ")}
     </span>
   );
@@ -50,13 +50,13 @@ function TicketStatusBadge({ status }: { status: string }) {
 
 function PriorityBadge({ priority }: { priority: string }) {
   const colors: Record<string, string> = {
-    URGENT: "bg-red-100 text-red-800",
-    HIGH: "bg-orange-100 text-orange-800",
-    MEDIUM: "bg-yellow-100 text-yellow-800",
-    LOW: "bg-gray-100 text-gray-600",
+    URGENT: "bg-error/10 text-error",
+    HIGH: "bg-warning/10 text-warning",
+    MEDIUM: "bg-warning/10 text-warning",
+    LOW: "bg-surface-container text-on-surface-variant",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[priority] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[priority] ?? "bg-surface-container text-on-surface-variant")}>
       {priority.toLowerCase()}
     </span>
   );
@@ -162,10 +162,10 @@ export default function AdminSupportPage() {
             </span>
           </button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-on-surface">
+            <h1 className="text-title-lg font-title-lg text-on-surface">
               {selectedTicket.ticketNumber}
             </h1>
-            <p className="text-sm text-on-surface-variant">{selectedTicket.subject}</p>
+            <p className="text-body-md text-on-surface-variant">{selectedTicket.subject}</p>
           </div>
           <div className="flex items-center gap-2">
             <TicketStatusBadge status={selectedTicket.status} />
@@ -175,7 +175,7 @@ export default function AdminSupportPage() {
 
         {/* Ticket Info */}
         <Card variant="elevated" className="p-5">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 text-sm">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 text-body-md">
             <div>
               <p className="text-on-surface-variant">User</p>
               <p className="font-medium text-on-surface">{selectedTicket.user.name ?? "N/A"}</p>
@@ -211,10 +211,10 @@ export default function AdminSupportPage() {
 
         {/* Message Thread */}
         <Card variant="elevated" className="p-5">
-          <h2 className="text-base font-semibold text-on-surface mb-4">Messages</h2>
+          <h2 className="text-title-md font-title-md text-on-surface mb-4">Messages</h2>
           <div className="space-y-4 max-h-[400px] overflow-y-auto">
             {selectedTicket.messages.length === 0 ? (
-              <p className="text-sm text-on-surface-variant text-center py-8">No messages yet</p>
+              <p className="text-body-md text-on-surface-variant text-center py-8">No messages yet</p>
             ) : (
               selectedTicket.messages.map((msg) => (
                 <div
@@ -222,19 +222,19 @@ export default function AdminSupportPage() {
                   className={cn(
                     "rounded-xl p-4 max-w-[80%]",
                     msg.isStaff
-                      ? "ml-auto bg-[#ae2f34]/10 border border-[#ae2f34]/20"
-                      : "bg-[#f9f9f9] border border-outline-variant/20"
+                      ? "ml-auto bg-primary/10 border border-primary/20"
+                      : "bg-surface-container border border-outline-variant/20"
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-on-surface">
+                    <span className="text-label-sm font-label-sm text-on-surface">
                       {msg.isStaff ? "Support Staff" : msg.user?.name ?? "User"}
                     </span>
                     <span className="text-[10px] text-on-surface-variant">
                       {formatDate(msg.createdAt, "relative")}
                     </span>
                   </div>
-                  <p className="text-sm text-on-surface whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-body-md text-on-surface whitespace-pre-wrap">{msg.content}</p>
                 </div>
               ))
             )}
@@ -244,9 +244,9 @@ export default function AdminSupportPage() {
         {/* Reply Form */}
         {selectedTicket.status !== "CLOSED" && (
           <Card variant="elevated" className="p-5">
-            <h3 className="text-sm font-semibold text-on-surface mb-3">Reply</h3>
+            <h3 className="text-label-sm font-label-lg text-on-surface mb-3">Reply</h3>
             <textarea
-              className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[80px] resize-y text-sm"
+              className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[80px] resize-y text-body-md"
               placeholder="Type your reply..."
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
@@ -271,8 +271,8 @@ export default function AdminSupportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">Support Tickets</h1>
-        <p className="text-sm text-on-surface-variant">Manage customer support requests</p>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Support Tickets</h1>
+        <p className="text-body-md text-on-surface-variant">Manage customer support requests</p>
       </div>
 
       {/* Status Tabs */}
@@ -290,16 +290,16 @@ export default function AdminSupportPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Ticket #</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">User</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Subject</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Category</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Priority</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Status</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Date</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Ticket #</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Subject</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Category</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Priority</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -320,24 +320,24 @@ export default function AdminSupportPage() {
                   <tr
                     key={ticket.id}
                     onClick={() => setSelectedTicket(ticket)}
-                    className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors cursor-pointer"
+                    className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors cursor-pointer"
                   >
-                    <td className="px-5 py-3 font-mono text-xs text-[#ae2f34] font-bold">{ticket.ticketNumber}</td>
+                    <td className="px-4 py-3 font-mono text-label-sm text-primary font-bold">{ticket.ticketNumber}</td>
                     <td className="px-5 py-3">
                       <div>
                         <p className="font-medium text-on-surface">{ticket.user.name ?? "N/A"}</p>
-                        <p className="text-xs text-on-surface-variant">{ticket.user.email ?? ""}</p>
+                        <p className="text-label-sm text-on-surface-variant">{ticket.user.email ?? ""}</p>
                       </div>
                     </td>
                     <td className="px-5 py-3 max-w-[200px] truncate text-on-surface">{ticket.subject}</td>
                     <td className="px-5 py-3 text-center">
-                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 capitalize">
+                      <span className="inline-flex items-center rounded-full bg-surface-container px-2 py-0.5 text-label-sm font-label-sm text-on-surface-variant capitalize">
                         {ticket.category.toLowerCase()}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-center"><PriorityBadge priority={ticket.priority} /></td>
                     <td className="px-5 py-3 text-center"><TicketStatusBadge status={ticket.status} /></td>
-                    <td className="px-5 py-3 text-right text-on-surface-variant text-xs">{formatDate(ticket.createdAt)}</td>
+                    <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">{formatDate(ticket.createdAt)}</td>
                   </tr>
                 ))
               )}

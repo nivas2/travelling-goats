@@ -11,6 +11,7 @@ import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
+import { useToast } from "@/components/ui/toast";
 import type { TripCardData, ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -118,6 +119,7 @@ function SavedTripCard({
 
 export default function SavedPage() {
   const router = useRouter();
+  const { error: toastError } = useToast();
   const [savedTrips, setSavedTrips] = useState<TripCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -130,7 +132,7 @@ export default function SavedPage() {
         setSavedTrips(json.data);
       }
     } catch {
-      // Handle error
+      toastError("Failed to load saved trips");
     } finally {
       setLoading(false);
     }
@@ -149,7 +151,7 @@ export default function SavedPage() {
         method: "DELETE",
       });
     } catch {
-      // Revert on error
+      toastError("Failed to remove trip");
       fetchSavedTrips();
     }
   };
@@ -158,7 +160,7 @@ export default function SavedPage() {
     <div className="min-h-screen bg-background">
       <PageHeader title="Saved Trips" />
 
-      <div className="px-5 py-4">
+      <div className="px-5 py-6">
         {/* Loading Skeletons */}
         {loading && (
           <div className="space-y-3">
@@ -190,16 +192,17 @@ export default function SavedPage() {
 
         {/* Empty State */}
         {!loading && savedTrips.length === 0 && (
-          <EmptyState
-            icon="favorite_border"
-            title="No Saved Trips Yet"
-            description="Tap the heart icon on any trip to save it here for later. Your dream adventures are just a tap away!"
-            action={{
-              label: "Explore Trips",
-              onClick: () => router.push("/home"),
-            }}
-            className="mt-16"
-          />
+          <div className="py-16">
+            <EmptyState
+              icon="favorite_border"
+              title="No Saved Trips Yet"
+              description="Tap the heart icon on any trip to save it here for later. Your dream adventures are just a tap away!"
+              action={{
+                label: "Explore Trips",
+                onClick: () => router.push("/home"),
+              }}
+            />
+          </div>
         )}
       </div>
     </div>

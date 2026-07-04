@@ -213,7 +213,7 @@ export default function StatusPage() {
         <h2 className="text-headline-md font-headline-md text-on-surface">
           Order Status
         </h2>
-        <p className="mt-1 text-body-md font-body-md text-on-surface-variant">
+        <p className="mt-1 text-body-md text-on-surface-variant">
           Booking #{order.bookingNumber}
         </p>
       </div>

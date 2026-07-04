@@ -122,8 +122,8 @@ function ToastItem({ toast }: { toast: Toast }) {
     <div
       role="alert"
       className={cn(
-        "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border p-4",
-        "shadow-card animate-in slide-in-from-bottom-4 fade-in-0 duration-300",
+        "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border p-4",
+        "shadow-lg animate-in slide-in-from-bottom-4 fade-in-0 duration-300",
         typeStyles[toast.type]
       )}
     >
@@ -131,7 +131,7 @@ function ToastItem({ toast }: { toast: Toast }) {
         name={iconMap[toast.type]}
         size={20}
         filled
-        className={cn("shrink-0 mt-0.5", iconColors[toast.type])}
+        className={cn("shrink-0 mt-0.5 mr-0.5", iconColors[toast.type])}
       />
       <div className="flex-1 min-w-0">
         <p className="text-label-lg font-semibold">{toast.message}</p>

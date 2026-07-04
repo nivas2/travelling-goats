@@ -29,14 +29,14 @@ type StatusFilter = "ALL" | "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
 
 function BookingStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    CONFIRMED: "bg-green-100 text-green-800",
-    COMPLETED: "bg-emerald-100 text-emerald-800",
-    PENDING: "bg-yellow-100 text-yellow-800",
-    CANCELLED: "bg-red-100 text-red-800",
-    REFUNDED: "bg-gray-100 text-gray-600",
+    CONFIRMED: "bg-success/10 text-success",
+    COMPLETED: "bg-success/10 text-success",
+    PENDING: "bg-warning/10 text-warning",
+    CANCELLED: "bg-error/10 text-error",
+    REFUNDED: "bg-surface-container text-on-surface-variant",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[status] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[status] ?? "bg-surface-container text-on-surface-variant")}>
       {status.toLowerCase()}
     </span>
   );
@@ -44,12 +44,12 @@ function BookingStatusBadge({ status }: { status: string }) {
 
 function TypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
-    SOLO: "bg-blue-50 text-blue-700",
-    COUPLE: "bg-pink-50 text-pink-700",
-    GROUP: "bg-indigo-50 text-indigo-700",
+    SOLO: "bg-primary/10 text-primary",
+    COUPLE: "bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",
+    GROUP: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize", colors[type] ?? "bg-gray-50 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-label-sm font-label-sm capitalize", colors[type] ?? "bg-surface-container text-on-surface-variant")}>
       {type.toLowerCase()}
     </span>
   );
@@ -123,8 +123,8 @@ export default function AdminBookingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">Booking Management</h1>
-        <p className="text-sm text-on-surface-variant">Track and manage all bookings</p>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Booking Management</h1>
+        <p className="text-body-md text-on-surface-variant">Track and manage all bookings</p>
       </div>
 
       {/* Search */}
@@ -155,18 +155,18 @@ export default function AdminBookingsPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Booking #</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">User</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Trip</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Type</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Travelers</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Amount</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Status</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Date</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Actions</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Booking #</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Trip</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Type</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Travelers</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Amount</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -184,12 +184,12 @@ export default function AdminBookingsPage() {
                 </tr>
               ) : (
                 filtered.map((booking) => (
-                  <tr key={booking.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors">
-                    <td className="px-5 py-3 font-mono text-xs">{booking.bookingNumber}</td>
+                  <tr key={booking.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
+                    <td className="px-4 py-3 font-mono text-label-sm">{booking.bookingNumber}</td>
                     <td className="px-5 py-3">
                       <div>
                         <p className="font-medium text-on-surface">{booking.user.name ?? "N/A"}</p>
-                        <p className="text-xs text-on-surface-variant">{booking.user.email ?? ""}</p>
+                        <p className="text-label-sm text-on-surface-variant">{booking.user.email ?? ""}</p>
                       </div>
                     </td>
                     <td className="px-5 py-3 max-w-[160px] truncate">{booking.trip.title}</td>
@@ -197,7 +197,7 @@ export default function AdminBookingsPage() {
                     <td className="px-5 py-3 text-center">{booking.travelerCount}</td>
                     <td className="px-5 py-3 text-right font-medium">{formatCurrency(booking.totalPricePaise)}</td>
                     <td className="px-5 py-3 text-center"><BookingStatusBadge status={booking.status} /></td>
-                    <td className="px-5 py-3 text-right text-on-surface-variant text-xs">{formatDate(booking.createdAt)}</td>
+                    <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">{formatDate(booking.createdAt)}</td>
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {booking.status === "PENDING" && (
@@ -206,7 +206,7 @@ export default function AdminBookingsPage() {
                             className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-green-50 transition-colors"
                             title="Confirm"
                           >
-                            <span className="material-symbols-outlined text-[18px] text-green-600">check_circle</span>
+                            <span className="material-symbols-outlined text-[18px] text-success">check_circle</span>
                           </button>
                         )}
                         {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
@@ -215,7 +215,7 @@ export default function AdminBookingsPage() {
                             className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
                             title="Cancel"
                           >
-                            <span className="material-symbols-outlined text-[18px] text-red-500">cancel</span>
+                            <span className="material-symbols-outlined text-[18px] text-error">cancel</span>
                           </button>
                         )}
                         {booking.status === "CANCELLED" && (
@@ -224,7 +224,7 @@ export default function AdminBookingsPage() {
                             className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-blue-50 transition-colors"
                             title="Refund"
                           >
-                            <span className="material-symbols-outlined text-[18px] text-blue-600">currency_exchange</span>
+                            <span className="material-symbols-outlined text-[18px] text-primary">currency_exchange</span>
                           </button>
                         )}
                       </div>
@@ -246,7 +246,7 @@ export default function AdminBookingsPage() {
         }
         size="sm"
       >
-        <p className="text-sm text-on-surface-variant">
+        <p className="text-body-md text-on-surface-variant">
           {actionType === "confirm"
             ? `Confirm booking ${actionBooking?.bookingNumber}?`
             : actionType === "cancel"

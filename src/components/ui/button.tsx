@@ -37,19 +37,19 @@ const Spinner = ({ className }: { className?: string }) => (
 
 const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "primary-gradient text-on-primary shadow-elevated hover:shadow-lg",
+    "primary-gradient text-on-primary shadow-elevated hover:shadow-lg hover:brightness-110",
   secondary:
     "bg-transparent border-2 border-primary text-primary hover:bg-primary/5",
   ghost:
     "bg-transparent text-on-surface hover:bg-surface-container-high",
   destructive:
-    "bg-error text-on-error hover:bg-error/90",
+    "bg-error text-on-error hover:brightness-110",
 };
 
 const sizeStyles: Record<NonNullable<ButtonProps["size"]>, string> = {
   sm: "h-9 px-4 text-label-sm gap-1.5",
-  md: "h-11 px-6 text-label-lg gap-2",
-  lg: "h-13 px-8 text-body-lg gap-2.5",
+  md: "h-11 px-5 text-label-lg gap-2",
+  lg: "h-12 px-6 text-label-lg gap-2",
 };
 
 const spinnerSizeStyles: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -81,10 +81,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(
           "tactile-btn inline-flex items-center justify-center font-semibold",
-          "rounded-full transition-all duration-200",
+          "rounded-full transition-all duration-200 ease-out",
           "active:scale-[0.98]",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-          "disabled:pointer-events-none disabled:opacity-50",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
+          "disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed",
           variantStyles[variant],
           sizeStyles[size],
           fullWidth && "w-full",

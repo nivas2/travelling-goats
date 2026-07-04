@@ -74,7 +74,7 @@ function ReviewCard({ review }: { review: ReviewData }) {
   const isLong = review.comment.length > 200;
 
   return (
-    <Card variant="outlined" className="p-4">
+    <Card variant="outlined" className="p-5">
       <div className="flex items-center gap-3">
         <Avatar src={review.userAvatar} name={review.userName} size="md" />
         <div className="flex-1 min-w-0">
@@ -354,11 +354,11 @@ export default function ReviewsPage({
           </div>
 
           {/* ===== Filter by Rating ===== */}
-          <div className="mb-4">
+          <div className="mb-6">
             <p className="text-label-lg font-semibold text-on-surface mb-2">
               Filter by Rating
             </p>
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+            <div className="flex gap-3 overflow-x-auto hide-scrollbar">
               <Chip
                 variant={filterRating === 0 ? "selected" : "outlined"}
                 color="primary"
@@ -391,7 +391,7 @@ export default function ReviewsPage({
           </div>
 
           {/* ===== Sort Options ===== */}
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-6 flex items-center gap-3">
             <p className="text-label-lg font-semibold text-on-surface mr-1">
               Sort:
             </p>

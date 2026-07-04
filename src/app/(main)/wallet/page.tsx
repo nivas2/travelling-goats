@@ -11,6 +11,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import { cn, formatCurrency } from "@/lib/utils";
 import type {
   WalletData,
@@ -61,6 +62,7 @@ function getTxMeta(type: string) {
 // ---------------------------------------------------------------------------
 
 export default function WalletPage() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [goals, setGoals] = useState<SavingsGoalData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,9 +113,10 @@ export default function WalletPage() {
       if (!res.ok) throw new Error("Payment failed");
       setAddMoneyOpen(false);
       setAddAmount("");
+      toastSuccess("Money added successfully");
       fetchWallet();
-    } catch {
-      // Error handled silently; production would show toast
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Failed to add money");
     } finally {
       setAddingMoney(false);
     }
@@ -138,9 +141,10 @@ export default function WalletPage() {
       setGoalName("");
       setGoalTarget("");
       setGoalDate("");
+      toastSuccess("Savings goal created");
       fetchWallet();
-    } catch {
-      // silent
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Failed to create goal");
     } finally {
       setCreatingGoal(false);
     }
@@ -300,7 +304,7 @@ export default function WalletPage() {
             />
           </Card>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {transactions.map((tx: WalletTransactionData) => {
               const meta = getTxMeta(tx.type);
               return (

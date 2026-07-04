@@ -32,16 +32,16 @@ const typeOptions = [
 
 function TypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
-    SYSTEM: "bg-gray-100 text-gray-700",
-    PROMOTION: "bg-purple-100 text-purple-800",
-    TRIP_UPDATE: "bg-blue-100 text-blue-800",
-    BOOKING: "bg-green-100 text-green-800",
-    PAYMENT: "bg-emerald-100 text-emerald-800",
-    REWARD: "bg-yellow-100 text-yellow-800",
-    REFERRAL: "bg-pink-100 text-pink-800",
+    SYSTEM: "bg-surface-container text-on-surface-variant",
+    PROMOTION: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    TRIP_UPDATE: "bg-primary/10 text-primary",
+    BOOKING: "bg-success/10 text-success",
+    PAYMENT: "bg-success/10 text-success",
+    REWARD: "bg-warning/10 text-warning",
+    REFERRAL: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[type] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[type] ?? "bg-surface-container text-on-surface-variant")}>
       {type.toLowerCase().replace("_", " ")}
     </span>
   );
@@ -114,13 +114,13 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">Notifications</h1>
-        <p className="text-sm text-on-surface-variant">Send notifications to users</p>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Notifications</h1>
+        <p className="text-body-md text-on-surface-variant">Send notifications to users</p>
       </div>
 
       {/* Send Notification Form */}
       <Card variant="elevated" className="p-6">
-        <h2 className="text-lg font-semibold text-on-surface mb-5">Send Notification</h2>
+        <h2 className="text-title-md font-title-md text-on-surface mb-5">Send Notification</h2>
         <div className="space-y-4">
           <Input
             label="Title"
@@ -182,16 +182,16 @@ export default function AdminNotificationsPage() {
       {/* Notification History */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="border-b border-outline-variant/20 px-5 py-4">
-          <h2 className="text-lg font-semibold text-on-surface">Notification History</h2>
+          <h2 className="text-title-md font-title-md text-on-surface">Notification History</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Title</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Type</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Recipients</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Sent</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Title</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Type</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Recipients</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Sent</th>
               </tr>
             </thead>
             <tbody>
@@ -209,16 +209,16 @@ export default function AdminNotificationsPage() {
                 </tr>
               ) : (
                 history.map((notif) => (
-                  <tr key={notif.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors">
+                  <tr key={notif.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3">
                       <div>
                         <p className="font-medium text-on-surface">{notif.title}</p>
-                        <p className="text-xs text-on-surface-variant mt-0.5 max-w-[300px] truncate">{notif.body}</p>
+                        <p className="text-label-sm text-on-surface-variant mt-0.5 max-w-[300px] truncate">{notif.body}</p>
                       </div>
                     </td>
                     <td className="px-5 py-3 text-center"><TypeBadge type={notif.type} /></td>
                     <td className="px-5 py-3 text-center text-on-surface-variant">{notif.recipientCount}</td>
-                    <td className="px-5 py-3 text-right text-on-surface-variant text-xs">{formatDate(notif.createdAt)}</td>
+                    <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">{formatDate(notif.createdAt)}</td>
                   </tr>
                 ))
               )}

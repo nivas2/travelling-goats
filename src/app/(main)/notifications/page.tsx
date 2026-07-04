@@ -134,7 +134,7 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="px-5 py-6 space-y-4">
+      <div className="px-5 py-6 space-y-6">
         <Skeleton variant="text" width={200} />
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} variant="card" height={80} />
@@ -159,10 +159,10 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="px-5 py-6 space-y-4">
+    <div className="px-5 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-title-lg font-title-lg text-on-surface">
+        <h1 className="text-headline-md font-headline-md text-on-surface">
           Notifications
         </h1>
         {unreadCount > 0 && (
@@ -174,11 +174,13 @@ export default function NotificationsPage() {
 
       {/* Empty state */}
       {notifications.length === 0 ? (
-        <EmptyState
-          icon="notifications_none"
-          title="No notifications yet"
-          description="We will let you know when something important happens"
-        />
+        <div className="py-16">
+          <EmptyState
+            icon="notifications_none"
+            title="No notifications yet"
+            description="We will let you know when something important happens"
+          />
+        </div>
       ) : (
         <div className="space-y-6">
           {grouped.map((group) => (
@@ -186,7 +188,7 @@ export default function NotificationsPage() {
               <h2 className="text-label-lg font-label-lg text-on-surface-variant mb-2">
                 {group.label}
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {group.items.map((notif) => {
                   const meta = getNotifIcon(notif.type);
                   return (

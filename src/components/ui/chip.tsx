@@ -31,6 +31,15 @@ const colorSelected: Record<NonNullable<ChipProps["color"]>, string> = {
   tertiary: "bg-tertiary text-on-tertiary",
 };
 
+// Inline color guarantee for selected variant.
+// tailwind-merge can strip `text-on-primary` when className includes other
+// `text-*` utilities (e.g. `text-body-md`). The style prop bypasses twMerge.
+const selectedColorStyle: Record<NonNullable<ChipProps["color"]>, string> = {
+  primary: "var(--color-on-primary)",
+  secondary: "var(--color-on-secondary)",
+  tertiary: "var(--color-on-tertiary)",
+};
+
 const Chip = forwardRef<HTMLDivElement, ChipProps>(
   (
     {
@@ -56,14 +65,15 @@ const Chip = forwardRef<HTMLDivElement, ChipProps>(
       <div
         ref={ref}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5",
-          "text-label-sm font-medium transition-all duration-150",
+          "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2",
+          "text-label-sm font-medium transition-all duration-200 ease-out",
           "select-none",
           variantStyles[variant],
-          disabled && "pointer-events-none opacity-50",
-          !disabled && "cursor-pointer hover:opacity-90",
+          disabled && "pointer-events-none opacity-50 cursor-not-allowed",
+          !disabled && "cursor-pointer hover:opacity-90 hover:shadow-sm",
           className
         )}
+        style={variant === "selected" ? { color: selectedColorStyle[color] } : undefined}
         role={props.onClick ? "button" : undefined}
         tabIndex={props.onClick && !disabled ? 0 : undefined}
         {...props}

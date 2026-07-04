@@ -7,11 +7,13 @@ async function main() {
 
   // Clean existing data
   await prisma.$transaction([
+    prisma.auditLog.deleteMany(),
     prisma.chatMessage.deleteMany(),
     prisma.chatRoom.deleteMany(),
     prisma.bookingSnack.deleteMany(),
     prisma.bookingAddOn.deleteMany(),
     prisma.bookingCancellation.deleteMany(),
+    prisma.couponUsage.deleteMany(),
     prisma.payment.deleteMany(),
     prisma.booking.deleteMany(),
     prisma.walletTransaction.deleteMany(),
@@ -127,7 +129,7 @@ async function main() {
         isOnboarded: true,
         idVerified: true,
         referralCode: "PAMEE003",
-        interests: ["WEEKEND", "CULTURAL", "FOOD", "PHOTOGRAPHY"],
+        interests: ["BEACH", "CULTURAL", "FOOD", "PHOTOGRAPHY"],
         budgetPreference: "BUDGET",
         pickupCity: "Chennai",
         rewardPoints: 800,
@@ -254,7 +256,7 @@ async function main() {
         isOnboarded: true,
         idVerified: true,
         referralCode: "PADIV009",
-        interests: ["ROAD_TRIP", "BEACH", "WEEKEND"],
+        interests: ["ROAD_TRIP", "BEACH", "CITY"],
         budgetPreference: "MID_RANGE",
         pickupCity: "Mumbai",
         rewardPoints: 1500,
@@ -440,7 +442,7 @@ async function main() {
         images: [
           "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800",
         ],
-        category: "WEEKEND",
+        category: "BEACH",
         difficulty: "EASY",
         startDate: new Date("2026-09-12"),
         endDate: new Date("2026-09-14"),
@@ -552,13 +554,13 @@ async function main() {
         dayNumber: 1,
         title: "Journey & Coffee Trail",
         description: "Depart from Bengaluru early morning. Arrive at Coorg by afternoon.",
-        activities: JSON.stringify([
+        activities: [
           { time: "6:00 AM", title: "Depart from Bengaluru", description: "Board the bus at Majestic", icon: "directions_bus" },
           { time: "12:00 PM", title: "Arrive at Coorg", description: "Check-in to resort", icon: "hotel" },
           { time: "2:00 PM", title: "Lunch", description: "Authentic Kodava cuisine", icon: "restaurant" },
           { time: "4:00 PM", title: "Coffee Plantation Tour", description: "Walk through coffee estates, learn about processing", icon: "local_cafe" },
           { time: "7:00 PM", title: "Bonfire & Dinner", description: "Evening bonfire with music", icon: "local_fire_department" },
-        ]),
+        ],
         meals: ["lunch", "dinner"],
         accommodation: "Coorg Wilderness Resort",
       },
@@ -567,7 +569,7 @@ async function main() {
         dayNumber: 2,
         title: "Trek to Tadiandamol",
         description: "Full day trek to the highest peak in Coorg.",
-        activities: JSON.stringify([
+        activities: [
           { time: "5:30 AM", title: "Early Breakfast", description: "Energy-packed breakfast", icon: "restaurant" },
           { time: "6:30 AM", title: "Trek Begins", description: "Start the 8km trek to Tadiandamol", icon: "hiking" },
           { time: "10:00 AM", title: "Summit!", description: "Reach 1,748m peak, panoramic views", icon: "landscape" },
@@ -575,7 +577,7 @@ async function main() {
           { time: "3:00 PM", title: "Return to Base", description: "Trek down, rest at resort", icon: "arrow_downward" },
           { time: "5:00 PM", title: "Abbey Falls Visit", description: "Evening visit to the iconic waterfall", icon: "water" },
           { time: "8:00 PM", title: "Group Dinner", description: "Special Kodava feast", icon: "dinner_dining" },
-        ]),
+        ],
         meals: ["breakfast", "lunch", "dinner"],
         accommodation: "Coorg Wilderness Resort",
       },
@@ -584,14 +586,14 @@ async function main() {
         dayNumber: 3,
         title: "Dubare & Return",
         description: "Morning at Dubare Elephant Camp and return journey.",
-        activities: JSON.stringify([
+        activities: [
           { time: "7:00 AM", title: "Breakfast", icon: "restaurant" },
           { time: "8:30 AM", title: "Dubare Elephant Camp", description: "Interact with elephants, river bath", icon: "pets" },
           { time: "11:00 AM", title: "Check-out", icon: "logout" },
           { time: "12:00 PM", title: "Lunch & Shopping", description: "Local market visit, buy coffee & spices", icon: "shopping_bag" },
           { time: "2:00 PM", title: "Depart for Bengaluru", icon: "directions_bus" },
           { time: "7:00 PM", title: "Arrive Bengaluru", description: "Drop at Majestic Bus Station", icon: "location_on" },
-        ]),
+        ],
         meals: ["breakfast", "lunch"],
       },
     ],
@@ -604,12 +606,12 @@ async function main() {
         tripId: "trip-goa-002",
         dayNumber: 1,
         title: "Welcome to Goa",
-        activities: JSON.stringify([
+        activities: [
           { time: "10:00 AM", title: "Airport Pickup", icon: "flight_land" },
           { time: "12:00 PM", title: "Check-in & Lunch", icon: "hotel" },
           { time: "3:00 PM", title: "Calangute Beach", icon: "beach_access" },
           { time: "7:00 PM", title: "Welcome Dinner", icon: "dinner_dining" },
-        ]),
+        ],
         meals: ["lunch", "dinner"],
         accommodation: "Beach Resort, North Goa",
       },
@@ -617,13 +619,13 @@ async function main() {
         tripId: "trip-goa-002",
         dayNumber: 2,
         title: "Adventure Day",
-        activities: JSON.stringify([
+        activities: [
           { time: "8:00 AM", title: "Breakfast", icon: "restaurant" },
           { time: "10:00 AM", title: "Water Sports at Baga", description: "Jet ski, parasailing, banana boat", icon: "surfing" },
           { time: "1:00 PM", title: "Seafood Lunch", icon: "set_meal" },
           { time: "4:00 PM", title: "Chapora Fort Sunset", icon: "castle" },
           { time: "9:00 PM", title: "Club Night", icon: "nightlife" },
-        ]),
+        ],
         meals: ["breakfast"],
         accommodation: "Beach Resort, North Goa",
       },
@@ -631,12 +633,12 @@ async function main() {
         tripId: "trip-goa-002",
         dayNumber: 3,
         title: "Heritage & Culture",
-        activities: JSON.stringify([
+        activities: [
           { time: "8:00 AM", title: "Old Goa Churches", icon: "church" },
           { time: "12:00 PM", title: "Fontainhas Latin Quarter", icon: "palette" },
           { time: "3:00 PM", title: "Spice Plantation", icon: "eco" },
           { time: "6:00 PM", title: "Saturday Night Market", icon: "storefront" },
-        ]),
+        ],
         meals: ["breakfast"],
         accommodation: "Beach Resort, North Goa",
       },
@@ -644,11 +646,11 @@ async function main() {
         tripId: "trip-goa-002",
         dayNumber: 4,
         title: "Farewell",
-        activities: JSON.stringify([
+        activities: [
           { time: "7:00 AM", title: "Sunrise Beach Yoga", icon: "self_improvement" },
           { time: "9:00 AM", title: "Breakfast & Check-out", icon: "restaurant" },
           { time: "11:00 AM", title: "Airport Drop", icon: "flight_takeoff" },
-        ]),
+        ],
         meals: ["breakfast"],
       },
     ],
@@ -747,7 +749,7 @@ async function main() {
         totalPricePaise: 809800,
         platformFeePaise: 9900,
         travelerCount: 1,
-        travelers: JSON.stringify([{ name: "Priya Sharma", age: 27, gender: "FEMALE", phone: "9876543210" }]),
+        travelers: [{ name: "Priya Sharma", age: 27, gender: "FEMALE", phone: "9876543210" }],
         pickupPoint: "Majestic Bus Station",
         payment: {
           create: {
@@ -770,12 +772,12 @@ async function main() {
         totalPricePaise: 4214600,
         platformFeePaise: 14900,
         travelerCount: 4,
-        travelers: JSON.stringify([
+        travelers: [
           { name: "Rahul Verma", age: 29, gender: "MALE", phone: "9876543211" },
           { name: "Amit Patel", age: 28, gender: "MALE", phone: "9876000001" },
           { name: "Neha Kumar", age: 26, gender: "FEMALE", phone: "9876000002" },
           { name: "Rohan Shah", age: 30, gender: "MALE", phone: "9876000003" },
-        ]),
+        ],
         pickupPoint: "Goa Airport",
         payment: {
           create: {
@@ -798,7 +800,7 @@ async function main() {
         totalPricePaise: 609800,
         platformFeePaise: 9900,
         travelerCount: 1,
-        travelers: JSON.stringify([{ name: "Meera Nair", age: 25, gender: "FEMALE", phone: "9876543212" }]),
+        travelers: [{ name: "Meera Nair", age: 25, gender: "FEMALE", phone: "9876543212" }],
       },
     }),
   ]);

@@ -239,7 +239,7 @@ export default function SuccessPage() {
           <h1 className="text-headline-lg font-headline-lg text-on-surface">
             Booking Confirmed!
           </h1>
-          <p className="mt-2 text-body-lg font-body-lg text-on-surface-variant">
+          <p className="mt-2 text-body-lg text-on-surface-variant">
             Your adventure awaits. Get ready to pack your bags!
           </p>
         </motion.div>

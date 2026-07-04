@@ -415,7 +415,7 @@ export default function PaymentPage() {
         <h2 className="text-headline-md font-headline-md text-on-surface">
           Review & Pay
         </h2>
-        <p className="mt-1 text-body-md font-body-md text-on-surface-variant">
+        <p className="mt-1 text-body-md text-on-surface-variant">
           Apply coupons and complete your booking
         </p>
       </div>
@@ -630,12 +630,12 @@ function PriceRow({
   const isNegative = amount < 0;
   return (
     <div className={cn("flex items-center justify-between", className)}>
-      <span className="text-body-md font-body-md text-on-surface-variant">
+      <span className="text-body-md text-on-surface-variant">
         {label}
       </span>
       <span
         className={cn(
-          "text-body-md font-body-md",
+          "text-body-md",
           isNegative ? "text-success" : "text-on-surface",
         )}
       >

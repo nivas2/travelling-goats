@@ -58,7 +58,7 @@ export default function PickupCityPage() {
   return (
     <div className="flex flex-1 flex-col">
       {/* Header */}
-      <div className="px-5 pt-safe">
+      <div className="px-6 pt-safe">
         <div className="flex items-center justify-between pt-4">
           <button
             type="button"
@@ -75,7 +75,7 @@ export default function PickupCityPage() {
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col px-5 pt-6">
+      <div className="flex flex-1 flex-col px-6 pt-6">
         <div className="mb-6">
           <h1 className="text-headline-md font-headline-md text-on-surface">
             Your pickup city
@@ -150,7 +150,7 @@ export default function PickupCityPage() {
       </div>
 
       {/* Bottom action */}
-      <div className="px-5 pb-8 pb-safe pt-4">
+      <div className="px-6 pb-8 pb-safe pt-4">
         <Button
           type="button"
           fullWidth

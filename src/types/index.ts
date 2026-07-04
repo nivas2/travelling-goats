@@ -149,9 +149,13 @@ export interface UserProfile {
   phone: string | null;
   email: string | null;
   avatar: string | null;
+  dateOfBirth: string | null;
+  gender: string | null;
   city: string | null;
   bio: string | null;
   interests: string[];
+  budgetPreference: string | null;
+  pickupCity: string | null;
   isVerified: boolean;
   isOnboarded: boolean;
   idVerified: boolean;
@@ -159,6 +163,7 @@ export interface UserProfile {
   rewardTier: string;
   totalTrips: number;
   referralCode: string | null;
+  createdAt: string;
 }
 
 // ===== Chat Types =====

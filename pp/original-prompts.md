@@ -112,3 +112,135 @@ If missing, explain exactly what needs to be completed.  -- pls suggest me what 
 ```
 
 ---
+
+## Original Prompt 2
+
+- **Captured at:** 2026-07-04T09:34:00Z
+- **REQ(s):** REQ-002
+- **UR:** —
+- **Source:** /pp:add
+
+```
+add edit profile not saving why, pls review all pages and fix all issues
+[Screenshot: edit profile page at /profile/edit showing form fields: email, DOB, gender, city, bio, interests, save button]
+```
+
+---
+
+## Original Prompt 3
+
+- **Captured at:** 2026-07-04T09:47:00Z
+- **REQ(s):** REQ-003
+- **UR:** —
+- **Source:** /pp:add
+
+```
+pls fix this meetmyroute as single word dont add any space and also fix upcoming & ongoing trips screen issue and aother issue is when i logout & when i check https://meetmyroute.feastigo.com/  it again auto loggin in why ? pls fix this issue and can u pls seed some trips & other data like see this feels empty but pls make what ever here all & can control from admin too to pls check & fix any other issues in adminn all should be functionalble and also check this why in google chrome it showing black layout for login page
+
+[Screenshot 1: /home page — header shows "Meet MyRoute" with space, all sections empty (Trending Now, Weekend Getaways, Popular Destinations — no trips)]
+[Screenshot 2: /login page in Edge — login card has dark/black transparent overlay background]
+[Screenshot 3: /my-trips page — "Something went wrong: Failed to fetch bookings" error with Retry button]
+[Screenshot 4: /login page in Chrome — same dark overlay issue on login card]
+```
+
+---
+
+## Original Prompt 4
+
+- **Captured at:** 2026-07-04T10:35:00Z
+- **REQ(s):** N/A (stale browser cache — not a code bug)
+- **UR:** —
+- **Source:** /pp:add
+
+```
+why any trip clicked it showing like this error i already told it should not show any error
+
+[Screenshot: /trips/trip-coorg-001 — "This page couldn't load" error with Reload and Back buttons]
+```
+
+---
+
+## Original Prompt 5
+
+- **Captured at:** 2026-07-04T11:00:00Z
+- **REQ(s):** REQ-005
+- **UR:** —
+- **Source:** /pp:add
+
+```
+when i clcikrd sign in with google it showing this error validation failed pls yar understand from start to end in all scenrios and fix all auth issue why u not able fix them
+
+[Screenshot: /budget onboarding page — user signed in via Google, selected "Budget" tier, clicked Continue, shows "Validation failed" error in red text below the options]
+```
+
+---
+
+## Original Prompt 6
+
+- **Captured at:** 2026-07-04T11:35:00Z
+- **REQ(s):** REQ-006
+- **UR:** —
+- **Source:** /pp:add
+
+```
+pls check this book now button is not visible and pls fix such issues in all places if it is there and when i click on book now button it showing 404 pls fix all issues — complete UI and Navigation QA audit across the entire application.
+
+[Screenshot 1: /trips/trip-coorg-001 — "Book Now" button hidden behind bottom nav bar, only "per person" text visible]
+[Screenshot 2: /trips/trip-coorg-001/booking — 404 "This page could not be found"]
+```
+
+---
+
+## Original Prompt 7
+
+- **Captured at:** 2026-07-04T12:07:00Z
+- **REQ(s):** REQ-007
+- **UR:** —
+- **Source:** /pp:add
+
+```
+The application is functionally complete.
+
+Do NOT redesign the application.
+
+I like the overall design direction.
+
+Your task is to refine and polish the UI until it feels like a professionally designed product from Apple, Airbnb, Stripe or Linear.
+
+Think like a Senior Product Designer.
+
+Do not change the overall branding, color palette or layout.
+
+Instead, improve the quality of the existing UI.
+
+Your objective is to eliminate every element that makes the UI feel AI-generated or unfinished.
+
+The application should feel handcrafted.
+
+Review EVERY screen. Review EVERY component. Review EVERY interaction.
+
+Do not only improve the current page. Perform a complete application-wide UI polish.
+
+Things to Improve:
+- Visual Hierarchy (prominent actions, typography hierarchy, content grouping, reduce clutter)
+- Spacing (8px system, consistent padding/margins/gaps/section spacing)
+- Buttons (CTA prominence, consistent sizes/padding, hover/focus/disabled states)
+- Cards (consistent border radius, shadows, padding, alignment)
+- Forms (input spacing/height, labels, validation/focus states, placeholders, error messages)
+- Navigation (navbar/sidebar/bottom nav spacing, active/hover/selected states)
+- Typography (heading sizes, hierarchy, readability, line heights, letter spacing, font weights)
+- Icons (consistent size, stroke width, alignment, spacing)
+- Images (cropping, aspect ratio, corner radius, loading states)
+- Responsive Design (desktop/laptop/tablet/mobile — no overflow, no compression)
+- Consistency (same design system across all screens)
+- Micro Interactions (hover animations, page transitions, button interactions, loading animations, skeletons, scroll behavior — subtle, never over-animate)
+- Accessibility (contrast, readable typography, keyboard nav, focus indicators, touch targets)
+
+DO NOT: Redesign from scratch, change brand colors, change user flows, remove functionality, replace design language.
+
+After completing the refinement, provide a report of screens refined, components improved, inconsistencies fixed, UX improvements, and remaining recommendations.
+
+The final result should feel production-ready, premium, cohesive, elegant, and visually polished.
+```
+
+---

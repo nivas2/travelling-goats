@@ -126,8 +126,8 @@ export default function AdminCouponsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface">Coupon Management</h1>
-          <p className="text-sm text-on-surface-variant">Create and manage discount coupons</p>
+          <h1 className="text-headline-md font-headline-md text-on-surface">Coupon Management</h1>
+          <p className="text-body-md text-on-surface-variant">Create and manage discount coupons</p>
         </div>
         <Button
           size="sm"
@@ -141,17 +141,17 @@ export default function AdminCouponsPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Code</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Description</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Type</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Value</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Usage</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Status</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Validity</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Active</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Code</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Description</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Type</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Value</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Usage</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Validity</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Active</th>
               </tr>
             </thead>
             <tbody>
@@ -171,13 +171,13 @@ export default function AdminCouponsPage() {
                 coupons.map((coupon) => {
                   const isExpired = coupon.validUntil && new Date(coupon.validUntil) < new Date();
                   return (
-                    <tr key={coupon.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors">
+                    <tr key={coupon.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                       <td className="px-5 py-3">
-                        <span className="font-mono font-bold text-[#ae2f34]">{coupon.code}</span>
+                        <span className="font-mono font-bold text-primary">{coupon.code}</span>
                       </td>
                       <td className="px-5 py-3 text-on-surface-variant max-w-[200px] truncate">{coupon.description}</td>
                       <td className="px-5 py-3 text-center">
-                        <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", coupon.discountType === "PERCENTAGE" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700")}>
+                        <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-label-sm font-label-sm", coupon.discountType === "PERCENTAGE" ? "bg-primary/10 text-primary" : "bg-success/10 text-success")}>
                           {coupon.discountType === "PERCENTAGE" ? "%" : "Fixed"}
                         </span>
                       </td>
@@ -190,11 +190,11 @@ export default function AdminCouponsPage() {
                         {coupon.currentUses}/{coupon.maxUses ?? "Unlimited"}
                       </td>
                       <td className="px-5 py-3 text-center">
-                        <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold", isExpired ? "bg-red-100 text-red-800" : coupon.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+                        <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm", isExpired ? "bg-error/10 text-error" : coupon.isActive ? "bg-success/10 text-success" : "bg-surface-container text-on-surface-variant")}>
                           {isExpired ? "Expired" : coupon.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-right text-on-surface-variant text-xs">
+                      <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">
                         {coupon.validUntil ? `Until ${formatDate(coupon.validUntil)}` : "No expiry"}
                       </td>
                       <td className="px-5 py-3 text-center">

@@ -28,12 +28,12 @@ interface ReferralStats {
 
 function ReferralStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    COMPLETED: "bg-green-100 text-green-800",
-    PENDING: "bg-yellow-100 text-yellow-800",
-    EXPIRED: "bg-gray-100 text-gray-600",
+    COMPLETED: "bg-success/10 text-success",
+    PENDING: "bg-warning/10 text-warning",
+    EXPIRED: "bg-surface-container text-on-surface-variant",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[status] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[status] ?? "bg-surface-container text-on-surface-variant")}>
       {status.toLowerCase()}
     </span>
   );
@@ -71,42 +71,42 @@ export default function AdminReferralsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">Referral Dashboard</h1>
-        <p className="text-sm text-on-surface-variant">Track referral program performance</p>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Referral Dashboard</h1>
+        <p className="text-body-md text-on-surface-variant">Track referral program performance</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ae2f34]/10">
-              <span className="material-symbols-outlined text-[24px] text-[#ae2f34]">share</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+              <span className="material-symbols-outlined text-[24px] text-primary">share</span>
             </div>
             <div>
-              <p className="text-sm text-on-surface-variant">Total Referrals</p>
-              <p className="text-2xl font-bold text-on-surface">{stats.totalReferrals}</p>
+              <p className="text-body-md text-on-surface-variant">Total Referrals</p>
+              <p className="text-headline-md font-headline-md text-on-surface">{stats.totalReferrals}</p>
             </div>
           </div>
         </Card>
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100">
-              <span className="material-symbols-outlined text-[24px] text-green-700">trending_up</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-success/10">
+              <span className="material-symbols-outlined text-[24px] text-success">trending_up</span>
             </div>
             <div>
-              <p className="text-sm text-on-surface-variant">Conversion Rate</p>
-              <p className="text-2xl font-bold text-on-surface">{stats.conversionRate}%</p>
+              <p className="text-body-md text-on-surface-variant">Conversion Rate</p>
+              <p className="text-headline-md font-headline-md text-on-surface">{stats.conversionRate}%</p>
             </div>
           </div>
         </Card>
         <Card variant="elevated" className="p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100">
-              <span className="material-symbols-outlined text-[24px] text-blue-700">payments</span>
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+              <span className="material-symbols-outlined text-[24px] text-primary">payments</span>
             </div>
             <div>
-              <p className="text-sm text-on-surface-variant">Total Payouts</p>
-              <p className="text-2xl font-bold text-on-surface">{formatCurrency(stats.totalPayoutsPaise)}</p>
+              <p className="text-body-md text-on-surface-variant">Total Payouts</p>
+              <p className="text-headline-md font-headline-md text-on-surface">{formatCurrency(stats.totalPayoutsPaise)}</p>
             </div>
           </div>
         </Card>
@@ -115,16 +115,16 @@ export default function AdminReferralsPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Referrer</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Referred User</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Code</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Tier</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Reward</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Status</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Date</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Referrer</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Referred User</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Code</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Tier</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Reward</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -142,30 +142,30 @@ export default function AdminReferralsPage() {
                 </tr>
               ) : (
                 referrals.map((ref) => (
-                  <tr key={ref.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors">
+                  <tr key={ref.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3">
                       <div>
                         <p className="font-medium text-on-surface">{ref.referrer.name ?? "N/A"}</p>
-                        <p className="text-xs text-on-surface-variant">{ref.referrer.email ?? ""}</p>
+                        <p className="text-label-sm text-on-surface-variant">{ref.referrer.email ?? ""}</p>
                       </div>
                     </td>
                     <td className="px-5 py-3">
                       <div>
                         <p className="font-medium text-on-surface">{ref.referred.name ?? "N/A"}</p>
-                        <p className="text-xs text-on-surface-variant">{ref.referred.email ?? ""}</p>
+                        <p className="text-label-sm text-on-surface-variant">{ref.referred.email ?? ""}</p>
                       </div>
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <span className="font-mono font-bold text-[#ae2f34] text-xs">{ref.code}</span>
+                      <span className="font-mono font-bold text-primary text-label-sm">{ref.code}</span>
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#ae2f34]/10 text-xs font-bold text-[#ae2f34]">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-label-sm font-bold text-primary">
                         {ref.tier}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right font-medium">{formatCurrency(ref.rewardPaise)}</td>
                     <td className="px-5 py-3 text-center"><ReferralStatusBadge status={ref.status} /></td>
-                    <td className="px-5 py-3 text-right text-on-surface-variant text-xs">{formatDate(ref.createdAt)}</td>
+                    <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">{formatDate(ref.createdAt)}</td>
                   </tr>
                 ))
               )}

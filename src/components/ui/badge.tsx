@@ -10,8 +10,8 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<NonNullable<BadgeProps["variant"]>, string> = {
-  default: "bg-primary text-on-primary",
-  secondary: "bg-secondary-container text-on-secondary-container",
+  default: "bg-primary text-on-primary shadow-sm",
+  secondary: "bg-secondary-container text-on-secondary-container shadow-sm",
   outline: "bg-transparent border border-outline text-on-surface-variant",
   dot: "",
 };
@@ -49,8 +49,8 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       <span
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center rounded-full font-semibold",
-          "text-label-sm leading-none",
+          "inline-flex items-center justify-center rounded-full",
+          "text-[11px] font-semibold leading-none",
           "min-w-[20px] h-5 px-1.5",
           variantStyles[variant],
           position === "absolute" &&

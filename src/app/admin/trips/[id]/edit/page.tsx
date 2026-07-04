@@ -93,7 +93,7 @@ function FormSection({
 }) {
   return (
     <Card variant="elevated" className="p-6">
-      <h2 className="text-lg font-semibold text-on-surface mb-5">{title}</h2>
+      <h2 className="text-title-md font-title-md text-on-surface mb-5">{title}</h2>
       <div className="space-y-4">{children}</div>
     </Card>
   );
@@ -491,7 +491,7 @@ export default function EditTripPage() {
   if (loading) {
     return (
       <div className="space-y-6 max-w-4xl">
-        <h1 className="text-2xl font-bold text-on-surface">Edit Trip</h1>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Edit Trip</h1>
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card
@@ -510,8 +510,8 @@ export default function EditTripPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface">Edit Trip</h1>
-          <p className="text-sm text-on-surface-variant">
+          <h1 className="text-headline-md font-headline-md text-on-surface">Edit Trip</h1>
+          <p className="text-body-md text-on-surface-variant">
             Update trip details and publish changes
           </p>
         </div>
@@ -653,7 +653,7 @@ export default function EditTripPage() {
           <Card key={dayIdx} variant="outlined" className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-on-surface">Day {day.dayNumber}</h3>
-              <button onClick={() => removeItineraryDay(dayIdx)} className="text-red-500 hover:text-red-700">
+              <button onClick={() => removeItineraryDay(dayIdx)} className="text-error hover:text-error/80">
                 <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
             </div>
@@ -663,13 +663,13 @@ export default function EditTripPage() {
             </div>
             <div>
               <label className="text-label-lg font-semibold text-on-surface mb-1.5 block">Description</label>
-              <textarea className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y text-sm" value={day.description} onChange={(e) => updateItineraryDay(dayIdx, "description", e.target.value)} />
+              <textarea className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y text-body-md" value={day.description} onChange={(e) => updateItineraryDay(dayIdx, "description", e.target.value)} />
             </div>
             <div>
               <label className="text-label-lg font-semibold text-on-surface mb-2 block">Meals Included</label>
               <div className="flex flex-wrap gap-2">
                 {mealOptions.map((meal) => (
-                  <button key={meal} type="button" onClick={() => toggleMeal(dayIdx, meal.toLowerCase())} className={cn("rounded-full px-3 py-1.5 text-xs font-medium border transition-colors", day.meals.includes(meal.toLowerCase()) ? "bg-[#ae2f34] text-white border-[#ae2f34]" : "bg-transparent text-on-surface-variant border-outline-variant hover:border-[#ae2f34]")}>
+                  <button key={meal} type="button" onClick={() => toggleMeal(dayIdx, meal.toLowerCase())} className={cn("rounded-full px-3 py-1.5 text-label-sm font-label-sm border transition-colors", day.meals.includes(meal.toLowerCase()) ? "bg-primary text-on-primary border-primary" : "bg-transparent text-on-surface-variant border-outline-variant hover:border-primary")}>
                     {meal}
                   </button>
                 ))}
@@ -678,14 +678,14 @@ export default function EditTripPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-label-lg font-semibold text-on-surface">Activities</label>
-                <button type="button" onClick={() => addActivity(dayIdx)} className="text-sm text-[#ae2f34] font-medium hover:underline">+ Add Activity</button>
+                <button type="button" onClick={() => addActivity(dayIdx)} className="text-body-md text-primary font-label-lg hover:underline">+ Add Activity</button>
               </div>
               {day.activities.map((act, actIdx) => (
-                <div key={actIdx} className="flex items-start gap-2 mb-2 p-3 rounded-lg bg-[#f9f9f9]">
+                <div key={actIdx} className="flex items-start gap-2 mb-2 p-3 rounded-lg bg-surface-container">
                   <Input placeholder="Time" value={act.time} onChange={(e) => updateActivity(dayIdx, actIdx, "time", e.target.value)} inputSize="sm" className="w-24" />
                   <Input placeholder="Title" value={act.title} onChange={(e) => updateActivity(dayIdx, actIdx, "title", e.target.value)} inputSize="sm" className="flex-1" />
                   <Input placeholder="Description" value={act.description} onChange={(e) => updateActivity(dayIdx, actIdx, "description", e.target.value)} inputSize="sm" className="flex-1" />
-                  <button onClick={() => removeActivity(dayIdx, actIdx)} className="mt-1 text-red-400 hover:text-red-600 shrink-0">
+                  <button onClick={() => removeActivity(dayIdx, actIdx)} className="mt-1 text-error/70 hover:text-error shrink-0">
                     <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
                 </div>
@@ -701,13 +701,13 @@ export default function EditTripPage() {
       {/* Add-ons */}
       <FormSection title="Add-ons">
         {addOns.map((addon, idx) => (
-          <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-[#f9f9f9]">
+          <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-surface-container">
             <Input placeholder="Name" value={addon.name} onChange={(e) => updateAddOn(idx, "name", e.target.value)} inputSize="sm" className="flex-1" />
             <Input placeholder="Description" value={addon.description} onChange={(e) => updateAddOn(idx, "description", e.target.value)} inputSize="sm" className="flex-1" />
             <Input placeholder="Price (₹)" type="number" value={addon.price || ""} onChange={(e) => updateAddOn(idx, "price", Number(e.target.value))} inputSize="sm" className="w-28" />
             <Input placeholder="Icon" value={addon.icon} onChange={(e) => updateAddOn(idx, "icon", e.target.value)} inputSize="sm" className="w-28" />
             <Input placeholder="Max Qty" type="number" value={addon.maxQuantity || ""} onChange={(e) => updateAddOn(idx, "maxQuantity", Number(e.target.value))} inputSize="sm" className="w-20" />
-            <button onClick={() => removeAddOn(idx)} className="mt-1 text-red-400 hover:text-red-600 shrink-0">
+            <button onClick={() => removeAddOn(idx)} className="mt-1 text-error/70 hover:text-error shrink-0">
               <span className="material-symbols-outlined text-[18px]">close</span>
             </button>
           </div>
@@ -718,14 +718,14 @@ export default function EditTripPage() {
       {/* Snack Options */}
       <FormSection title="Snack Options">
         {snacks.map((snack, idx) => (
-          <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-[#f9f9f9]">
+          <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-surface-container">
             <Input placeholder="Name" value={snack.name} onChange={(e) => updateSnack(idx, "name", e.target.value)} inputSize="sm" className="flex-1" />
             <Input placeholder="Price (₹)" type="number" value={snack.price || ""} onChange={(e) => updateSnack(idx, "price", Number(e.target.value))} inputSize="sm" className="w-28" />
             <div className="w-32">
               <Dropdown options={[{ label: "Veg", value: "veg" }, { label: "Non-Veg", value: "non-veg" }]} value={snack.category} onChange={(v) => updateSnack(idx, "category", v)} />
             </div>
             <Input placeholder="Icon" value={snack.icon} onChange={(e) => updateSnack(idx, "icon", e.target.value)} inputSize="sm" className="w-28" />
-            <button onClick={() => removeSnack(idx)} className="mt-1 text-red-400 hover:text-red-600 shrink-0">
+            <button onClick={() => removeSnack(idx)} className="mt-1 text-error/70 hover:text-error shrink-0">
               <span className="material-symbols-outlined text-[18px]">close</span>
             </button>
           </div>
@@ -736,17 +736,17 @@ export default function EditTripPage() {
       {/* FAQs */}
       <FormSection title="FAQs">
         {faqs.map((faq, idx) => (
-          <div key={idx} className="p-3 rounded-lg bg-[#f9f9f9] space-y-3">
+          <div key={idx} className="p-3 rounded-lg bg-surface-container space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-on-surface-variant">FAQ #{idx + 1}</span>
+              <span className="text-label-sm font-label-lg text-on-surface-variant">FAQ #{idx + 1}</span>
               <div className="flex items-center gap-1">
                 <button onClick={() => moveFaq(idx, "up")} disabled={idx === 0} className="h-7 w-7 flex items-center justify-center rounded hover:bg-surface-container-high disabled:opacity-30"><span className="material-symbols-outlined text-[16px]">arrow_upward</span></button>
                 <button onClick={() => moveFaq(idx, "down")} disabled={idx === faqs.length - 1} className="h-7 w-7 flex items-center justify-center rounded hover:bg-surface-container-high disabled:opacity-30"><span className="material-symbols-outlined text-[16px]">arrow_downward</span></button>
-                <button onClick={() => removeFaq(idx)} className="h-7 w-7 flex items-center justify-center rounded text-red-400 hover:text-red-600 hover:bg-red-50"><span className="material-symbols-outlined text-[16px]">delete</span></button>
+                <button onClick={() => removeFaq(idx)} className="h-7 w-7 flex items-center justify-center rounded text-error/70 hover:text-error hover:bg-red-50"><span className="material-symbols-outlined text-[16px]">delete</span></button>
               </div>
             </div>
             <Input placeholder="Question" value={faq.question} onChange={(e) => updateFaq(idx, "question", e.target.value)} inputSize="sm" fullWidth />
-            <textarea className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y" placeholder="Answer" value={faq.answer} onChange={(e) => updateFaq(idx, "answer", e.target.value)} />
+            <textarea className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[60px] resize-y" placeholder="Answer" value={faq.answer} onChange={(e) => updateFaq(idx, "answer", e.target.value)} />
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={addFaq} icon={<span className="material-symbols-outlined text-[18px]">add</span>}>Add FAQ</Button>

@@ -119,7 +119,7 @@ const TabList = forwardRef<HTMLDivElement, TabListProps>(
 
         {/* Animated underline */}
         <motion.div
-          className="absolute bottom-0 h-0.5 rounded-full bg-primary"
+          className="absolute bottom-0 h-[3px] rounded-full bg-primary"
           animate={{ left: indicator.left, width: indicator.width }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
         />
@@ -159,10 +159,10 @@ const Tab = forwardRef<HTMLButtonElement, TabProps>(
         data-tab-value={value}
         onClick={() => setActiveTab(value)}
         className={cn(
-          "relative px-4 py-2.5 text-label-lg font-label-lg transition-colors",
+          "relative rounded-lg px-4 py-3 text-label-lg font-label-lg transition-colors",
           isActive
             ? "text-primary"
-            : "text-on-surface-variant hover:text-on-surface",
+            : "text-on-surface-variant hover:bg-surface-container/50 hover:text-on-surface",
           disabled && "pointer-events-none opacity-50",
           className,
         )}

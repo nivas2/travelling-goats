@@ -32,14 +32,14 @@ type StatusFilter = "ALL" | "PENDING" | "CAPTURED" | "FAILED" | "REFUNDED";
 
 function PaymentStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    CAPTURED: "bg-green-100 text-green-800",
-    AUTHORIZED: "bg-blue-100 text-blue-800",
-    PENDING: "bg-yellow-100 text-yellow-800",
-    FAILED: "bg-red-100 text-red-800",
-    REFUNDED: "bg-gray-100 text-gray-600",
+    CAPTURED: "bg-success/10 text-success",
+    AUTHORIZED: "bg-primary/10 text-primary",
+    PENDING: "bg-warning/10 text-warning",
+    FAILED: "bg-error/10 text-error",
+    REFUNDED: "bg-surface-container text-on-surface-variant",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", colors[status] ?? "bg-gray-100 text-gray-700")}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-label-sm font-label-sm capitalize", colors[status] ?? "bg-surface-container text-on-surface-variant")}>
       {status.toLowerCase()}
     </span>
   );
@@ -97,27 +97,27 @@ export default function AdminPaymentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-on-surface">Payment Management</h1>
-        <p className="text-sm text-on-surface-variant">Track all payments and revenue</p>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Payment Management</h1>
+        <p className="text-body-md text-on-surface-variant">Track all payments and revenue</p>
       </div>
 
       {/* Revenue Summary */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card variant="elevated" className="p-5">
-          <p className="text-sm text-on-surface-variant">Total Revenue</p>
-          <p className="text-2xl font-bold text-on-surface mt-1">{formatCurrency(summary.totalRevenuePaise)}</p>
+          <p className="text-body-md text-on-surface-variant">Total Revenue</p>
+          <p className="text-headline-md font-headline-md text-on-surface mt-1">{formatCurrency(summary.totalRevenuePaise)}</p>
         </Card>
         <Card variant="elevated" className="p-5">
-          <p className="text-sm text-on-surface-variant">Captured</p>
-          <p className="text-2xl font-bold text-green-700 mt-1">{summary.capturedCount}</p>
+          <p className="text-body-md text-on-surface-variant">Captured</p>
+          <p className="text-headline-md font-headline-md text-success mt-1">{summary.capturedCount}</p>
         </Card>
         <Card variant="elevated" className="p-5">
-          <p className="text-sm text-on-surface-variant">Pending</p>
-          <p className="text-2xl font-bold text-yellow-700 mt-1">{summary.pendingCount}</p>
+          <p className="text-body-md text-on-surface-variant">Pending</p>
+          <p className="text-headline-md font-headline-md text-warning mt-1">{summary.pendingCount}</p>
         </Card>
         <Card variant="elevated" className="p-5">
-          <p className="text-sm text-on-surface-variant">Failed</p>
-          <p className="text-2xl font-bold text-red-700 mt-1">{summary.failedCount}</p>
+          <p className="text-body-md text-on-surface-variant">Failed</p>
+          <p className="text-headline-md font-headline-md text-error mt-1">{summary.failedCount}</p>
         </Card>
       </div>
 
@@ -139,7 +139,7 @@ export default function AdminPaymentsPage() {
             onChange={(e) => setDateFrom(e.target.value)}
             inputSize="sm"
           />
-          <span className="flex items-center text-on-surface-variant text-sm">to</span>
+          <span className="flex items-center text-on-surface-variant text-body-md">to</span>
           <Input
             type="date"
             value={dateTo}
@@ -162,17 +162,17 @@ export default function AdminPaymentsPage() {
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-body-md">
             <thead>
-              <tr className="border-b border-outline-variant/10 bg-[#f9f9f9]">
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Payment ID</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Booking</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">User</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Amount</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Method</th>
-                <th className="px-5 py-3 text-left font-medium text-on-surface-variant">Razorpay ID</th>
-                <th className="px-5 py-3 text-center font-medium text-on-surface-variant">Status</th>
-                <th className="px-5 py-3 text-right font-medium text-on-surface-variant">Date</th>
+              <tr className="border-b border-outline-variant/10 bg-surface-container">
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Payment ID</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Booking</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Amount</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Method</th>
+                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Razorpay ID</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -190,15 +190,15 @@ export default function AdminPaymentsPage() {
                 </tr>
               ) : (
                 filtered.map((payment) => (
-                  <tr key={payment.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-[#f9f9f9]/50 transition-colors">
-                    <td className="px-5 py-3 font-mono text-xs text-on-surface-variant">{payment.id.slice(0, 12)}...</td>
-                    <td className="px-5 py-3 font-mono text-xs">{payment.booking?.bookingNumber ?? "-"}</td>
+                  <tr key={payment.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
+                    <td className="px-4 py-3 font-mono text-label-sm text-on-surface-variant">{payment.id.slice(0, 12)}...</td>
+                    <td className="px-4 py-3 font-mono text-label-sm">{payment.booking?.bookingNumber ?? "-"}</td>
                     <td className="px-5 py-3">{payment.booking?.user?.name ?? "N/A"}</td>
                     <td className="px-5 py-3 text-right font-medium">{formatCurrency(payment.amountPaise)}</td>
                     <td className="px-5 py-3 text-center text-on-surface-variant capitalize">{payment.method ?? "-"}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-on-surface-variant">{payment.razorpayPaymentId ?? "-"}</td>
+                    <td className="px-4 py-3 font-mono text-label-sm text-on-surface-variant">{payment.razorpayPaymentId ?? "-"}</td>
                     <td className="px-5 py-3 text-center"><PaymentStatusBadge status={payment.status} /></td>
-                    <td className="px-5 py-3 text-right text-on-surface-variant text-xs">{formatDate(payment.createdAt)}</td>
+                    <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">{formatDate(payment.createdAt)}</td>
                   </tr>
                 ))
               )}

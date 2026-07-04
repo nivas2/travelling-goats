@@ -11,6 +11,7 @@ import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dropdown } from "@/components/ui/dropdown";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -113,6 +114,7 @@ function FaqAccordion({
 // ---------------------------------------------------------------------------
 
 export default function HelpPage() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const [data, setData] = useState<HelpData>({ faqs: [], tickets: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -186,12 +188,13 @@ export default function HelpPage() {
         }
       }
 
+      toastSuccess("Ticket submitted successfully");
       setTicketModalOpen(false);
       setTicketSubject("");
       setTicketCategory("");
       setTicketDescription("");
     } catch {
-      // silent
+      toastError("Failed to submit ticket. Please try again.");
     } finally {
       setSubmittingTicket(false);
     }
@@ -221,7 +224,7 @@ export default function HelpPage() {
 
   if (loading) {
     return (
-      <div className="px-5 py-6 space-y-4">
+      <div className="px-5 py-6 space-y-6">
         <Skeleton variant="text" width={200} />
         <Skeleton variant="card" height={48} />
         <Skeleton variant="card" height={60} />
@@ -282,7 +285,7 @@ export default function HelpPage() {
           </div>
 
           {/* FAQ list */}
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-3">
             {filteredFaqs.length === 0 ? (
               <EmptyState
                 icon="search_off"
@@ -317,7 +320,7 @@ export default function HelpPage() {
               }}
             />
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {data.tickets.map((ticket) => {
                 const statusMeta = TICKET_STATUS_META[ticket.status];
                 return (

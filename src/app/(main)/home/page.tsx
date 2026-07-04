@@ -162,7 +162,7 @@ function HeroSkeleton() {
 
 function HorizontalCardsSkeleton() {
   return (
-    <div className="flex gap-4 overflow-hidden px-5">
+    <div className="flex gap-3 overflow-hidden px-5">
       {Array.from({ length: 3 }).map((_, i) => (
         <div key={i} className="w-[260px] shrink-0">
           <Skeleton variant="card" height={220} />
@@ -174,7 +174,7 @@ function HorizontalCardsSkeleton() {
 
 function GridCardsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 px-5">
+    <div className="grid grid-cols-2 gap-3 px-5">
       {Array.from({ length: 4 }).map((_, i) => (
         <Skeleton key={i} variant="card" height={260} />
       ))}
@@ -196,9 +196,11 @@ export default function HomePage() {
     try {
       setLoading(true);
       const res = await fetch("/api/trips");
-      const json: ApiResponse<TripCardData[]> = await res.json();
+      const json = await res.json();
       if (json.success && json.data) {
-        setTrips(json.data);
+        // API returns paginated { items: [...], total, page, ... }
+        const items = Array.isArray(json.data) ? json.data : (json.data.items ?? []);
+        setTrips(items);
       }
     } catch {
       // Silently handle fetch errors
@@ -290,9 +292,9 @@ export default function HomePage() {
       ) : null}
 
       {/* ===== Trending Now ===== */}
-      <section className="mt-6">
+      <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
-          <h2 className="text-headline-md font-bold text-on-surface">
+          <h2 className="text-title-lg font-title-lg text-on-surface">
             Trending Now
           </h2>
           <button
@@ -306,7 +308,7 @@ export default function HomePage() {
         {loading ? (
           <HorizontalCardsSkeleton />
         ) : (
-          <div className="flex gap-4 overflow-x-auto px-5 pb-2 hide-scrollbar">
+          <div className="flex gap-3 overflow-x-auto px-5 pb-2 hide-scrollbar">
             {trendingTrips.length > 0
               ? trendingTrips.map((trip) => (
                   <HorizontalTripCard key={trip.id} trip={trip} />
@@ -321,7 +323,7 @@ export default function HomePage() {
       {/* ===== Weekend Getaways - Bento Grid ===== */}
       <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
-          <h2 className="text-headline-md font-bold text-on-surface">
+          <h2 className="text-title-lg font-title-lg text-on-surface">
             Weekend Getaways
           </h2>
           <button
@@ -397,7 +399,7 @@ export default function HomePage() {
 
       {/* ===== Category Chips ===== */}
       <section className="mt-8 px-5">
-        <h2 className="text-headline-md font-bold text-on-surface mb-3">
+        <h2 className="text-title-lg font-title-lg text-on-surface mb-3">
           Explore by Category
         </h2>
         <div className="flex gap-2.5 overflow-x-auto pb-2 hide-scrollbar">
@@ -421,9 +423,9 @@ export default function HomePage() {
       </section>
 
       {/* ===== Popular Destinations ===== */}
-      <section className="mt-6">
+      <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
-          <h2 className="text-headline-md font-bold text-on-surface">
+          <h2 className="text-title-lg font-title-lg text-on-surface">
             {selectedCategory
               ? `${selectedCategory} Trips`
               : "Popular Destinations"}
@@ -439,7 +441,7 @@ export default function HomePage() {
             ))}
           </div>
         ) : (
-          <div className="px-5 py-12 text-center">
+          <div className="px-5 py-16 text-center">
             <Icon
               name="travel_explore"
               size={48}

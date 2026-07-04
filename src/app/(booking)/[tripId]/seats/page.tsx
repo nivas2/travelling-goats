@@ -151,7 +151,7 @@ export default function SeatsPage() {
         <h2 className="text-headline-md font-headline-md text-on-surface">
           Choose Your Seats
         </h2>
-        <p className="mt-1 text-body-md font-body-md text-on-surface-variant">
+        <p className="mt-1 text-body-md text-on-surface-variant">
           Select {travelerCount} {travelerCount === 1 ? "seat" : "seats"} &mdash;{" "}
           {selectedSeats.length}/{travelerCount} selected
         </p>

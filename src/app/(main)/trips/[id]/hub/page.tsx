@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import type { ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -518,6 +519,7 @@ function HubSkeleton() {
 export default function TripHubPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { error: toastError } = useToast();
   const tripId = params.id;
 
   const [hubData, setHubData] = useState<TripHubData | null>(null);
@@ -571,8 +573,8 @@ export default function TripHubPage() {
         });
       }
       setShowAddMemory(false);
-    } catch (err) {
-      console.error("Failed to add memory:", err);
+    } catch {
+      toastError("Failed to add memory");
     } finally {
       setSubmittingMemory(false);
     }
@@ -695,7 +697,7 @@ export default function TripHubPage() {
           </Badge>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {/* Sort: captain first */}
           {[...hubData.companions]
             .sort((a, b) => (b.isCaptain ? 1 : 0) - (a.isCaptain ? 1 : 0))
@@ -712,7 +714,7 @@ export default function TripHubPage() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-6 space-y-5">
+    <div className="mx-auto max-w-lg px-4 py-6 space-y-6">
       {/* Back button + title */}
       <div className="flex items-center gap-3">
         <button
@@ -738,7 +740,7 @@ export default function TripHubPage() {
 
       {/* Quick Actions Grid */}
       <div>
-        <h3 className="text-label-lg font-label-lg text-on-surface-variant mb-3">
+        <h3 className="text-label-sm text-on-surface-variant mb-3">
           Quick Actions
         </h3>
         <div className="grid grid-cols-3 gap-3">
@@ -786,7 +788,7 @@ export default function TripHubPage() {
       {/* Recent Memories Preview */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-label-lg font-label-lg text-on-surface-variant">
+          <h3 className="text-label-sm text-on-surface-variant">
             Recent Memories
           </h3>
           {hubData.memories.length > 0 && (
@@ -848,7 +850,7 @@ export default function TripHubPage() {
       {/* Companions Preview */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-label-lg font-label-lg text-on-surface-variant">
+          <h3 className="text-label-sm text-on-surface-variant">
             Your Companions
           </h3>
           <button

@@ -53,11 +53,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const hasLeftAdornment = !!iconLeft || !!countryCode;
 
     return (
-      <div className={cn("flex flex-col gap-1.5", fullWidth && "w-full")}>
+      <div className={cn("flex flex-col", fullWidth && "w-full")}>
         {label && (
           <label
             htmlFor={id}
-            className="text-label-lg font-semibold text-on-surface"
+            className="mb-1.5 text-label-lg font-semibold text-on-surface"
           >
             {label}
           </label>
@@ -87,14 +87,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               "border border-outline-variant",
               "placeholder:text-on-surface-variant/50",
               "transition-all duration-200",
-              "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
+              "hover:border-outline",
+              "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary",
               "disabled:cursor-not-allowed disabled:opacity-50",
               inputSizeStyles[inputSize],
               hasLeftAdornment && !countryCode && "pl-11",
               countryCode && "pl-[4.5rem]",
               iconRight && "pr-11",
               error &&
-                "border-error focus:ring-error focus:border-error",
+                "border-error ring-1 ring-error/20 focus:ring-error focus:border-error",
               className
             )}
             aria-invalid={!!error}
@@ -115,7 +116,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p
             id={`${id}-error`}
-            className="text-label-sm text-error"
+            className="mt-1.5 text-label-sm text-error"
             role="alert"
           >
             {error}
@@ -125,7 +126,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {helperText && !error && (
           <p
             id={`${id}-helper`}
-            className="text-label-sm text-on-surface-variant"
+            className="mt-1.5 text-label-sm text-on-surface-variant"
           >
             {helperText}
           </p>

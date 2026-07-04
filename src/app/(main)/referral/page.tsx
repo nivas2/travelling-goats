@@ -264,7 +264,7 @@ export default function ReferralPage() {
         <h2 className="text-title-lg font-title-lg text-on-surface mb-3">
           Reward Tiers
         </h2>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {REWARD_TIERS.map((tier) => (
             <Card
               key={tier.range}
@@ -311,7 +311,7 @@ export default function ReferralPage() {
             />
           </Card>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {referredUsers.map((user) => {
               const statusMeta = STATUS_META[user.status];
               return (

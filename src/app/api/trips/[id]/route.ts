@@ -34,7 +34,19 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: trip });
+    // Ensure itinerary day activities are always arrays (handles double-encoded JSON strings)
+    const data = {
+      ...trip,
+      itineraryDays: trip.itineraryDays.map((day) => ({
+        ...day,
+        activities:
+          typeof day.activities === "string"
+            ? JSON.parse(day.activities)
+            : day.activities ?? [],
+      })),
+    };
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error("Trip fetch error:", error);
     return NextResponse.json(
