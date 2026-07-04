@@ -1,4 +1,4 @@
-# PackAlong — Third-Party Integration Audit & Production Readiness Report
+# MeetMyRoute — Third-Party Integration Audit & Production Readiness Report
 
 **Date:** July 4, 2026
 **Stack:** Next.js 16 / Prisma 5 / PostgreSQL / Vercel (bom1 — Mumbai)

@@ -27,7 +27,7 @@ const CATEGORY_FILTERS = [
   { label: "Camping", value: "Camping" },
 ];
 
-const RECENT_SEARCHES_KEY = "packalong_recent_searches";
+const RECENT_SEARCHES_KEY = "meetmyroute_recent_searches";
 const MAX_RECENT_SEARCHES = 8;
 
 // ---------------------------------------------------------------------------

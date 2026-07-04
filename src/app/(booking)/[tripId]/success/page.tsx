@@ -173,11 +173,11 @@ export default function SuccessPage() {
 
   const handleShare = async () => {
     const shareData = {
-      title: "I just booked a trip on PackAlong!",
+      title: "I just booked a trip on MeetMyRoute!",
       text: booking
-        ? `I am going on ${booking.tripName}. Join me on PackAlong!`
-        : "Join me on PackAlong for amazing group trips!",
-      url: `https://packalong.in/trips/${tripId}`,
+        ? `I am going on ${booking.tripName}. Join me on MeetMyRoute!`
+        : "Join me on MeetMyRoute for amazing group trips!",
+      url: `https://meetmyroute.feastigo.com/trips/${tripId}`,
     };
 
     if (navigator.share) {

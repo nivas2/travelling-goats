@@ -19,8 +19,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "PackAlong — Curated Group Travel for Young India",
-    template: "%s | PackAlong",
+    default: "MeetMyRoute — Curated Group Travel for Young India",
+    template: "%s | MeetMyRoute",
   },
   description:
     "Discover curated group trips across India. Join solo or with friends. Verified travelers, transparent pricing, unforgettable experiences.",
@@ -30,24 +30,24 @@ export const metadata: Metadata = {
     "curated trips",
     "weekend getaway",
     "adventure travel",
-    "PackAlong",
+    "MeetMyRoute",
   ],
-  authors: [{ name: "PackAlong" }],
-  creator: "PackAlong",
+  authors: [{ name: "MeetMyRoute" }],
+  creator: "MeetMyRoute",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://packalong.in",
-    siteName: "PackAlong",
-    title: "PackAlong — Curated Group Travel for Young India",
+    url: "https://meetmyroute.feastigo.com",
+    siteName: "MeetMyRoute",
+    title: "MeetMyRoute — Curated Group Travel for Young India",
     description:
       "Discover curated group trips across India. Join solo or with friends.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "PackAlong" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "MeetMyRoute" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PackAlong — Curated Group Travel",
+    title: "MeetMyRoute — Curated Group Travel",
     description: "Discover curated group trips across India.",
     images: ["/og-image.png"],
   },

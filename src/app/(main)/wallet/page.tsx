@@ -358,7 +358,7 @@ export default function WalletPage() {
         open={addMoneyOpen}
         onClose={() => setAddMoneyOpen(false)}
         title="Add Money"
-        description="Top up your PackAlong wallet"
+        description="Top up your MeetMyRoute wallet"
       >
         <div className="space-y-4">
           <Input

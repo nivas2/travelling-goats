@@ -77,7 +77,7 @@ export default function LoginPage() {
           <Icon name="luggage" size={40} className="text-on-primary hidden md:block" filled />
         </div>
         <h1 className="text-headline-lg font-headline-lg text-on-surface md:text-display md:font-display">
-          Pack<span className="text-primary">Along</span>
+          Meet<span className="text-primary">MyRoute</span>
         </h1>
         <p className="text-body-md text-on-surface-variant text-center">
           Travel with your tribe

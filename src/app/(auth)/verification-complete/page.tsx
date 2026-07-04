@@ -85,7 +85,7 @@ export default function VerificationCompletePage() {
           </h1>
           <p className="text-body-lg text-on-surface-variant">
             Your identity has been verified. You can now enjoy the full
-            PackAlong experience with trusted travelers.
+            MeetMyRoute experience with trusted travelers.
           </p>
         </div>
 

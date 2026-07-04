@@ -268,7 +268,7 @@ export default function TripDetailPage({
       userAvatar: null,
       rating: 5,
       comment:
-        "Best trip I have ever been on! Met some wonderful people and the views were breathtaking. PackAlong really knows how to curate experiences.",
+        "Best trip I have ever been on! Met some wonderful people and the views were breathtaking. MeetMyRoute really knows how to curate experiences.",
       date: "2025-02-20",
     },
   ]);
@@ -297,7 +297,7 @@ export default function TripDetailPage({
       try {
         await navigator.share({
           title: trip.title,
-          text: `Check out this trip to ${trip.destination} on PackAlong!`,
+          text: `Check out this trip to ${trip.destination} on MeetMyRoute!`,
           url: window.location.href,
         });
       } catch {

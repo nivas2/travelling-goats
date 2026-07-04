@@ -341,7 +341,7 @@ export default function PaymentPage() {
         key: order.razorpayKeyId ?? process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
         amount: totalPaise,
         currency: "INR",
-        name: "PackAlong",
+        name: "MeetMyRoute",
         description: `Trip Booking - ${travelerCount} traveler(s)`,
         order_id: order.razorpayOrderId ?? order.orderId,
         handler: async (response: RazorpayResponse) => {

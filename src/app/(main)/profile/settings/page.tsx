@@ -261,7 +261,7 @@ export default function SettingsPage() {
 
       {/* App version */}
       <p className="text-center text-label-sm text-on-surface-variant pt-2 pb-4">
-        PackAlong v1.0.0
+        MeetMyRoute v1.0.0
       </p>
 
       {/* Delete Account Modal */}

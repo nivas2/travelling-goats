@@ -33,14 +33,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = useCallback(
     (t: Theme) => {
       setThemeState(t);
-      localStorage.setItem("packalong-theme", t);
+      localStorage.setItem("meetmyroute-theme", t);
       applyTheme(t);
     },
     [applyTheme]
   );
 
   useEffect(() => {
-    const stored = localStorage.getItem("packalong-theme") as Theme | null;
+    const stored = localStorage.getItem("meetmyroute-theme") as Theme | null;
     const initial = stored || "system";
     setThemeState(initial);
     applyTheme(initial);

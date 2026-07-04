@@ -164,7 +164,7 @@ export default function TicketPage() {
 
     const url = new URL("https://calendar.google.com/calendar/render");
     url.searchParams.set("action", "TEMPLATE");
-    url.searchParams.set("text", `PackAlong: ${ticket.tripName}`);
+    url.searchParams.set("text", `MeetMyRoute: ${ticket.tripName}`);
     url.searchParams.set(
       "dates",
       `${formatGCalDate(start)}/${formatGCalDate(end)}`,
@@ -204,7 +204,7 @@ export default function TicketPage() {
           <div className="primary-gradient p-5 text-on-primary">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-label-sm opacity-80">PackAlong</p>
+                <p className="text-label-sm opacity-80">MeetMyRoute</p>
                 <h2 className="text-title-lg font-title-lg">{ticket.tripName}</h2>
               </div>
               <span className="material-symbols-outlined text-[32px] opacity-80">

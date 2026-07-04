@@ -1,6 +1,6 @@
 {
-  "name": "PackAlong — Curated Group Travel",
-  "short_name": "PackAlong",
+  "name": "MeetMyRoute — Curated Group Travel",
+  "short_name": "MeetMyRoute",
   "description": "Discover curated group trips across India. Join solo or with friends.",
   "start_url": "/",
   "display": "standalone",

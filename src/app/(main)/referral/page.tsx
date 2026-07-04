@@ -104,7 +104,7 @@ export default function ReferralPage() {
   const handleShareWhatsApp = () => {
     if (!data) return;
     const msg = encodeURIComponent(
-      `Join PackAlong and get rewarded! Use my referral code: ${data.referralCode}\n${data.referralLink}`
+      `Join MeetMyRoute and get rewarded! Use my referral code: ${data.referralCode}\n${data.referralLink}`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
@@ -113,7 +113,7 @@ export default function ReferralPage() {
     if (!data || !navigator.share) return;
     try {
       await navigator.share({
-        title: "Join PackAlong",
+        title: "Join MeetMyRoute",
         text: `Use my referral code ${data.referralCode} to sign up and earn rewards!`,
         url: data.referralLink,
       });
@@ -169,7 +169,7 @@ export default function ReferralPage() {
               Refer &amp; Earn
             </h1>
             <p className="mt-1 text-body-md text-white/80">
-              Invite friends to PackAlong and earn up to{" "}
+              Invite friends to MeetMyRoute and earn up to{" "}
               <span className="font-semibold text-white">&#x20B9;500</span> per
               referral!
             </p>
