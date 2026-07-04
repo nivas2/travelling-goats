@@ -111,7 +111,7 @@ const TabList = forwardRef<HTMLDivElement, TabListProps>(
         }}
         role="tablist"
         className={cn(
-          "relative flex gap-1 border-b border-outline-variant",
+          "relative flex gap-1 border-b border-outline-variant overflow-x-auto hide-scrollbar",
           className,
         )}
       >
@@ -159,7 +159,7 @@ const Tab = forwardRef<HTMLButtonElement, TabProps>(
         data-tab-value={value}
         onClick={() => setActiveTab(value)}
         className={cn(
-          "relative rounded-lg px-4 py-3 text-label-lg font-label-lg transition-colors",
+          "relative shrink-0 whitespace-nowrap rounded-lg px-4 py-3 text-label-lg font-label-lg transition-colors",
           isActive
             ? "text-primary"
             : "text-on-surface-variant hover:bg-surface-container/50 hover:text-on-surface",
