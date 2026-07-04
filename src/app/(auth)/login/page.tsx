@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Icon } from "@/components/ui/icon";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -72,10 +71,6 @@ export default function LoginPage() {
 
       {/* Logo */}
       <div className="animate-float mb-8 flex flex-col items-center gap-2">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl primary-gradient shadow-elevated md:h-20 md:w-20">
-          <Icon name="luggage" size={32} className="text-on-primary md:hidden" filled />
-          <Icon name="luggage" size={40} className="text-on-primary hidden md:block" filled />
-        </div>
         <h1 className="text-headline-lg font-headline-lg text-on-surface md:text-display md:font-display">
           Meet<span className="text-primary">MyRoute</span>
         </h1>
