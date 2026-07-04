@@ -1,7 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import LandingPage from "@/components/landing/landing-page";
 
 export default async function RootPage() {
   const session = await auth();
-  redirect(session ? "/home" : "/login");
+
+  if (session) {
+    redirect("/home");
+  }
+
+  return <LandingPage />;
 }

@@ -25,9 +25,9 @@ const nextConfig: NextConfig = {
           value: [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com",
-            "style-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
-            "font-src 'self'",
+            "font-src 'self' https://fonts.gstatic.com",
             "connect-src 'self' https://api.razorpay.com https://lumberjack-cx.razorpay.com",
             "frame-src https://api.razorpay.com https://checkout.razorpay.com",
             "object-src 'none'",
