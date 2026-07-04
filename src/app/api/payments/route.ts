@@ -12,10 +12,14 @@ import { auditLog } from "@/lib/audit";
 
 const logger = createLogger({ route: "payments" });
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID ?? "",
-  key_secret: process.env.RAZORPAY_KEY_SECRET ?? "",
-});
+const isTestMode = !process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET;
+
+const razorpay = isTestMode
+  ? null
+  : new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID!,
+      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    });
 
 // Create Razorpay order
 export async function POST(req: NextRequest) {
@@ -132,6 +136,48 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json({ success: true, data: { payment: result, fullWalletPayment: true } });
+    }
+
+    // Test mode — skip Razorpay, auto-confirm booking
+    if (isTestMode || !razorpay) {
+      const testResult = await prisma.$transaction(async (tx) => {
+        const testPayment = await tx.payment.create({
+          data: {
+            bookingId,
+            amountPaise: booking.totalPricePaise,
+            walletAmountPaise: walletDeduction,
+            status: "CAPTURED",
+            method: "test",
+          },
+        });
+
+        await tx.booking.update({
+          where: { id: bookingId },
+          data: { status: "CONFIRMED" },
+        });
+
+        await tx.trip.update({
+          where: { id: booking.tripId },
+          data: { currentBookings: { increment: booking.travelerCount } },
+        });
+
+        return testPayment;
+      });
+
+      const ip = getClientIp(req);
+      auditLog({
+        userId: session.user.id,
+        action: "PAYMENT_CREATED",
+        entityType: "payment",
+        entityId: testResult.id,
+        metadata: { bookingId, method: "test", amountPaise: booking.totalPricePaise },
+        ipAddress: ip,
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: { payment: testResult, testMode: true, bookingId },
+      });
     }
 
     // Create Razorpay order

@@ -293,7 +293,17 @@ export default function PaymentPage() {
     setShowCoupons(false);
   };
 
-  // Razorpay payment
+  const {
+    seatPreference,
+    selectedSeatIds,
+    sessionId,
+    contactEmail,
+    contactPhone,
+    specialRequests,
+    pickupPoint,
+  } = useBookingStore();
+
+  // Payment flow
   const handlePay = useCallback(async () => {
     setPaying(true);
 
@@ -301,8 +311,8 @@ export default function PaymentPage() {
       // Persist summary to store
       setSummary(summary);
 
-      // 1. Create order via API
-      const orderRes = await fetch("/api/payments", {
+      // 1. Create the booking first
+      const bookingRes = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -310,6 +320,13 @@ export default function PaymentPage() {
           bookingType,
           travelerCount,
           travelers,
+          seatPreference,
+          seatIds: selectedSeatIds.length > 0 ? selectedSeatIds : undefined,
+          sessionId: selectedSeatIds.length > 0 ? sessionId : undefined,
+          contactEmail,
+          contactPhone,
+          specialRequests,
+          pickupPoint,
           addOns: Object.entries(selectedAddOns).map(([id, qty]) => ({
             addOnId: id,
             quantity: qty,
@@ -319,35 +336,60 @@ export default function PaymentPage() {
             quantity: qty,
           })),
           couponCode: couponCode ?? undefined,
+        }),
+      });
+
+      if (!bookingRes.ok) {
+        const errJson = await bookingRes.json().catch(() => null);
+        throw new Error(errJson?.error ?? "Failed to create booking");
+      }
+
+      const bookingJson = await bookingRes.json();
+      const booking = bookingJson.data ?? bookingJson;
+      const bookingId = booking.id;
+
+      // 2. Create payment order
+      const orderRes = await fetch("/api/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId,
           useWallet,
-          amountPaise: totalPaise,
+          walletAmountPaise: walletDeduction,
         }),
       });
 
       if (!orderRes.ok) {
-        throw new Error("Failed to create payment order");
+        const errJson = await orderRes.json().catch(() => null);
+        throw new Error(errJson?.error ?? "Failed to create payment order");
       }
 
       const orderJson = await orderRes.json();
       const order = orderJson.data ?? orderJson;
 
-      // 2. Load Razorpay script
+      // Test mode or full wallet payment — auto-completed
+      if (order.testMode || order.fullWalletPayment) {
+        toastSuccess("Booking confirmed!");
+        router.push(`/${tripId}/success?bookingId=${bookingId}`);
+        return;
+      }
+
+      // 3. Load Razorpay script
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         throw new Error("Failed to load payment gateway");
       }
 
-      // 3. Open Razorpay checkout
+      // 4. Open Razorpay checkout
       const options: RazorpayOptions = {
-        key: order.razorpayKeyId ?? process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
-        amount: totalPaise,
-        currency: "INR",
+        key: order.key ?? process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
+        amount: order.amount ?? totalPaise,
+        currency: order.currency ?? "INR",
         name: "MeetMyRoute",
         description: `Trip Booking - ${travelerCount} traveler(s)`,
-        order_id: order.razorpayOrderId ?? order.orderId,
+        order_id: order.orderId ?? order.payment?.razorpayOrderId,
         handler: async (response: RazorpayResponse) => {
           try {
-            // 4. Verify payment
             const verifyRes = await fetch("/api/payments", {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -355,7 +397,7 @@ export default function PaymentPage() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                bookingId: order.bookingId,
+                bookingId,
               }),
             });
 
@@ -364,7 +406,7 @@ export default function PaymentPage() {
             }
 
             toastSuccess("Payment successful!");
-            router.push(`/${tripId}/success?bookingId=${order.bookingId}`);
+            router.push(`/${tripId}/success?bookingId=${bookingId}`);
           } catch {
             toastError("Payment verification failed. Contact support.");
             setPaying(false);
@@ -394,8 +436,10 @@ export default function PaymentPage() {
     }
   }, [
     tripId, bookingType, travelerCount, travelers,
+    seatPreference, selectedSeatIds, sessionId,
+    contactEmail, contactPhone, specialRequests, pickupPoint,
     selectedAddOns, selectedSnacks, couponCode, useWallet,
-    totalPaise, summary, setSummary, router, toastSuccess, toastError,
+    walletDeduction, totalPaise, summary, setSummary, router, toastSuccess, toastError,
   ]);
 
   if (loading) {
