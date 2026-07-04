@@ -310,9 +310,9 @@ export default function AddonsPage() {
                       {addon.name}
                     </span>
                     {addon.isPopular && (
-                      <Badge variant="default" className="text-[10px] px-1.5 py-0.5">
+                      <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
                         Popular
-                      </Badge>
+                      </span>
                     )}
                   </div>
                   {addon.description && (
