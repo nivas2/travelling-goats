@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -52,6 +53,7 @@ async function main() {
         phone: "9999999999",
         email: "admin@meetmyroute.in",
         name: "MeetMyRoute Admin",
+        passwordHash: await bcrypt.hash("123456", 12),
         avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200",
         gender: "MALE",
         city: "Bengaluru",
