@@ -10,6 +10,7 @@ import { RadioCard } from "@/components/ui/radio-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
 
 // ---------------------------------------------------------------------------
 //  Types
@@ -295,12 +296,17 @@ export default function TravelersPage() {
         </Card>
       )}
 
-      {/* Sticky bottom CTA */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-outline-variant/10 bg-surface/95 backdrop-blur-md p-4 pb-safe">
-        <Button fullWidth size="lg" onClick={handleContinue}>
-          Continue
-        </Button>
-      </div>
+      {/* Bottom bar */}
+      <BookingBottomBar
+        step={1}
+        totalSteps={6}
+        onNext={handleContinue}
+        priceSummary={
+          selectedOption
+            ? { label: "Estimated total", amountPaise: totalPricePaise }
+            : undefined
+        }
+      />
     </div>
   );
 }

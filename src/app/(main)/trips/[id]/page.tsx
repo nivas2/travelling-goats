@@ -492,6 +492,42 @@ export default function TripDetailPage({
           </Card>
         </div>
 
+        {/* Vehicle Info */}
+        {trip.vehicleTemplate && (
+          <section className="mt-6">
+            <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
+              Vehicle
+            </h3>
+            <Card variant="outlined" className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <span className="material-symbols-outlined text-[22px] text-primary">
+                  {trip.vehicleTemplate.vehicleType?.icon ?? "directions_bus"}
+                </span>
+              </div>
+              <div className="flex-1">
+                <p className="text-title-md font-title-md text-on-surface">
+                  {trip.vehicleTemplate.vehicleType?.name ?? "Vehicle"}
+                </p>
+                <p className="text-body-sm text-on-surface-variant">
+                  {trip.vehicleTemplate.name} &middot; {trip.vehicleTemplate.totalSeats} seats
+                </p>
+                {trip.vehicleTemplate.amenities && trip.vehicleTemplate.amenities.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {trip.vehicleTemplate.amenities.map((amenity, i) => (
+                      <span
+                        key={i}
+                        className="rounded-full bg-surface-container px-2.5 py-0.5 text-label-sm text-on-surface-variant"
+                      >
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </section>
+        )}
+
         {/* Inclusions */}
         {trip.inclusions.length > 0 && (
           <section className="mt-6">

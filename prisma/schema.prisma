@@ -175,16 +175,21 @@ model Trip {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  itineraryDays   ItineraryDay[]
-  addOns          TripAddOn[]
-  snackOptions    SnackOption[]
-  bookings        Booking[]
-  reviews         Review[]
-  wishlistItems   WishlistItem[]
-  waitlistItems   WaitlistItem[]
-  chatRoom        ChatRoom?
-  faqs            TripFaq[]
+  vehicleTemplateId String?
+  vehicleTemplate   VehicleTemplate? @relation(fields: [vehicleTemplateId], references: [id])
 
+  itineraryDays    ItineraryDay[]
+  addOns           TripAddOn[]
+  snackOptions     SnackOption[]
+  bookings         Booking[]
+  reviews          Review[]
+  wishlistItems    WishlistItem[]
+  waitlistItems    WaitlistItem[]
+  chatRoom         ChatRoom?
+  faqs             TripFaq[]
+  seatReservations SeatReservation[]
+
+  @@index([vehicleTemplateId])
   @@map("trips")
 }
 
@@ -265,6 +270,8 @@ model Booking {
   travelerCount   Int           @default(1)
   travelers       Json          @default("[]") // [{name, age, gender, phone}]
   seatPreference  String?
+  contactEmail    String?
+  contactPhone    String?
   specialRequests String?
   pickupPoint     String?
   qrToken         String?       @unique
@@ -277,6 +284,7 @@ model Booking {
   payment   Payment?
   addOns    BookingAddOn[]
   snacks    BookingSnack[]
+  seats     BookingSeat[]
   cancellation BookingCancellation?
 
   @@index([userId])
@@ -869,4 +877,150 @@ enum WaitlistStatus {
   ACCEPTED
   EXPIRED
   CANCELLED
+}
+
+// ===== VEHICLE MANAGEMENT ENUMS =====
+
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum SeatType {
+  PUSH_BACK
+  SEMI_SLEEPER
+  SLEEPER
+  BERTH
+  REGULAR
+}
+
+enum SeatCategory {
+  WINDOW
+  AISLE
+  MIDDLE
+}
+
+enum SeatStatus {
+  AVAILABLE
+  BLOCKED
+  MAINTENANCE
+}
+
+enum GenderRestriction {
+  NONE
+  MALE_ONLY
+  FEMALE_ONLY
+}
+
+enum GridCellType {
+  SEAT
+  AISLE
+  EMPTY
+  DRIVER
+  DOOR
+  STAIRS
+}
+
+enum DeckType {
+  SINGLE
+  LOWER
+  UPPER
+}
+
+// ===== VEHICLE MANAGEMENT =====
+
+model VehicleType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  icon        String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  templates VehicleTemplate[]
+
+  @@map("vehicle_types")
+}
+
+model VehicleTemplate {
+  id                 String        @id @default(cuid())
+  vehicleTypeId      String
+  name               String
+  registrationNumber String?
+  totalSeats         Int
+  totalRows          Int
+  totalColumns       Int
+  hasUpperDeck       Boolean       @default(false)
+  upperDeckRows      Int?
+  upperDeckColumns   Int?
+  amenities          String[]      @default([])
+  gridLayout         Json          // 2D array of GridCellType for lower deck
+  upperGridLayout    Json?         // 2D array of GridCellType for upper deck
+  status             VehicleStatus @default(ACTIVE)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id])
+  seats       Seat[]
+  trips       Trip[]
+
+  @@map("vehicle_templates")
+}
+
+model Seat {
+  id                String            @id @default(cuid())
+  vehicleTemplateId String
+  seatNumber        String
+  row               Int
+  col               Int
+  deck              DeckType          @default(SINGLE)
+  seatType          SeatType          @default(REGULAR)
+  category          SeatCategory      @default(WINDOW)
+  priceDeltaPaise   Int               @default(0)
+  genderRestriction GenderRestriction @default(NONE)
+  status            SeatStatus        @default(AVAILABLE)
+  isAccessible      Boolean           @default(false)
+  isPremium         Boolean           @default(false)
+  order             Int               @default(0)
+
+  vehicleTemplate  VehicleTemplate   @relation(fields: [vehicleTemplateId], references: [id], onDelete: Cascade)
+  bookingSeats     BookingSeat[]
+  seatReservations SeatReservation[]
+
+  @@unique([vehicleTemplateId, seatNumber])
+  @@index([vehicleTemplateId])
+  @@map("seats")
+}
+
+model BookingSeat {
+  id             String  @id @default(cuid())
+  bookingId      String
+  seatId         String
+  travelerName   String?
+  travelerGender String?
+  pricePaise     Int
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  seat    Seat    @relation(fields: [seatId], references: [id])
+
+  @@unique([bookingId, seatId])
+  @@map("booking_seats")
+}
+
+model SeatReservation {
+  id        String   @id @default(cuid())
+  seatId    String
+  tripId    String
+  userId    String
+  sessionId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  seat Seat @relation(fields: [seatId], references: [id], onDelete: Cascade)
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId, seatId])
+  @@index([expiresAt])
+  @@map("seat_reservations")
 }

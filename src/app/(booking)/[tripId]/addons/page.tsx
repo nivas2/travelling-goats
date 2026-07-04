@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
 import type { AddOnData, SnackOptionData } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -386,32 +387,23 @@ export default function AddonsPage() {
         </Tabs>
       </div>
 
-      {/* Sticky bottom with running total */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-outline-variant/10 bg-surface/95 backdrop-blur-md p-4 pb-safe">
-        {runningTotal > 0 && (
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-body-md text-on-surface-variant">
-              Add-ons total
-            </span>
-            <span className="text-title-md font-title-md text-primary">
-              +{formatCurrency(runningTotal)}
-            </span>
-          </div>
-        )}
-        <div className="flex gap-3">
-          <Button
-            variant="ghost"
-            size="lg"
-            onClick={handleContinue}
-            className="flex-1"
-          >
+      {/* Bottom bar */}
+      <BookingBottomBar
+        step={4}
+        totalSteps={6}
+        onNext={handleContinue}
+        onBack={() => router.push(`/${tripId}/seats`)}
+        priceSummary={
+          runningTotal > 0
+            ? { label: "Add-ons total", amountPaise: runningTotal }
+            : undefined
+        }
+        leftAction={
+          <Button variant="ghost" size="lg" onClick={handleContinue}>
             Skip
           </Button>
-          <Button fullWidth size="lg" onClick={handleContinue} className="flex-[2]">
-            Continue
-          </Button>
-        </div>
-      </div>
+        }
+      />
     </div>
   );
 }

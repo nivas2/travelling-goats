@@ -145,6 +145,10 @@ export default function EditTripPage() {
   const [difficulty, setDifficulty] = useState("MODERATE");
   const [tags, setTags] = useState("");
 
+  // Vehicle assignment
+  const [vehicleTemplateId, setVehicleTemplateId] = useState("");
+  const [vehicleTemplates, setVehicleTemplates] = useState<Array<{ id: string; name: string; totalSeats: number; vehicleType: { name: string } }>>([]);
+
   // Settings
   const [isFeatured, setIsFeatured] = useState(false);
   const [isTrending, setIsTrending] = useState(false);
@@ -206,6 +210,7 @@ export default function EditTripPage() {
         setIsTrending(t.isTrending);
         setCancellationPolicy(t.cancellationPolicy);
         setCurrentStatus(t.status);
+        setVehicleTemplateId(t.vehicleTemplateId ?? "");
 
         // Itinerary
         setItinerary(
@@ -258,6 +263,20 @@ export default function EditTripPage() {
       }
     }
     loadTrip();
+
+    // Fetch vehicle templates
+    async function fetchVehicles() {
+      try {
+        const res = await fetch("/api/admin/vehicles?status=ACTIVE");
+        if (res.ok) {
+          const json = await res.json();
+          setVehicleTemplates(json.data?.templates ?? []);
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+    fetchVehicles();
   }, [tripId]);
 
   /* ---------- Itinerary Helpers ---------- */
@@ -434,6 +453,7 @@ export default function EditTripPage() {
       isFeatured,
       isTrending,
       cancellationPolicy,
+      vehicleTemplateId: vehicleTemplateId || null,
       status,
       itineraryDays: itinerary.map((day) => ({
         dayNumber: day.dayNumber,
@@ -627,6 +647,26 @@ export default function EditTripPage() {
           <Input label="Max Group Size" type="number" value={maxGroupSize} onChange={(e) => setMaxGroupSize(e.target.value)} fullWidth />
           <Input label="Min Group Size" type="number" value={minGroupSize} onChange={(e) => setMinGroupSize(e.target.value)} fullWidth />
         </div>
+      </FormSection>
+
+      {/* Vehicle Assignment */}
+      <FormSection title="Vehicle Assignment">
+        <Dropdown
+          label="Assign Vehicle (optional)"
+          placeholder="No vehicle assigned"
+          options={[
+            { label: "No vehicle", value: "" },
+            ...vehicleTemplates.map((v) => ({
+              label: `${v.name} (${v.vehicleType.name} - ${v.totalSeats} seats)`,
+              value: v.id,
+            })),
+          ]}
+          value={vehicleTemplateId}
+          onChange={setVehicleTemplateId}
+        />
+        <p className="text-body-sm text-on-surface-variant">
+          Assigning a vehicle enables dynamic seat selection in the booking flow.
+        </p>
       </FormSection>
 
       {/* Category & Tags */}

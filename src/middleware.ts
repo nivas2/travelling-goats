@@ -16,6 +16,9 @@ const publicPaths = [
   "/sw.js",
 ];
 
+// Paths that require auth but are not admin - seat APIs are under /api/trips which is already public for GET
+// POST/DELETE to /api/trips/.../seats/reserve requires auth and is handled by the route itself
+
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 

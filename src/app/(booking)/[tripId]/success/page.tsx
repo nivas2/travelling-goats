@@ -104,7 +104,7 @@ export default function SuccessPage() {
   const tripId = params.tripId;
   const bookingId = searchParams.get("bookingId");
 
-  const { travelers, travelerCount, summary, setStep, reset } = useBookingStore();
+  const { travelers, travelerCount, selectedSeatIds, seatPreference, summary, setStep, reset } = useBookingStore();
 
   const [showConfetti, setShowConfetti] = useState(true);
   const [booking, setBooking] = useState<BookingDetails | null>(null);
@@ -302,6 +302,25 @@ export default function SuccessPage() {
                   </div>
                 )}
               </div>
+
+              {/* Seat numbers */}
+              {seatPreference && (
+                <div className="border-t border-outline-variant/20 pt-3">
+                  <p className="text-label-sm text-on-surface-variant mb-1">
+                    Seats
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {seatPreference.split(",").filter(Boolean).map((seat, i) => (
+                      <span
+                        key={i}
+                        className="rounded-full bg-primary/10 px-3 py-1 text-label-sm font-label-sm text-primary"
+                      >
+                        {seat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Traveler names */}
               {travelers.length > 0 && (

@@ -10,6 +10,11 @@ interface BookingState {
   travelerCount: number;
   travelers: TravelerInfo[];
   seatPreference: string | null;
+  selectedSeatIds: string[];
+  seatReservationExpiry: string | null;
+  sessionId: string;
+  contactEmail: string | null;
+  contactPhone: string | null;
   specialRequests: string | null;
   pickupPoint: string | null;
   selectedAddOns: Record<string, number>;
@@ -30,6 +35,11 @@ interface BookingState {
   setTravelers: (travelers: TravelerInfo[]) => void;
   updateTraveler: (index: number, info: Partial<TravelerInfo>) => void;
   setSeatPreference: (pref: string | null) => void;
+  setSelectedSeats: (ids: string[]) => void;
+  setSeatReservationExpiry: (expiry: string | null) => void;
+  setSessionId: (id: string) => void;
+  setContactEmail: (email: string | null) => void;
+  setContactPhone: (phone: string | null) => void;
   setSpecialRequests: (req: string | null) => void;
   setPickupPoint: (point: string | null) => void;
   toggleAddOn: (addOnId: string, quantity: number) => void;
@@ -48,6 +58,11 @@ const initialState = {
   travelerCount: 1,
   travelers: [] as TravelerInfo[],
   seatPreference: null as string | null,
+  selectedSeatIds: [] as string[],
+  seatReservationExpiry: null as string | null,
+  sessionId: typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString(36),
+  contactEmail: null as string | null,
+  contactPhone: null as string | null,
   specialRequests: null as string | null,
   pickupPoint: null as string | null,
   selectedAddOns: {} as Record<string, number>,
@@ -79,6 +94,11 @@ export const useBookingStore = create<BookingState>((set) => ({
       return { travelers };
     }),
   setSeatPreference: (seatPreference) => set({ seatPreference }),
+  setSelectedSeats: (selectedSeatIds) => set({ selectedSeatIds }),
+  setSeatReservationExpiry: (seatReservationExpiry) => set({ seatReservationExpiry }),
+  setSessionId: (sessionId) => set({ sessionId }),
+  setContactEmail: (contactEmail) => set({ contactEmail }),
+  setContactPhone: (contactPhone) => set({ contactPhone }),
   setSpecialRequests: (specialRequests) => set({ specialRequests }),
   setPickupPoint: (pickupPoint) => set({ pickupPoint }),
   toggleAddOn: (addOnId, quantity) =>

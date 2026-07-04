@@ -46,6 +46,36 @@ export interface TripCardData {
   highlights: string[];
 }
 
+export interface VehicleTemplateData {
+  id: string;
+  name: string;
+  totalSeats: number;
+  totalRows: number;
+  totalColumns: number;
+  hasUpperDeck: boolean;
+  upperDeckRows: number | null;
+  upperDeckColumns: number | null;
+  amenities: string[];
+  gridLayout: string[][];
+  upperGridLayout: string[][] | null;
+  vehicleType: { id: string; name: string; icon: string | null };
+}
+
+export interface SeatData {
+  id: string;
+  seatNumber: string;
+  row: number;
+  col: number;
+  deck: string;
+  seatType: string;
+  category: string;
+  priceDeltaPaise: number;
+  genderRestriction: string;
+  isAccessible: boolean;
+  isPremium: boolean;
+  availability: string;
+}
+
 export interface TripDetail extends TripCardData {
   description: string;
   shortDescription: string | null;
@@ -64,6 +94,7 @@ export interface TripDetail extends TripCardData {
   snackOptions: SnackOptionData[];
   faqs: FaqData[];
   minGroupSize: number;
+  vehicleTemplate?: VehicleTemplateData | null;
 }
 
 export interface ItineraryDayData {
@@ -124,6 +155,9 @@ export interface BookingFormData {
   travelerCount: number;
   travelers: TravelerInfo[];
   seatPreference: string | null;
+  seatIds?: string[];
+  contactEmail?: string | null;
+  contactPhone?: string | null;
   specialRequests: string | null;
   pickupPoint: string | null;
   addOns: { addOnId: string; quantity: number }[];

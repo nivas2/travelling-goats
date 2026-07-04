@@ -104,6 +104,10 @@ export async function POST(req: NextRequest) {
       travelerCount,
       travelers,
       seatPreference,
+      seatIds,
+      sessionId: bookingSessionId,
+      contactEmail,
+      contactPhone,
       specialRequests,
       pickupPoint,
       addOns,
@@ -232,6 +236,53 @@ export async function POST(req: NextRequest) {
       // Generate booking number
       const bookingNumber = `PA${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
 
+      // Handle seat assignments
+      const bookingSeatData: Array<{ seatId: string; travelerName: string | null; travelerGender: string | null; pricePaise: number }> = [];
+      if (seatIds?.length) {
+        // Verify seats are reserved by this session
+        if (bookingSessionId) {
+          const reservations = await tx.seatReservation.findMany({
+            where: {
+              tripId,
+              sessionId: bookingSessionId,
+              seatId: { in: seatIds },
+              expiresAt: { gt: new Date() },
+            },
+            select: { seatId: true },
+          });
+          const reservedIds = new Set(reservations.map((r) => r.seatId));
+          for (const seatId of seatIds) {
+            if (!reservedIds.has(seatId)) {
+              throw new Error("SEAT_NOT_RESERVED");
+            }
+          }
+        }
+
+        // Fetch seat details for pricing
+        const seatRecords = await tx.seat.findMany({
+          where: { id: { in: seatIds } },
+        });
+        const seatMap = new Map(seatRecords.map((s) => [s.id, s]));
+
+        for (let i = 0; i < seatIds.length; i++) {
+          const seat = seatMap.get(seatIds[i]);
+          if (!seat) throw new Error("SEAT_NOT_FOUND");
+          bookingSeatData.push({
+            seatId: seatIds[i],
+            travelerName: (travelers ?? [])[i]?.name ?? null,
+            travelerGender: (travelers ?? [])[i]?.gender ?? null,
+            pricePaise: seat.priceDeltaPaise,
+          });
+        }
+
+        // Delete reservations for this session
+        if (bookingSessionId) {
+          await tx.seatReservation.deleteMany({
+            where: { tripId, sessionId: bookingSessionId },
+          });
+        }
+      }
+
       const newBooking = await tx.booking.create({
         data: {
           bookingNumber,
@@ -246,6 +297,8 @@ export async function POST(req: NextRequest) {
           travelerCount,
           travelers: JSON.parse(JSON.stringify(travelers ?? [])),
           seatPreference,
+          contactEmail,
+          contactPhone,
           specialRequests,
           pickupPoint,
           addOns: {
@@ -254,6 +307,11 @@ export async function POST(req: NextRequest) {
           snacks: {
             create: bookingSnacks,
           },
+          ...(bookingSeatData.length > 0 && {
+            seats: {
+              create: bookingSeatData,
+            },
+          }),
         },
         include: {
           trip: { select: { title: true, coverImage: true } },
@@ -302,6 +360,12 @@ export async function POST(req: NextRequest) {
       if (error.message === "COUPON_USER_LIMIT") {
         return NextResponse.json(
           { success: false, error: "You have already used this coupon" },
+          { status: 400 }
+        );
+      }
+      if (error.message === "SEAT_NOT_RESERVED" || error.message === "SEAT_NOT_FOUND") {
+        return NextResponse.json(
+          { success: false, error: "Seat reservation expired or invalid. Please select seats again." },
           { status: 400 }
         );
       }

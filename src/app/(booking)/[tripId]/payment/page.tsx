@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
+import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
 import type { BookingSummary } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -593,23 +594,16 @@ export default function PaymentPage() {
         </Card>
       )}
 
-      {/* Sticky Pay button */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-outline-variant/10 bg-surface/95 backdrop-blur-md p-4 pb-safe">
-        <Button
-          fullWidth
-          size="lg"
-          onClick={handlePay}
-          loading={paying}
-          icon={
-            <span className="material-symbols-outlined text-[20px]">lock</span>
-          }
-        >
-          Pay {formatCurrency(totalPaise)}
-        </Button>
-        <p className="mt-2 text-center text-label-sm text-on-surface-variant">
-          Secured by Razorpay. 100% safe & refundable.
-        </p>
-      </div>
+      {/* Bottom bar */}
+      <BookingBottomBar
+        step={5}
+        totalSteps={6}
+        onNext={handlePay}
+        onBack={() => router.push(`/${tripId}/addons`)}
+        isLoading={paying}
+        nextLabel={`Pay ${formatCurrency(totalPaise)}`}
+        priceSummary={{ label: "Total", amountPaise: totalPaise }}
+      />
     </div>
   );
 }

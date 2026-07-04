@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn, slugify, formatCurrency, paiseToRupees, rupeesToPaise } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -137,6 +137,10 @@ export default function CreateTripPage() {
   const [difficulty, setDifficulty] = useState("MODERATE");
   const [tags, setTags] = useState("");
 
+  // Vehicle assignment
+  const [vehicleTemplateId, setVehicleTemplateId] = useState("");
+  const [vehicleTemplates, setVehicleTemplates] = useState<Array<{ id: string; name: string; totalSeats: number; vehicleType: { name: string } }>>([]);
+
   // Settings
   const [isFeatured, setIsFeatured] = useState(false);
   const [isTrending, setIsTrending] = useState(false);
@@ -162,6 +166,22 @@ export default function CreateTripPage() {
             (1000 * 60 * 60 * 24)
         ) + 1
       : 0;
+
+  // Fetch vehicle templates on mount
+  useEffect(() => {
+    async function fetchVehicles() {
+      try {
+        const res = await fetch("/api/admin/vehicles?status=ACTIVE");
+        if (res.ok) {
+          const json = await res.json();
+          setVehicleTemplates(json.data?.templates ?? []);
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+    fetchVehicles();
+  }, []);
 
   const handleTitleChange = useCallback((val: string) => {
     setTitle(val);
@@ -345,6 +365,7 @@ export default function CreateTripPage() {
       isFeatured,
       isTrending,
       cancellationPolicy,
+      vehicleTemplateId: vehicleTemplateId || undefined,
       status,
       itineraryDays: itinerary.map((day) => ({
         dayNumber: day.dayNumber,
@@ -614,6 +635,26 @@ export default function CreateTripPage() {
             fullWidth
           />
         </div>
+      </FormSection>
+
+      {/* Vehicle Assignment */}
+      <FormSection title="Vehicle Assignment">
+        <Dropdown
+          label="Assign Vehicle (optional)"
+          placeholder="No vehicle assigned"
+          options={[
+            { label: "No vehicle", value: "" },
+            ...vehicleTemplates.map((v) => ({
+              label: `${v.name} (${v.vehicleType.name} - ${v.totalSeats} seats)`,
+              value: v.id,
+            })),
+          ]}
+          value={vehicleTemplateId}
+          onChange={setVehicleTemplateId}
+        />
+        <p className="text-body-sm text-on-surface-variant">
+          Assigning a vehicle enables dynamic seat selection in the booking flow.
+        </p>
       </FormSection>
 
       {/* Category & Tags */}
