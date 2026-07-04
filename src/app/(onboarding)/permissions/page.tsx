@@ -219,7 +219,7 @@ export default function PermissionsPage() {
           onClick={anyEnabled ? handleComplete : handleSkip}
           className="rounded-full"
         >
-          {anyEnabled ? "Complete Setup" : "Skip & Continue"}
+          {anyEnabled ? "Start Your Adventure" : "Skip for Now"}
         </Button>
 
         {anyEnabled && (

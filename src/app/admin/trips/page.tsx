@@ -131,7 +131,7 @@ export default function AdminTripsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-headline-md font-headline-md text-on-surface">Trip Management</h1>
+          <h1 className="text-headline-md font-headline-md text-on-surface">Trail Management</h1>
           <p className="text-body-md text-on-surface-variant">
             Manage all trips, drafts, and schedules
           </p>

@@ -150,7 +150,7 @@ export default function BudgetPage() {
           onClick={handleContinue}
           className="rounded-full"
         >
-          Continue
+          Keep Trekking
         </Button>
       </div>
     </div>

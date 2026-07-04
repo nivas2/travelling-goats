@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useAuthStore } from "@/stores/auth-store";
+import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -71,11 +72,9 @@ export default function LoginPage() {
 
       {/* Logo */}
       <div className="animate-float mb-8 flex flex-col items-center gap-2">
-        <h1 className="text-headline-lg font-headline-lg text-on-surface md:text-display md:font-display">
-          Meet<span className="text-primary">MyRoute</span>
-        </h1>
+        <TravellingGoatsLogo size="lg" />
         <p className="text-body-md text-on-surface-variant text-center">
-          Travel with your tribe
+          Roam with the herd
         </p>
       </div>
 

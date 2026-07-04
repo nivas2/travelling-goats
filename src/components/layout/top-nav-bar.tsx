@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
 
 interface TopNavBarProps {
   notificationCount?: number;
@@ -14,7 +15,7 @@ interface TopNavBarProps {
 // Desktop navigation links (mirror the mobile bottom nav, which is hidden on md+)
 const NAV_LINKS = [
   { label: "Explore", href: "/" },
-  { label: "My Trips", href: "/my-trips" },
+  { label: "My Trails", href: "/my-trips" },
   { label: "Saved", href: "/saved" },
   { label: "Profile", href: "/profile" },
 ];
@@ -57,9 +58,7 @@ export function TopNavBar({
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-3 md:px-6">
         {/* Logo / App Name */}
         <Link href="/" className="flex items-center">
-          <span className="text-title-lg font-bold tracking-[-0.02em] text-on-surface">
-            Meet<span className="text-primary">MyRoute</span>
-          </span>
+          <TravellingGoatsLogo size="sm" />
         </Link>
 
         {/* Desktop Nav Links */}

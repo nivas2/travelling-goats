@@ -27,7 +27,7 @@ const CATEGORY_FILTERS = [
   { label: "Camping", value: "Camping" },
 ];
 
-const RECENT_SEARCHES_KEY = "meetmyroute_recent_searches";
+const RECENT_SEARCHES_KEY = "travellinggoats_recent_searches";
 const MAX_RECENT_SEARCHES = 8;
 
 // ---------------------------------------------------------------------------
@@ -348,7 +348,7 @@ export default function SearchPage() {
         {!loading && hasSearched && results.length > 0 && (
           <div>
             <p className="text-label-sm text-on-surface-variant mb-3">
-              {results.length} trip{results.length !== 1 ? "s" : ""} found
+              {results.length} trail{results.length !== 1 ? "s" : ""} found
             </p>
             <div className="flex flex-col gap-3">
               {results.map((trip) => (
@@ -362,10 +362,10 @@ export default function SearchPage() {
         {!loading && hasSearched && results.length === 0 && (
           <EmptyState
             icon="search_off"
-            title="No trips found"
-            description={`We couldn't find any trips matching "${query || activeCategory}". Try adjusting your search or explore other categories.`}
+            title="No trails found"
+            description={`No trails match your search. Try a different path.`}
             action={{
-              label: "Explore Trips",
+              label: "Explore Trails",
               onClick: () => {
                 setQuery("");
                 setActiveCategory("");

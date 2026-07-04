@@ -27,7 +27,7 @@ export function BookingBottomBar({
   totalSteps,
   onNext,
   onBack,
-  nextLabel = "Continue",
+  nextLabel = "Keep Trekking",
   isNextDisabled = false,
   isLoading = false,
   priceSummary,

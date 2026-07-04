@@ -242,7 +242,7 @@ export default function SeatsPage() {
             No Seat Selection
           </h2>
           <p className="mt-1 text-body-md text-on-surface-variant">
-            Seats will be assigned by the trip captain
+            Seats will be assigned by the Shepherd
           </p>
         </div>
         <BookingBottomBar
@@ -250,7 +250,7 @@ export default function SeatsPage() {
           totalSteps={6}
           onNext={() => router.push(`/${tripId}/addons`)}
           onBack={() => router.push(`/${tripId}/details`)}
-          nextLabel="Continue"
+          nextLabel="Keep Trekking"
         />
       </div>
     );

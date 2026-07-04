@@ -65,7 +65,7 @@ export default function ProfilePage() {
     { icon: "group_add", label: "Referral", href: "/referral", chevron: true },
     { icon: "settings", label: "Settings", href: "/profile/settings", chevron: true },
     { icon: "help", label: "Help & Support", href: "/help", chevron: true },
-    { icon: "info", label: "About MeetMyRoute", chevron: true },
+    { icon: "info", label: "About Travelling Goats", chevron: true },
     {
       icon: "logout",
       label: "Logout",
@@ -123,7 +123,7 @@ export default function ProfilePage() {
         </div>
 
         <h1 className="mt-3 text-headline-md font-headline-md text-on-surface">
-          {user.name ?? "MeetMyRoute User"}
+          {user.name ?? "Travelling Goats Explorer"}
         </h1>
 
         {user.phone && (

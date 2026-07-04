@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
 
 /* ------------------------------------------------------------------ */
 /*  Image URLs from the design                                        */
@@ -79,7 +80,7 @@ const TRIPS = [
 
 const TRUST_BADGES = [
   { icon: "verified_user", label: "Verified Travelers" },
-  { icon: "local_police", label: "Verified Captains" },
+  { icon: "local_police", label: "Verified Shepherds" },
   { icon: "shield", label: "Safe & Secure" },
   { icon: "payments", label: "Transparent Pricing" },
 ];
@@ -128,9 +129,7 @@ export default function LandingPage() {
       {/* ===== NAVIGATION ===== */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
         <div className="flex justify-between items-center px-4 md:px-16 py-4 max-w-[1280px] mx-auto">
-          <div className="text-headline-md font-headline-md font-bold text-primary">
-            MeetMyRoute
-          </div>
+          <TravellingGoatsLogo size="sm" />
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex gap-6 items-center">
@@ -238,7 +237,7 @@ export default function LandingPage() {
               href="/login"
               className="btn-primary-landing text-white px-8 py-4 rounded-full text-label-md font-label-md"
             >
-              Explore Trips
+              Explore Trails
             </Link>
             <a
               href="#how-it-works"
@@ -369,7 +368,7 @@ export default function LandingPage() {
                           <span className="material-symbols-outlined text-sm">
                             person
                           </span>{" "}
-                          Trip Captain
+                          Shepherd
                         </span>
                       </div>
                       <p className="text-body-md text-on-surface-variant mb-6">
@@ -426,7 +425,7 @@ export default function LandingPage() {
                         href="/login"
                         className="btn-primary-landing text-white px-8 py-3 rounded-full text-label-md font-label-md w-full md:w-auto text-center"
                       >
-                        Book Now
+                        Join the Herd
                       </Link>
                     </div>
                   </div>
@@ -440,11 +439,11 @@ export default function LandingPage() {
         <footer className="border-t border-surface-variant bg-white">
           <div className="max-w-[1280px] mx-auto px-4 md:px-16 py-16 flex flex-col md:flex-row justify-between items-start gap-8">
             <div className="flex-1">
-              <div className="text-headline-md font-headline-md font-extrabold text-primary mb-4">
-                MeetMyRoute
+              <div className="mb-4">
+                <TravellingGoatsLogo size="md" />
               </div>
               <p className="text-body-md text-on-surface-variant max-w-sm mb-6">
-                &copy; {new Date().getFullYear()} MeetMyRoute. All rights
+                &copy; {new Date().getFullYear()} Travelling Goats. All rights
                 reserved. Premium Group Travel Redefined.
               </p>
             </div>

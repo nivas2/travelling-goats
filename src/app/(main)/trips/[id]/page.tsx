@@ -284,7 +284,7 @@ export default function TripDetailPage({
       userAvatar: null,
       rating: 5,
       comment:
-        "Best trip I have ever been on! Met some wonderful people and the views were breathtaking. MeetMyRoute really knows how to curate experiences.",
+        "Best trail I have ever been on! Met some wonderful people and the views were breathtaking. Travelling Goats really knows how to curate experiences.",
       date: "2025-02-20",
     },
   ]);
@@ -314,7 +314,7 @@ export default function TripDetailPage({
       try {
         await navigator.share({
           title: trip.title,
-          text: `Check out this trip to ${trip.destination} on MeetMyRoute!`,
+          text: `Check out this trail to ${trip.destination} on Travelling Goats!`,
           url: window.location.href,
         });
       } catch {
@@ -852,13 +852,13 @@ export default function TripDetailPage({
             </p>
           </div>
 
-          {/* Book Now */}
+          {/* Join the Herd */}
           <Button
             size="lg"
             onClick={() => router.push(`/${id}/travelers`)}
             className="shrink-0"
           >
-            Book Now
+            Join the Herd
           </Button>
         </div>
       </div>

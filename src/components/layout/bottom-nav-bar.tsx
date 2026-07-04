@@ -12,7 +12,7 @@ interface NavTab {
 
 const tabs: NavTab[] = [
   { label: "Explore", icon: "home", href: "/" },
-  { label: "My Trips", icon: "travel_explore", href: "/my-trips" },
+  { label: "My Trails", icon: "travel_explore", href: "/my-trips" },
   { label: "Saved", icon: "bookmark", href: "/saved" },
   { label: "Profile", icon: "person", href: "/profile" },
 ];

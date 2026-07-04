@@ -1,4 +1,4 @@
-const CACHE_NAME = "meetmyroute-v2";
+const CACHE_NAME = "travellinggoats-v2";
 const STATIC_ASSETS = [
   "/manifest.json",
 ];

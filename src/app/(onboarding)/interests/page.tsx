@@ -171,7 +171,7 @@ export default function InterestsPage() {
           onClick={handleContinue}
           className="rounded-full"
         >
-          Continue
+          Keep Trekking
         </Button>
       </div>
     </div>

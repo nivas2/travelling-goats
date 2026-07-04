@@ -158,7 +158,7 @@ export default function SavedPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="Saved Trips" />
+      <PageHeader title="Dream Trails" />
 
       <div className="px-5 py-6">
         {/* Loading Skeletons */}
@@ -173,7 +173,7 @@ export default function SavedPage() {
         {/* Saved trips count */}
         {!loading && savedTrips.length > 0 && (
           <p className="text-label-sm text-on-surface-variant mb-3">
-            {savedTrips.length} saved trip{savedTrips.length !== 1 ? "s" : ""}
+            {savedTrips.length} saved trail{savedTrips.length !== 1 ? "s" : ""}
           </p>
         )}
 
@@ -195,10 +195,10 @@ export default function SavedPage() {
           <div className="py-16">
             <EmptyState
               icon="favorite_border"
-              title="No Saved Trips Yet"
-              description="Tap the heart icon on any trip to save it here for later. Your dream adventures are just a tap away!"
+              title="No Dream Trails Yet"
+              description="No dream trails saved yet. Start exploring! Your next adventure is just a tap away."
               action={{
-                label: "Explore Trips",
+                label: "Explore Trails",
                 onClick: () => router.push("/home"),
               }}
             />

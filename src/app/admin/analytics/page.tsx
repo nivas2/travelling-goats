@@ -94,7 +94,7 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-headline-md font-headline-md text-on-surface">Analytics Dashboard</h1>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Herd Analytics</h1>
         <p className="text-body-md text-on-surface-variant">Key metrics and performance insights</p>
       </div>
 

@@ -261,7 +261,7 @@ export default function SettingsPage() {
 
       {/* App version */}
       <p className="text-center text-label-sm text-on-surface-variant pt-2 pb-4">
-        MeetMyRoute v1.0.0
+        Travelling Goats v1.0.0
       </p>
 
       {/* Delete Account Modal */}

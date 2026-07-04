@@ -401,7 +401,7 @@ function SafetyInfoCard() {
           </div>
           <p className="mt-2 text-label-sm text-on-surface-variant">
             Keep your phone charged. Share your live location with your emergency
-            contact. Stay with the group and follow the Trip Captain&apos;s
+            contact. Stay with the group and follow the Shepherd&apos;s
             instructions.
           </p>
         </div>
@@ -778,7 +778,7 @@ export default function TripHubPage() {
           />
           <QuickActionButton
             icon="call"
-            label="Trip Captain"
+            label="Shepherd"
             color="default"
             onClick={() => window.open(`tel:${hubData.tripCaptain.phone}`)}
           />
@@ -889,7 +889,7 @@ export default function TripHubPage() {
             size="md"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-label-sm text-on-surface-variant">Trip Captain</p>
+            <p className="text-label-sm text-on-surface-variant">Shepherd</p>
             <p className="text-label-lg font-semibold text-on-surface truncate">
               {hubData.tripCaptain.name}
             </p>

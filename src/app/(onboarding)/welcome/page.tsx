@@ -16,17 +16,17 @@ interface Slide {
 
 const slides: Slide[] = [
   {
-    title: "Travel with a tribe",
+    title: "Roam with the herd",
     description:
-      "Join curated group trips with like-minded travelers. Make friends, share stories, and create memories that last a lifetime.",
+      "Join curated group trails with like-minded trekkers. Make friends, share stories, and create memories that last a lifetime.",
     icon: "groups",
     bgGradient: "from-primary-container/40 to-primary-fixed/20",
     accentColor: "bg-primary",
   },
   {
-    title: "Curated experiences",
+    title: "Handpicked trails",
     description:
-      "Every trip is handcrafted by local experts. From hidden gems to must-see spots, we plan so you can enjoy.",
+      "Every trail is handcrafted by local experts. From hidden gems to must-see spots, we plan so you can enjoy.",
     icon: "explore",
     bgGradient: "from-secondary-container/40 to-secondary-fixed/20",
     accentColor: "bg-secondary",
@@ -34,7 +34,7 @@ const slides: Slide[] = [
   {
     title: "Safety first",
     description:
-      "All travelers are ID-verified. Real-time tracking, 24/7 support, and transparent policies keep you safe on every journey.",
+      "All trekkers are ID-verified. Real-time tracking, 24/7 support, and transparent policies keep you safe on every journey.",
     icon: "verified_user",
     bgGradient: "from-success-container/40 to-tertiary-fixed/20",
     accentColor: "bg-success",
@@ -209,7 +209,7 @@ export default function WelcomePage() {
             />
           }
         >
-          {isLastSlide ? "Get Started" : "Next"}
+          {isLastSlide ? "Let's Trek" : "Next"}
         </Button>
       </div>
     </div>

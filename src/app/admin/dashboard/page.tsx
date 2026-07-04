@@ -132,7 +132,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-headline-md font-headline-md text-on-surface">Dashboard</h1>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Herd Dashboard</h1>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} variant="elevated" className="h-32 animate-pulse bg-surface-container-low" />
@@ -158,7 +158,7 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-headline-md font-headline-md text-on-surface">Dashboard</h1>
+          <h1 className="text-headline-md font-headline-md text-on-surface">Herd Dashboard</h1>
           <p className="text-body-md text-on-surface-variant">
             Welcome back. Here is what is happening today.
           </p>

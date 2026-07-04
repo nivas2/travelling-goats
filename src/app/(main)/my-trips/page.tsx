@@ -272,7 +272,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
           </span>
         </div>
 
-        {/* Trip Captain */}
+        {/* Shepherd */}
         {booking.tripCaptain && (
           <div className="mt-3 flex items-center gap-2 rounded-xl bg-surface-container-low p-2.5">
             <Avatar
@@ -281,7 +281,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
               size="sm"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-label-sm text-on-surface-variant">Trip Captain</p>
+              <p className="text-label-sm text-on-surface-variant">Shepherd</p>
               <p className="text-label-lg font-semibold text-on-surface truncate">
                 {booking.tripCaptain.name}
               </p>
@@ -291,7 +291,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
               variant="ghost"
               icon={<Icon name="call" size={18} />}
               onClick={() => window.open(`tel:${booking.tripCaptain!.phone}`)}
-              aria-label="Call Trip Captain"
+              aria-label="Call Shepherd"
             />
           </div>
         )}
@@ -454,7 +454,7 @@ export default function MyTripsPage() {
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-headline-md font-headline-md text-on-surface">
-          My Trips
+          My Trails
         </h1>
         <p className="mt-1 text-body-md text-on-surface-variant">
           Your upcoming adventures and past memories
@@ -489,10 +489,10 @@ export default function MyTripsPage() {
           ) : bookings.length === 0 ? (
             <EmptyState
               icon="flight_takeoff"
-              title="No upcoming trips"
-              description="Explore amazing trips and start your next adventure!"
+              title="No upcoming trails"
+              description="Explore amazing trails and start your next adventure!"
               action={{
-                label: "Explore Trips",
+                label: "Explore Trails",
                 onClick: () => router.push("/home"),
               }}
             />

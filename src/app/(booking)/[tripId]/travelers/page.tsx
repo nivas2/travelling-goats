@@ -96,15 +96,15 @@ export default function TravelersPage() {
         {
           type: "SOLO",
           icon: "person",
-          title: "Solo",
-          description: "Traveling alone? Join the pack!",
+          title: "Lone Goat",
+          description: "Traveling alone? Join the herd!",
           pricePaise: pricing.basePricePaise,
           defaultCount: 1,
         },
         {
           type: "COUPLE",
           icon: "favorite",
-          title: "Couple",
+          title: "Goat Pair",
           description: "Travel with your partner",
           pricePaise: pricing.couplePricePaise ?? pricing.basePricePaise * 2,
           defaultCount: 2,
@@ -112,8 +112,8 @@ export default function TravelersPage() {
         {
           type: "GROUP",
           icon: "groups",
-          title: "Group",
-          description: `${MIN_GROUP_SIZE}-${pricing.maxGroupSize} travelers`,
+          title: "Mountain Herd",
+          description: `${MIN_GROUP_SIZE}-${pricing.maxGroupSize} trekkers`,
           pricePaise:
             pricing.groupPricePaise ?? pricing.basePricePaise,
           defaultCount: MIN_GROUP_SIZE,

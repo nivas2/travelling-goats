@@ -54,7 +54,7 @@ const STATUS_STEPS: StatusStep[] = [
     key: "CONFIRMED",
     label: "Confirmed",
     icon: "verified",
-    description: "Trip confirmed by MeetMyRoute team",
+    description: "Trail confirmed by Travelling Goats team",
   },
   {
     key: "TRIP_DAY",
@@ -393,7 +393,7 @@ export default function StatusPage() {
           variant="secondary"
           onClick={() => {
             // Open email or support page
-            window.open("mailto:support@meetmyroute.in?subject=Booking%20Support%20-%20" + order.bookingNumber, "_blank");
+            window.open("mailto:support@travellinggoats.in?subject=Booking%20Support%20-%20" + order.bookingNumber, "_blank"); // TODO: Update email domain
           }}
           icon={
             <span className="material-symbols-outlined text-[20px]">

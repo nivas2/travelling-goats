@@ -387,10 +387,10 @@ export default function HelpPage() {
               className="text-on-surface-variant"
             />
             <a
-              href="mailto:support@meetmyroute.in"
+              href="mailto:support@travellinggoats.in" /* TODO: Update email domain */
               className="text-body-md text-primary"
             >
-              support@meetmyroute.in
+              support@travellinggoats.in
             </a>
           </div>
           <div className="flex items-center gap-3">
@@ -490,7 +490,7 @@ const defaultFaqs: FaqItem[] = [
     id: "3",
     question: "What payment methods are accepted?",
     answer:
-      "We accept UPI, credit/debit cards, net banking, and wallet payments through Razorpay. You can also use your MeetMyRoute wallet balance.",
+      "We accept UPI, credit/debit cards, net banking, and wallet payments through Razorpay. You can also use your Travelling Goats wallet balance.",
     category: "Payment",
   },
   {

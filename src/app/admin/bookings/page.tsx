@@ -123,7 +123,7 @@ export default function AdminBookingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-headline-md font-headline-md text-on-surface">Booking Management</h1>
+        <h1 className="text-headline-md font-headline-md text-on-surface">Trail Booking Management</h1>
         <p className="text-body-md text-on-surface-variant">Track and manage all bookings</p>
       </div>
 

@@ -202,7 +202,7 @@ export default function ReviewsPage({
       userAvatar: null,
       rating: 5,
       comment:
-        "Best trip I have ever been on! Met some wonderful people and the views were breathtaking. MeetMyRoute really knows how to curate experiences. Every moment was special and the trip leader was fantastic.",
+        "Best trail I have ever been on! Met some wonderful people and the views were breathtaking. Travelling Goats really knows how to curate experiences. Every moment was special and the Shepherd was fantastic.",
       date: "2025-02-20",
       isVerified: false,
       helpfulCount: 15,
@@ -224,7 +224,7 @@ export default function ReviewsPage({
       userAvatar: null,
       rating: 5,
       comment:
-        "MeetMyRoute exceeded all my expectations. As a solo traveler, I was nervous at first, but the community vibe was incredible. Made friends for life! The trip was perfectly paced with a great mix of adventure and relaxation.",
+        "Travelling Goats exceeded all my expectations. As a solo trekker, I was nervous at first, but the herd vibe was incredible. Made friends for life! The trail was perfectly paced with a great mix of adventure and relaxation.",
       date: "2025-01-28",
       isVerified: true,
       helpfulCount: 20,
@@ -246,7 +246,7 @@ export default function ReviewsPage({
       userAvatar: null,
       rating: 5,
       comment:
-        "Wonderful trip from start to finish! The sunrise hike was the highlight for me. Such a well-curated experience. I have already recommended MeetMyRoute to all my friends.",
+        "Wonderful trail from start to finish! The sunrise hike was the highlight for me. Such a well-curated experience. I have already recommended Travelling Goats to all my friends.",
       date: "2025-01-05",
       isVerified: true,
       helpfulCount: 11,

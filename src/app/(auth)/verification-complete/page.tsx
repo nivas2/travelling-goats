@@ -85,7 +85,7 @@ export default function VerificationCompletePage() {
           </h1>
           <p className="text-body-lg text-on-surface-variant">
             Your identity has been verified. You can now enjoy the full
-            MeetMyRoute experience with trusted travelers.
+            Travelling Goats experience with trusted explorers.
           </p>
         </div>
 

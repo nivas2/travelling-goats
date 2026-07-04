@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
 
 interface NavItem {
   label: string;
@@ -14,7 +15,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: "dashboard", href: "/admin/dashboard" },
-  { label: "Trips", icon: "flight_takeoff", href: "/admin/trips" },
+  { label: "Trails", icon: "flight_takeoff", href: "/admin/trips" },
   { label: "Vehicles", icon: "directions_bus", href: "/admin/vehicles" },
   { label: "Users", icon: "group", href: "/admin/users" },
   { label: "Bookings", icon: "confirmation_number", href: "/admin/bookings" },
@@ -23,7 +24,7 @@ const navItems: NavItem[] = [
   { label: "Referrals", icon: "share", href: "/admin/referrals" },
   { label: "Notifications", icon: "notifications", href: "/admin/notifications" },
   { label: "Reviews", icon: "reviews", href: "/admin/reviews" },
-  { label: "Analytics", icon: "analytics", href: "/admin/analytics" },
+  { label: "Herd Analytics", icon: "analytics", href: "/admin/analytics" },
   { label: "Support", icon: "support_agent", href: "/admin/support" },
 ];
 
@@ -88,9 +89,7 @@ export function AdminSidebar() {
               className="flex items-center gap-1.5"
               onClick={() => setMobileOpen(false)}
             >
-              <span className="text-title-lg font-bold tracking-tight text-on-surface">
-                Meet<span className="text-primary">MyRoute</span>
-              </span>
+              <TravellingGoatsLogo size="sm" />
               <span className="ml-1 text-label-sm text-on-surface-variant/60 font-medium">
                 Admin
               </span>

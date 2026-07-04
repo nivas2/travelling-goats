@@ -19,36 +19,38 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "MeetMyRoute — Curated Group Travel for Young India",
-    template: "%s | MeetMyRoute",
+    default: "Travelling Goats — Adventure Travel with the Herd",
+    template: "%s | Travelling Goats",
   },
   description:
-    "Discover curated group trips across India. Join solo or with friends. Verified travelers, transparent pricing, unforgettable experiences.",
+    "Join the herd. Discover curated group trails across India. Travel with fellow goats — verified explorers, transparent pricing, unforgettable adventures.",
   keywords: [
     "group travel",
     "solo travel India",
     "curated trips",
     "weekend getaway",
     "adventure travel",
-    "MeetMyRoute",
+    "Travelling Goats",
+    "herd travel",
+    "trail adventures",
   ],
-  authors: [{ name: "MeetMyRoute" }],
-  creator: "MeetMyRoute",
+  authors: [{ name: "Travelling Goats" }],
+  creator: "Travelling Goats",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://meetmyroute.feastigo.com",
-    siteName: "MeetMyRoute",
-    title: "MeetMyRoute — Curated Group Travel for Young India",
+    url: "https://meetmyroute.feastigo.com", // TODO: Update domain to travellinggoats
+    siteName: "Travelling Goats",
+    title: "Travelling Goats — Adventure Travel with the Herd",
     description:
-      "Discover curated group trips across India. Join solo or with friends.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "MeetMyRoute" }],
+      "Join the herd. Discover curated group trails across India. Travel with fellow goats.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Travelling Goats" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MeetMyRoute — Curated Group Travel",
-    description: "Discover curated group trips across India.",
+    title: "Travelling Goats — Adventure Travel with the Herd",
+    description: "Join the herd. Discover curated group trails across India.",
     images: ["/og-image.png"],
   },
   robots: {

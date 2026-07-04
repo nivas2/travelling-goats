@@ -177,8 +177,8 @@ export default function NotificationsPage() {
         <div className="py-16">
           <EmptyState
             icon="notifications_none"
-            title="No notifications yet"
-            description="We will let you know when something important happens"
+            title="Your bell is quiet for now"
+            description="Adventure updates will appear here"
           />
         </div>
       ) : (

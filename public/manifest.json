@@ -1,7 +1,7 @@
 {
-  "name": "MeetMyRoute — Curated Group Travel",
-  "short_name": "MeetMyRoute",
-  "description": "Discover curated group trips across India. Join solo or with friends.",
+  "name": "Travelling Goats — Adventure Travel with the Herd",
+  "short_name": "Travelling Goats",
+  "description": "Join the herd. Discover curated group trails across India.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
