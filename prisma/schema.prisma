@@ -1,0 +1,869 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== USER & AUTH =====
+
+model User {
+  id                String    @id @default(cuid())
+  phone             String?   @unique
+  email             String?   @unique
+  name              String?
+  avatar            String?
+  dateOfBirth       DateTime?
+  gender            Gender?
+  bio               String?
+  city              String?
+  interests         String[]  @default([])
+  budgetPreference  BudgetPreference?
+  pickupCity        String?
+  isVerified        Boolean   @default(false)
+  isOnboarded       Boolean   @default(false)
+  idVerified        Boolean   @default(false)
+  aadhaarNumber     String?
+  selfieUrl         String?
+  role              UserRole  @default(USER)
+  status            UserStatus @default(ACTIVE)
+  referralCode      String?   @unique
+  referredBy        String?
+  rewardPoints      Int       @default(0)
+  rewardTier        RewardTier @default(EXPLORER)
+  totalTrips        Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  otpCodes          OtpCode[]
+  emergencyContacts EmergencyContact[]
+  bookings          Booking[]
+  reviews           Review[]
+  wallet            Wallet?
+  walletTransactions WalletTransaction[]
+  referralsSent     Referral[]     @relation("referrer")
+  referralsReceived Referral[]     @relation("referred")
+  notifications     Notification[]
+  chatMessages      ChatMessage[]
+  wishlistItems     WishlistItem[]
+  waitlistItems     WaitlistItem[]
+  supportTickets    SupportTicket[]
+  ticketMessages    TicketMessage[]
+  memoryEntries     MemoryEntry[]
+  tripCompanions    TripCompanion[]
+  savingsGoals      SavingsGoal[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  userId    String?
+  phone     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([phone, verified, expiresAt])
+  @@map("otp_codes")
+}
+
+model EmergencyContact {
+  id           String @id @default(cuid())
+  userId       String
+  name         String
+  phone        String
+  relationship String
+  isPrimary    Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_contacts")
+}
+
+// ===== TRIPS =====
+
+model Trip {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  description     String
+  shortDescription String?
+  destination     String
+  origin          String      @default("Bengaluru")
+  coverImage      String
+  images          String[]    @default([])
+  category        TripCategory
+  difficulty      TripDifficulty @default(MODERATE)
+  startDate       DateTime
+  endDate         DateTime
+  duration        Int         // in days
+  maxGroupSize    Int
+  minGroupSize    Int         @default(4)
+  currentBookings Int         @default(0)
+  basePricePaise  Int         // price in paise
+  couplePricePaise Int?
+  groupPricePaise  Int?
+  platformFeePaise Int        @default(9900) // ₹99
+  inclusions      String[]   @default([])
+  exclusions      String[]   @default([])
+  highlights      String[]   @default([])
+  meetingPoint    String?
+  meetingTime     String?
+  status          TripStatus  @default(DRAFT)
+  isFeatured      Boolean     @default(false)
+  isTrending      Boolean     @default(false)
+  rating          Float       @default(0)
+  reviewCount     Int         @default(0)
+  cancellationPolicy CancellationPolicy @default(MODERATE)
+  bookingCutoffHours Int        @default(24)
+  tripCaptainId   String?
+  tags            String[]    @default([])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  itineraryDays   ItineraryDay[]
+  addOns          TripAddOn[]
+  snackOptions    SnackOption[]
+  bookings        Booking[]
+  reviews         Review[]
+  wishlistItems   WishlistItem[]
+  waitlistItems   WaitlistItem[]
+  chatRoom        ChatRoom?
+  faqs            TripFaq[]
+
+  @@map("trips")
+}
+
+model ItineraryDay {
+  id          String @id @default(cuid())
+  tripId      String
+  dayNumber   Int
+  title       String
+  description String?
+  activities  Json   @default("[]") // [{time, title, description, icon}]
+  meals       String[] @default([])  // ["breakfast", "lunch", "dinner"]
+  accommodation String?
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, dayNumber])
+  @@map("itinerary_days")
+}
+
+model TripAddOn {
+  id          String @id @default(cuid())
+  tripId      String
+  name        String
+  description String?
+  pricePaise  Int
+  icon        String?
+  maxQuantity Int    @default(1)
+  isPopular   Boolean @default(false)
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  bookingAddOns BookingAddOn[]
+
+  @@map("trip_add_ons")
+}
+
+model SnackOption {
+  id         String @id @default(cuid())
+  tripId     String
+  name       String
+  description String?
+  pricePaise Int
+  category   String? // "veg", "non-veg", "vegan"
+  icon       String?
+  isVeg      Boolean @default(true)
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  bookingSnacks BookingSnack[]
+
+  @@map("snack_options")
+}
+
+model TripFaq {
+  id       String @id @default(cuid())
+  tripId   String
+  question String
+  answer   String
+  order    Int    @default(0)
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("trip_faqs")
+}
+
+// ===== BOOKINGS =====
+
+model Booking {
+  id              String        @id @default(cuid())
+  bookingNumber   String        @unique
+  userId          String
+  tripId          String
+  bookingType     BookingType
+  status          BookingStatus @default(PENDING)
+  totalPricePaise Int
+  platformFeePaise Int
+  discountPaise   Int           @default(0)
+  couponCode      String?
+  couponId        String?
+  travelerCount   Int           @default(1)
+  travelers       Json          @default("[]") // [{name, age, gender, phone}]
+  seatPreference  String?
+  specialRequests String?
+  pickupPoint     String?
+  qrToken         String?       @unique
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id])
+  trip      Trip      @relation(fields: [tripId], references: [id])
+  coupon    Coupon?   @relation(fields: [couponId], references: [id])
+  payment   Payment?
+  addOns    BookingAddOn[]
+  snacks    BookingSnack[]
+  cancellation BookingCancellation?
+
+  @@index([userId])
+  @@index([tripId])
+  @@index([status])
+  @@index([couponId])
+  @@map("bookings")
+}
+
+model BookingAddOn {
+  id        String @id @default(cuid())
+  bookingId String
+  addOnId   String
+  quantity  Int    @default(1)
+  pricePaise Int
+
+  booking  Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOn    TripAddOn @relation(fields: [addOnId], references: [id])
+
+  @@map("booking_add_ons")
+}
+
+model BookingSnack {
+  id         String @id @default(cuid())
+  bookingId  String
+  snackId    String
+  quantity   Int    @default(1)
+  pricePaise Int
+
+  booking Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  snack   SnackOption @relation(fields: [snackId], references: [id])
+
+  @@map("booking_snacks")
+}
+
+model BookingCancellation {
+  id             String   @id @default(cuid())
+  bookingId      String   @unique
+  reason         String
+  refundPaise    Int
+  refundStatus   RefundStatus @default(PENDING)
+  cancelledAt    DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@map("booking_cancellations")
+}
+
+// ===== PAYMENTS =====
+
+model Payment {
+  id                  String        @id @default(cuid())
+  bookingId           String        @unique
+  razorpayOrderId     String?       @unique
+  razorpayPaymentId   String?       @unique
+  razorpaySignature   String?
+  amountPaise         Int
+  currency            String        @default("INR")
+  status              PaymentStatus @default(PENDING)
+  method              String?
+  walletAmountPaise   Int           @default(0) // amount paid from wallet
+  failureReason       String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([status])
+  @@map("payments")
+}
+
+// ===== WALLET =====
+
+model Wallet {
+  id           String @id @default(cuid())
+  userId       String @unique
+  balancePaise Int    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User @relation(fields: [userId], references: [id])
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id          String              @id @default(cuid())
+  walletId    String
+  userId      String
+  type        WalletTransactionType
+  amountPaise Int
+  description String
+  referenceId String?
+  balanceAfterPaise Int
+  createdAt   DateTime            @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([walletId])
+  @@index([userId])
+  @@map("wallet_transactions")
+}
+
+model SavingsGoal {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  targetPaise   Int
+  currentPaise  Int      @default(0)
+  autoSaveAmount Int?    // monthly auto-save amount in paise
+  targetDate    DateTime?
+  isActive      Boolean  @default(true)
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("savings_goals")
+}
+
+// ===== REFERRAL =====
+
+model Referral {
+  id           String        @id @default(cuid())
+  referrerId   String
+  referredId   String
+  code         String
+  status       ReferralStatus @default(PENDING)
+  rewardPaise  Int           @default(0)
+  tier         Int           @default(1)
+  createdAt    DateTime      @default(now())
+  convertedAt  DateTime?
+
+  referrer User @relation("referrer", fields: [referrerId], references: [id])
+  referred User @relation("referred", fields: [referredId], references: [id])
+
+  @@index([referrerId])
+  @@index([referredId])
+  @@index([code])
+  @@map("referrals")
+}
+
+// ===== REVIEWS =====
+
+model Review {
+  id            String  @id @default(cuid())
+  userId        String
+  tripId        String
+  overallRating Float
+  safetyRating  Float?
+  valueRating   Float?
+  funRating     Float?
+  comment       String?
+  images        String[] @default([])
+  isVerified    Boolean @default(false)
+  helpfulCount  Int     @default(0)
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  trip Trip @relation(fields: [tripId], references: [id])
+
+  @@unique([userId, tripId])
+  @@index([tripId])
+  @@map("reviews")
+}
+
+// ===== CHAT =====
+
+model ChatRoom {
+  id        String   @id @default(cuid())
+  tripId    String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  trip     Trip          @relation(fields: [tripId], references: [id])
+  messages ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String
+  type      MessageType @default(TEXT)
+  imageUrl  String?
+  replyToId String?
+  isEdited  Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  room    ChatRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id])
+  replyTo ChatMessage? @relation("replies", fields: [replyToId], references: [id])
+  replies ChatMessage[] @relation("replies")
+
+  @@index([roomId])
+  @@map("chat_messages")
+}
+
+// ===== NOTIFICATIONS =====
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  type      NotificationType
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ===== WISHLIST & WAITLIST =====
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  tripId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tripId])
+  @@map("wishlist_items")
+}
+
+model WaitlistItem {
+  id        String         @id @default(cuid())
+  userId    String
+  tripId    String
+  notified  Boolean        @default(false)
+  status    WaitlistStatus @default(WAITING)
+  offeredAt DateTime?
+  expiresAt DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tripId])
+  @@index([tripId, status])
+  @@index([status, expiresAt])
+  @@map("waitlist_items")
+}
+
+// ===== COUPONS =====
+
+model Coupon {
+  id             String     @id @default(cuid())
+  code           String     @unique
+  description    String
+  discountType   DiscountType
+  discountValue  Int        // percentage or paise
+  minOrderPaise  Int        @default(0)
+  maxDiscountPaise Int?
+  maxUses        Int?
+  maxUsesPerUser Int?       @default(1)
+  currentUses    Int        @default(0)
+  isActive       Boolean    @default(true)
+  validFrom      DateTime   @default(now())
+  validUntil     DateTime?
+  createdAt      DateTime   @default(now())
+
+  bookings Booking[]
+  usages   CouponUsage[]
+
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  bookingId String
+  createdAt DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id])
+
+  @@unique([couponId, userId, bookingId])
+  @@index([couponId, userId])
+  @@map("coupon_usages")
+}
+
+// ===== SUPPORT =====
+
+model SupportTicket {
+  id          String       @id @default(cuid())
+  ticketNumber String      @unique
+  userId      String
+  subject     String
+  category    TicketCategory
+  priority    TicketPriority @default(MEDIUM)
+  status      TicketStatus   @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user     User            @relation(fields: [userId], references: [id])
+  messages TicketMessage[]
+
+  @@index([userId])
+  @@map("support_tickets")
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  userId    String?
+  content   String
+  isStaff   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User?         @relation(fields: [userId], references: [id])
+
+  @@map("ticket_messages")
+}
+
+// ===== TRIP COMPANIONS (for in-trip hub) =====
+
+model TripCompanion {
+  id        String   @id @default(cuid())
+  userId    String
+  tripId    String
+  joinedAt  DateTime @default(now())
+  role      CompanionRole @default(TRAVELER)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, tripId])
+  @@index([tripId])
+  @@map("trip_companions")
+}
+
+// ===== MEMORY JOURNAL =====
+
+model MemoryEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  tripId      String
+  content     String?
+  imageUrl    String?
+  location    String?
+  mood        String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, tripId])
+  @@map("memory_entries")
+}
+
+// ===== FAQ =====
+
+model Faq {
+  id       String @id @default(cuid())
+  question String
+  answer   String
+  category String
+  order    Int    @default(0)
+  isActive Boolean @default(true)
+
+  @@map("faqs")
+}
+
+// ===== CMS CONTENT =====
+
+model CmsContent {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  title     String
+  content   String
+  type      String   @default("page")
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  @@map("cms_contents")
+}
+
+// ===== AUDIT LOG =====
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ===== ENUMS =====
+
+enum UserRole {
+  USER
+  ADMIN
+  TRIP_CAPTAIN
+  SUPPORT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
+enum BudgetPreference {
+  BUDGET
+  MID_RANGE
+  PREMIUM
+  LUXURY
+}
+
+enum TripCategory {
+  ADVENTURE
+  CULTURAL
+  BEACH
+  MOUNTAIN
+  WILDLIFE
+  CITY
+  ROAD_TRIP
+  SPIRITUAL
+  FOOD
+  PHOTOGRAPHY
+  WEEKEND
+  INTERNATIONAL
+}
+
+enum TripDifficulty {
+  EASY
+  MODERATE
+  CHALLENGING
+  EXTREME
+}
+
+enum TripStatus {
+  DRAFT
+  PUBLISHED
+  SOLD_OUT
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingType {
+  SOLO
+  COUPLE
+  GROUP
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum CancellationPolicy {
+  FLEXIBLE
+  MODERATE
+  STRICT
+}
+
+enum WalletTransactionType {
+  CREDIT
+  DEBIT
+  REFUND
+  REWARD
+  REFERRAL
+  GIFT
+  TRANSFER_IN
+  TRANSFER_OUT
+  AUTO_SAVE
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+}
+
+enum RewardTier {
+  EXPLORER
+  ADVENTURER
+  VOYAGER
+  LEGEND
+}
+
+enum NotificationType {
+  BOOKING
+  PAYMENT
+  TRIP_UPDATE
+  CHAT
+  REFERRAL
+  REWARD
+  PROMOTION
+  SYSTEM
+  SOS
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM
+  LOCATION
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum TicketCategory {
+  BOOKING
+  PAYMENT
+  TRIP
+  ACCOUNT
+  TECHNICAL
+  OTHER
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum CompanionRole {
+  TRAVELER
+  TRIP_CAPTAIN
+  CO_TRAVELER
+}
+
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
