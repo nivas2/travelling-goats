@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 const publicPaths = [
   "/login",
   "/otp",
+  "/admin/login",
   "/api/auth",
   "/api/otp",
   "/api/trips",
@@ -14,8 +15,6 @@ const publicPaths = [
   "/icons",
   "/sw.js",
 ];
-
-const adminPaths = ["/admin"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -30,19 +29,23 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Admin routes — separate login flow
+  if (pathname.startsWith("/admin")) {
+    if (!req.auth) {
+      return NextResponse.redirect(new URL("/admin/login", req.nextUrl.origin));
+    }
+    const user = req.auth.user as Record<string, unknown>;
+    if (user?.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/home", req.nextUrl.origin));
+    }
+    return NextResponse.next();
+  }
+
   // Check auth for protected routes
   if (!req.auth) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Check admin access
-  if (adminPaths.some((p) => pathname.startsWith(p))) {
-    const user = req.auth.user as Record<string, unknown>;
-    if (user?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/home", req.nextUrl.origin));
-    }
   }
 
   return NextResponse.next();

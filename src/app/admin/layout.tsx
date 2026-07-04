@@ -1,10 +1,19 @@
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
+import { auth } from "@/lib/auth";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const isAdmin = (session?.user as Record<string, unknown>)?.role === "ADMIN";
+
+  // Show bare layout for login page (unauthenticated or non-admin)
+  if (!isAdmin) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex min-h-dvh bg-background">
       <AdminSidebar />
