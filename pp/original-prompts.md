@@ -244,3 +244,79 @@ The final result should feel production-ready, premium, cohesive, elegant, and v
 ```
 
 ---
+
+## Original Prompt 8
+
+- **Captured at:** 2026-07-05T00:05:00Z
+- **REQ(s):** REQ-008
+- **UR:** —
+- **Source:** /pp:add
+
+```
+pls understand the complete code deeply & pls use this color pallet across all places instead of current onw
+
+[Image: Color palette table with 3 colors:
+- #FF385C (coral/pink-red) — RGB 255,56,92
+- #FFFFFF (white) — RGB 255,255,255
+- #222222 (dark charcoal) — RGB 34,34,34]
+```
+
+---
+
+## Original Prompt 9
+
+- **Captured at:** 2026-07-05T02:30:00Z
+- **REQ(s):** REQ-009
+- **UR:** —
+- **Source:** /pp:add
+
+```
+i am taking so risk decision, copy this exting code and create a new folder & also new git branch and keep that exsting code safe , if there any commits need to be done pls commit now itself and i want to change everthing to goat theme but dont change color and functionality You are a Senior Brand Designer, UX Designer, and Product Designer from Airbnb, Stripe, Apple, and Linear.
+
+Your task is to completely rebrand the existing application from "MeetMyRoute" to "Travelling Goats".
+
+IMPORTANT RULES
+
+• DO NOT change any functionality.
+• DO NOT change navigation.
+• DO NOT change layouts.
+• DO NOT change workflows.
+• DO NOT change the existing color palette.
+• DO NOT redesign components unless required for branding consistency.
+• Keep the existing premium modern UI.
+• Only replace branding, terminology, illustrations, icons, empty states, loading states, onboarding copy, and micro-interactions.
+
+The brand should feel like a premium travel community—not a cartoon app. The goat theme should be subtle, sophisticated, memorable, and integrated throughout the experience.
+
+BRAND: App Name: Travelling Goats. Brand Personality: Adventurous, Community Driven, Premium, Friendly, Modern, Mountain Explorer, Social Travel, Minimal, Clean. Brand Voice: Fun but never childish.
+
+LOGO: Use the provided Travelling Goats logo everywhere. Replace every MeetMyRoute logo. Update: Splash Screen, Login, Register, Navbar, Mobile Header, Favicon, App Icon, PWA Manifest, Email Templates, Loading Screen, SEO Metadata, Browser Title, Social Share Images.
+
+TERMINOLOGY:
+User → Goat | Solo Registration → Lone Goat | Couple Registration → Goat Pair | Group Registration → Mountain Herd | Trip Captain → Shepherd | Co-host → Assistant Shepherd | Trip Members → Herd | Community → The Herd | Trips → Trails | Trip Requests → Trail Requests | Bookings → Trail Bookings | Group Chat → Campfire Chat | Wishlist → Dream Trails | Followers → Herd Members | Invite Friends → Grow Your Herd | Premium → Explorer Pass | Points → Trail Points | Achievements → Goat Milestones
+
+BUTTONS:
+Book Now → Join the Herd | Reserve Seat → Claim Your Spot | Continue → Keep Trekking | Explore Trips → Explore Trails | Contact Trip Captain → Contact Shepherd
+
+NOTIFICATIONS: "A new trail is waiting." | "A new goat joined your herd." | "Your Shepherd updated the itinerary." | "Adventure starts soon." | "Your herd is ready."
+
+EMPTY STATES: No Trips → "Looks like this trail hasn't been explored yet." | No Bookings → "No hoofprints here yet." | No Notifications → "Your bell is quiet for now." | No Friends → "Every herd starts with one goat."
+
+LOADING STATES: Finding the perfect trail... | Gathering your herd... | Checking mountain paths... | Packing backpacks... | Sharpening hooves... | Adventure is almost ready...
+
+SUCCESS STATES: Welcome to the Herd! | Trail Joined Successfully! | Adventure Awaits! | You're officially part of the herd.
+
+ERROR STATES: Oops! | Looks like this goat wandered off the trail. | Let's try another path.
+
+ONBOARDING: Welcome to Travelling Goats | Adventure is always better with the herd. | Meet fellow explorers. | Find incredible trails. | Travel together. | Create unforgettable memories.
+
+ADMIN PANEL: Users → Goats | Trip Captains → Shepherds | Trips → Trails | Bookings → Trail Bookings | Analytics → Herd Analytics | Reports → Trail Reports
+
+ILLUSTRATIONS: Replace generic travel illustrations with premium branded goat illustrations. Flat, minimal, premium, modern and consistent with the logo style.
+
+MICRO ANIMATIONS: Animated hoofprints while loading, Bell jiggle on notifications, Tiny goat hop after successful booking, Trail line drawing animation, Mountain reveal animation, Campfire flicker on chat empty state. Animations should remain lightweight.
+
+DO NOT CHANGE: Color palette, Existing layouts, Existing UX, Existing functionality, Existing flows, Existing responsive behavior.
+```
+
+---
