@@ -496,20 +496,20 @@ export default function PaymentPage() {
             </button>
           </div>
         ) : (
-          <div className="flex gap-2">
+          <div className="flex w-full gap-2">
             <Input
               placeholder="Enter coupon code"
               value={couponInput}
               onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-              className="flex-1"
-              inputSize="sm"
+              className="min-w-0 flex-1"
             />
             <Button
               variant="secondary"
-              size="sm"
+              size="md"
               onClick={handleApplyCoupon}
               loading={applyingCoupon}
               disabled={!couponInput.trim()}
+              className="shrink-0"
             >
               Apply
             </Button>
