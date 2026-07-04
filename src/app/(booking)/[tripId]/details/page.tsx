@@ -38,16 +38,6 @@ const travelerSchema = z.object({
 
 const formSchema = z.object({
   travelers: z.array(travelerSchema).min(1, "At least one traveler is required"),
-  contactPhone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number")
-    .optional()
-    .or(z.literal("")),
-  contactEmail: z
-    .string()
-    .email("Enter a valid email address")
-    .optional()
-    .or(z.literal("")),
   specialRequests: z.string().max(500).optional(),
   pickupPoint: z.string().min(1, "Please select a pickup point"),
 });
@@ -113,13 +103,11 @@ export default function DetailsPage() {
     specialRequests: storedRequests,
     pickupPoint: storedPickup,
     travelers: storedTravelers,
-    contactEmail: storedEmail,
-    contactPhone: storedContactPhone,
     setTravelers,
     setSpecialRequests,
     setPickupPoint,
-    setContactEmail,
     setContactPhone,
+    setContactEmail,
     setStep,
   } = useBookingStore();
 
@@ -147,8 +135,6 @@ export default function DetailsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       travelers: defaultTravelers,
-      contactPhone: storedContactPhone ?? "",
-      contactEmail: storedEmail ?? "",
       specialRequests: storedRequests ?? "",
       pickupPoint: storedPickup ?? "",
     },
@@ -173,8 +159,9 @@ export default function DetailsPage() {
           phone: t.phone,
         })),
       );
-      setContactPhone(data.contactPhone || null);
-      setContactEmail(data.contactEmail || null);
+      // Use primary traveler's phone as contact
+      setContactPhone(data.travelers[0]?.phone || null);
+      setContactEmail(null);
       setSpecialRequests(data.specialRequests || null);
       setPickupPoint(data.pickupPoint);
 
@@ -264,37 +251,6 @@ export default function DetailsPage() {
           </Card>
         </motion.div>
       ))}
-
-      {/* Contact Details */}
-      <div className="flex flex-col gap-3">
-        <div>
-          <h3 className="text-title-lg font-title-lg text-on-surface">
-            Contact Details
-          </h3>
-          <p className="mt-0.5 text-body-md text-on-surface-variant">
-            We'll send booking updates to these
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Input
-            label="Phone Number"
-            type="tel"
-            placeholder="10-digit mobile"
-            countryCode="+91"
-            inputMode="numeric"
-            maxLength={10}
-            error={errors.contactPhone?.message}
-            {...register("contactPhone")}
-          />
-          <Input
-            label="Email Address"
-            type="email"
-            placeholder="your@email.com"
-            error={errors.contactEmail?.message}
-            {...register("contactEmail")}
-          />
-        </div>
-      </div>
 
       {/* Special Requests */}
       <div className="flex flex-col gap-1.5">
