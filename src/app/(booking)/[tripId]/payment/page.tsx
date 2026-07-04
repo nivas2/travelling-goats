@@ -646,7 +646,6 @@ export default function PaymentPage() {
         onBack={() => router.push(`/${tripId}/addons`)}
         isLoading={paying}
         nextLabel={`Pay ${formatCurrency(totalPaise)}`}
-        priceSummary={{ label: "Total", amountPaise: totalPaise }}
       />
     </div>
   );
