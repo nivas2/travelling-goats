@@ -643,9 +643,13 @@ export default function PaymentPage() {
         step={5}
         totalSteps={6}
         onNext={handlePay}
-        onBack={() => router.push(`/${tripId}/addons`)}
         isLoading={paying}
         nextLabel={`Pay ${formatCurrency(totalPaise)}`}
+        leftContent={
+          <p className="text-body-md text-on-surface-variant">
+            Almost there! Pack your bags 🎒
+          </p>
+        }
       />
     </div>
   );
