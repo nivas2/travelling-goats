@@ -393,15 +393,7 @@ export default function TripDetailPage({
           </div>
         </div>
 
-        {/* Price badge overlay */}
-        <div className="absolute bottom-4 right-4 z-10">
-          <GlassCard intensity="strong" className="rounded-2xl px-4 py-2.5">
-            <p className="text-label-sm text-on-surface-variant">Starting from</p>
-            <p className="text-title-lg font-bold text-primary">
-              {formatCurrency(trip.basePricePaise)}
-            </p>
-          </GlassCard>
-        </div>
+        {/* Price badge removed — shown in fixed bottom bar */}
       </div>
 
       {/* ===== Trip Info ===== */}
@@ -800,31 +792,56 @@ export default function TripDetailPage({
         </div>
       </div>
 
-      {/* ===== Sticky Bottom CTA Bar ===== */}
+      {/* ===== Fixed Bottom Bar ===== */}
       <div
         className={cn(
           "fixed left-0 right-0 z-40",
           "bottom-[80px] md:bottom-0",
           "bg-surface/95 backdrop-blur-md",
           "border-t border-outline-variant/20",
-          "px-5 py-3 md:pb-safe",
+          "px-4 py-2.5 md:pb-safe",
           "shadow-nav"
         )}
       >
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-label-sm text-on-surface-variant">
+        <div className="flex items-center gap-3">
+          {/* Wishlist */}
+          <button
+            onClick={toggleWishlist}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-outline-variant transition-colors hover:bg-surface-container"
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Icon
+              name="favorite"
+              size={22}
+              filled={isWishlisted}
+              className={isWishlisted ? "text-primary" : "text-on-surface-variant"}
+            />
+          </button>
+
+          {/* Share */}
+          <button
+            onClick={handleShare}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-outline-variant transition-colors hover:bg-surface-container"
+            aria-label="Share trip"
+          >
+            <Icon name="share" size={22} className="text-on-surface-variant" />
+          </button>
+
+          {/* Price */}
+          <div className="ml-1 flex-1">
+            <p className="text-label-sm text-on-surface-variant leading-tight">
               Starting from
             </p>
-            <p className="text-headline-md font-bold text-primary">
+            <p className="text-title-lg font-bold text-primary leading-tight">
               {formatCurrency(trip.basePricePaise)}
             </p>
-            <p className="text-label-sm text-on-surface-variant">per person</p>
           </div>
+
+          {/* Book Now */}
           <Button
             size="lg"
             onClick={() => router.push(`/${id}/travelers`)}
-            className="min-w-[160px]"
+            className="shrink-0"
           >
             Book Now
           </Button>
