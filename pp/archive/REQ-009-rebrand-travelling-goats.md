@@ -1,7 +1,7 @@
 ---
 id: REQ-009
 title: Rebrand MeetMyRoute to Travelling Goats
-status: pending
+status: done
 created_at: 2026-07-05T02:30:00Z
 user_request: —
 rephrased_prompt: pp/rephrased/REQ-009-rephrased.md
