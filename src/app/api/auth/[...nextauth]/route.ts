@@ -1,20 +1,17 @@
 import { handlers } from "@/lib/auth";
 import { NextRequest } from "next/server";
 
-const { GET: authGET, POST: authPOST } = handlers;
-
-export async function GET(
-  req: NextRequest,
-  ctx: { params: Promise<{ nextauth: string[] }> }
-) {
-  const params = await ctx.params;
-  return authGET(req, { params } as unknown as Record<string, unknown>);
+// Next.js 16 passes params as a Promise, but next-auth v5 beta expects
+// sync params. We wrap the handlers to resolve params before forwarding.
+function wrapHandler(handler: Function) {
+  return async (
+    req: NextRequest,
+    ctx: { params: Promise<{ nextauth: string[] }> }
+  ) => {
+    const resolvedParams = await ctx.params;
+    return handler(req, { params: resolvedParams });
+  };
 }
 
-export async function POST(
-  req: NextRequest,
-  ctx: { params: Promise<{ nextauth: string[] }> }
-) {
-  const params = await ctx.params;
-  return authPOST(req, { params } as unknown as Record<string, unknown>);
-}
+export const GET = wrapHandler(handlers.GET);
+export const POST = wrapHandler(handlers.POST);
