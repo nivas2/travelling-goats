@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, use } from "react";
+import { useEffect, useRef, useState, useCallback, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -43,10 +43,23 @@ function ImageCarousel({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const pausedRef = useRef(false);
 
   const allImages = images.length > 0 ? images : ["/placeholder-trip.jpg"];
 
+  // Auto-rotate every 3 seconds
+  useEffect(() => {
+    if (allImages.length <= 1) return;
+    const timer = setInterval(() => {
+      if (!pausedRef.current) {
+        setCurrentIndex((prev) => (prev + 1) % allImages.length);
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [allImages.length]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
+    pausedRef.current = true;
     setTouchStart(e.targetTouches[0].clientX);
   };
 
@@ -68,6 +81,8 @@ function ImageCarousel({
     }
     setTouchStart(0);
     setTouchEnd(0);
+    // Resume auto-rotate after 5s
+    setTimeout(() => { pausedRef.current = false; }, 5000);
   };
 
   return (
@@ -796,7 +811,7 @@ export default function TripDetailPage({
       <div
         className={cn(
           "fixed left-0 right-0 z-40",
-          "bottom-[80px] md:bottom-0",
+          "bottom-0",
           "bg-surface/95 backdrop-blur-md",
           "border-t border-outline-variant/20",
           "px-4 py-2.5 md:pb-safe",

@@ -10,7 +10,7 @@
   --color-primary: #ae2f34;
   --color-on-primary: #ffffff;
   --color-primary-container: #ff6b6b;
-  --color-on-primary-container: #6d0010;
+  --color-on-primary-container: #ffffff;
   --color-inverse-primary: #ffb3b0;
   --color-primary-fixed: #ffdad8;
   --color-primary-fixed-dim: #ffb3b0;
@@ -207,8 +207,11 @@ body {
 
 /* White text on any colored background — light & dark mode */
 .bg-primary,
+.bg-primary-container,
 .bg-secondary,
+.bg-secondary-container,
 .bg-tertiary,
+.bg-tertiary-container,
 .bg-error,
 .bg-success,
 .primary-gradient,
@@ -217,8 +220,11 @@ body {
 }
 
 .bg-primary *,
+.bg-primary-container *,
 .bg-secondary *,
+.bg-secondary-container *,
 .bg-tertiary *,
+.bg-tertiary-container *,
 .bg-error *,
 .bg-success *,
 .primary-gradient *,

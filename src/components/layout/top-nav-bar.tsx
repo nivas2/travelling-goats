@@ -27,6 +27,10 @@ export function TopNavBar({
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
+  // Hide on trip detail pages (they have their own back/share/wishlist)
+  const isTripDetail = /^\/trips\/[^/]+$/.test(pathname);
+  if (isTripDetail) return null;
+
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/" || pathname === "/home";
     return pathname.startsWith(href);

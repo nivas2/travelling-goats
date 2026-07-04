@@ -20,6 +20,10 @@ const tabs: NavTab[] = [
 export function BottomNavBar() {
   const pathname = usePathname();
 
+  // Hide on trip detail pages (they have their own fixed bottom bar)
+  const isTripDetail = /^\/trips\/[^/]+$/.test(pathname);
+  if (isTripDetail) return null;
+
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/" || pathname === "/home";
     return pathname.startsWith(href);
