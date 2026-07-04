@@ -9,6 +9,8 @@ const publicPaths = [
   "/api/otp",
   "/api/trips",
   "/api/health",
+  "/trips",
+  "/home",
   "/_next",
   "/favicon.ico",
   "/manifest.json",
