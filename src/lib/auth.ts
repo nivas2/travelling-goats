@@ -103,17 +103,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // On sign-in (runs in Node.js, not Edge), fetch user data from DB
+      // and store in token so middleware/session don't need Prisma
       if (user) {
         token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token.id && session.user) {
-        session.user.id = token.id as string;
         const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
+          where: { id: user.id },
           select: {
             role: true,
             isOnboarded: true,
@@ -122,13 +118,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
         if (dbUser) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const u = session.user as any;
-          u.role = dbUser.role;
-          u.isOnboarded = dbUser.isOnboarded;
-          u.isVerified = dbUser.isVerified;
-          u.idVerified = dbUser.idVerified;
+          token.role = dbUser.role;
+          token.isOnboarded = dbUser.isOnboarded;
+          token.isVerified = dbUser.isVerified;
+          token.idVerified = dbUser.idVerified;
         }
+      }
+      // On explicit session update, refresh from DB
+      if (trigger === "update" && token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              role: true,
+              isOnboarded: true,
+              isVerified: true,
+              idVerified: true,
+            },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.isOnboarded = dbUser.isOnboarded;
+            token.isVerified = dbUser.isVerified;
+            token.idVerified = dbUser.idVerified;
+          }
+        } catch {
+          // Ignore errors (e.g. Edge Runtime) — keep existing token data
+        }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Read everything from the JWT token — no Prisma needed
+      // This is Edge-compatible since it doesn't hit the database
+      if (session.user) {
+        session.user.id = token.id as string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const u = session.user as any;
+        u.role = token.role;
+        u.isOnboarded = token.isOnboarded;
+        u.isVerified = token.isVerified;
+        u.idVerified = token.idVerified;
       }
       return session;
     },
