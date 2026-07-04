@@ -125,7 +125,7 @@
 /* ===== DARK MODE TOKENS ===== */
 .dark {
   --color-primary: #ffb3b0;
-  --color-on-primary: #68000b;
+  --color-on-primary: #ffffff;
   --color-primary-container: #ae2f34;
   --color-on-primary-container: #ffdad8;
   --color-secondary: #7bd0ff;
@@ -197,10 +197,33 @@ body {
 
 .primary-gradient {
   background: linear-gradient(135deg, #ff6b6b 0%, #ae2f34 100%);
+  color: #ffffff;
 }
 
 .coral-gradient {
   background: linear-gradient(180deg, #ff8a8a 0%, #ae2f34 100%);
+  color: #ffffff;
+}
+
+/* White text on any colored background — light & dark mode */
+.bg-primary,
+.bg-secondary,
+.bg-tertiary,
+.bg-error,
+.bg-success,
+.primary-gradient,
+.coral-gradient {
+  color: #ffffff;
+}
+
+.bg-primary *,
+.bg-secondary *,
+.bg-tertiary *,
+.bg-error *,
+.bg-success *,
+.primary-gradient *,
+.coral-gradient * {
+  color: inherit;
 }
 
 .text-shadow-premium {

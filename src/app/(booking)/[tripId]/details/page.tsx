@@ -38,6 +38,14 @@ const travelerSchema = z.object({
 
 const formSchema = z.object({
   travelers: z.array(travelerSchema).min(1, "At least one traveler is required"),
+  contactPhone: z
+    .string()
+    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
+  contactEmail: z
+    .string()
+    .email("Enter a valid email address")
+    .optional()
+    .or(z.literal("")),
   specialRequests: z.string().max(500).optional(),
   pickupPoint: z.string().min(1, "Please select a pickup point"),
 });
@@ -103,6 +111,8 @@ export default function DetailsPage() {
     specialRequests: storedRequests,
     pickupPoint: storedPickup,
     travelers: storedTravelers,
+    contactPhone: storedContactPhone,
+    contactEmail: storedEmail,
     setTravelers,
     setSpecialRequests,
     setPickupPoint,
@@ -135,6 +145,8 @@ export default function DetailsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       travelers: defaultTravelers,
+      contactPhone: storedContactPhone ?? "",
+      contactEmail: storedEmail ?? "",
       specialRequests: storedRequests ?? "",
       pickupPoint: storedPickup ?? "",
     },
@@ -142,10 +154,21 @@ export default function DetailsPage() {
 
   const { fields } = useFieldArray({ control, name: "travelers" });
   const selectedPickup = watch("pickupPoint");
+  const primaryPhone = watch("travelers.0.phone");
 
   useEffect(() => {
     setStep(2);
   }, [setStep]);
+
+  // Auto-sync contact phone from primary traveler
+  useEffect(() => {
+    if (primaryPhone && /^[6-9]\d{9}$/.test(primaryPhone)) {
+      const current = watch("contactPhone");
+      if (!current) {
+        setValue("contactPhone", primaryPhone);
+      }
+    }
+  }, [primaryPhone, setValue, watch]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setSubmitting(true);
@@ -159,9 +182,8 @@ export default function DetailsPage() {
           phone: t.phone,
         })),
       );
-      // Use primary traveler's phone as contact
-      setContactPhone(data.travelers[0]?.phone || null);
-      setContactEmail(null);
+      setContactPhone(data.contactPhone || null);
+      setContactEmail(data.contactEmail || null);
       setSpecialRequests(data.specialRequests || null);
       setPickupPoint(data.pickupPoint);
 
@@ -251,6 +273,35 @@ export default function DetailsPage() {
           </Card>
         </motion.div>
       ))}
+
+      {/* Contact Details — compact card */}
+      <Card variant="outlined" className="flex flex-col gap-3">
+        <div>
+          <h3 className="text-title-md font-title-md text-on-surface">
+            Contact Details
+          </h3>
+          <p className="text-label-sm text-on-surface-variant">
+            Your ticket and trip info will be sent here
+          </p>
+        </div>
+        <Input
+          label="Mobile Number"
+          type="tel"
+          placeholder="10-digit mobile"
+          countryCode="+91"
+          inputMode="numeric"
+          maxLength={10}
+          error={errors.contactPhone?.message}
+          {...register("contactPhone")}
+        />
+        <Input
+          label="Email ID"
+          type="email"
+          placeholder="your@email.com"
+          error={errors.contactEmail?.message}
+          {...register("contactEmail")}
+        />
+      </Card>
 
       {/* Special Requests */}
       <div className="flex flex-col gap-1.5">
