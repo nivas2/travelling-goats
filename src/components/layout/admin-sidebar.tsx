@@ -87,10 +87,10 @@ export function AdminSidebar() {
               onClick={() => setMobileOpen(false)}
             >
               <span className="text-title-lg font-bold tracking-tight text-primary">
-                Pack
+                Meet
               </span>
               <span className="text-title-lg font-bold tracking-tight text-on-surface">
-                Along
+                MyRoute
               </span>
               <span className="ml-1 text-label-sm text-on-surface-variant/60 font-medium">
                 Admin

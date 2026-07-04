@@ -108,24 +108,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // and store in token so middleware/session don't need Prisma
       if (user) {
         token.id = user.id;
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: {
-            role: true,
-            isOnboarded: true,
-            isVerified: true,
-            idVerified: true,
-          },
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.isOnboarded = dbUser.isOnboarded;
-          token.isVerified = dbUser.isVerified;
-          token.idVerified = dbUser.idVerified;
-        }
       }
-      // On explicit session update, refresh from DB
-      if (trigger === "update" && token.id) {
+      // Refresh role from DB when missing or on explicit update
+      // Uses try/catch so it gracefully fails in Edge Runtime
+      if (token.id && (!token.role || trigger === "update")) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
@@ -143,7 +129,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.idVerified = dbUser.idVerified;
           }
         } catch {
-          // Ignore errors (e.g. Edge Runtime) — keep existing token data
+          // Edge Runtime — Prisma not available, keep existing token data
         }
       }
       return token;
