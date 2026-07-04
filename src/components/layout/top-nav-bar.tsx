@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface TopNavBarProps {
@@ -10,12 +11,26 @@ interface TopNavBarProps {
   avatarUrl?: string;
 }
 
+// Desktop navigation links (mirror the mobile bottom nav, which is hidden on md+)
+const NAV_LINKS = [
+  { label: "Explore", href: "/" },
+  { label: "My Trips", href: "/my-trips" },
+  { label: "Saved", href: "/saved" },
+  { label: "Profile", href: "/profile" },
+];
+
 export function TopNavBar({
   notificationCount = 0,
   userInitials = "U",
   avatarUrl,
 }: TopNavBarProps) {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/" || pathname === "/home";
+    return pathname.startsWith(href);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,13 +50,34 @@ export function TopNavBar({
           : "bg-transparent"
       )}
     >
-      <div className="flex items-center justify-between px-4 py-3 md:px-6">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-3 md:px-6">
         {/* Logo / App Name */}
         <Link href="/" className="flex items-center">
           <span className="text-title-lg font-bold tracking-[-0.02em] text-on-surface">
             Meet<span className="text-primary">MyRoute</span>
           </span>
         </Link>
+
+        {/* Desktop Nav Links */}
+        <nav className="hidden md:flex md:items-center md:gap-1">
+          {NAV_LINKS.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "rounded-full px-4 py-2 text-label-lg font-semibold transition-colors",
+                  active
+                    ? "bg-primary/10 text-primary"
+                    : "text-on-surface-variant hover:bg-surface-container-high/70 hover:text-on-surface"
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">

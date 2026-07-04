@@ -7,11 +7,12 @@ import { useRouter } from "next/navigation";
 import { cn, formatCurrency, formatDateRange } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { GlassCard } from "@/components/ui/glass-card";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Rating } from "@/components/ui/rating";
+import { TripCarousel } from "@/components/ui/trip-carousel";
+import { FavoriteButton } from "@/components/ui/favorite-button";
+import { FavouritesFilter, type TripView } from "@/components/ui/favourites-filter";
+import { useWishlistStore } from "@/stores/wishlist-store";
 import type { TripCardData, ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -27,6 +28,49 @@ const CATEGORIES = [
   { label: "Road Trip", icon: "directions_car" },
   { label: "Camping", icon: "camping" },
   { label: "Spiritual", icon: "self_improvement" },
+];
+
+// ---------------------------------------------------------------------------
+// Perks / Value Props (shown in place of the hero)
+// ---------------------------------------------------------------------------
+
+const PERKS = [
+  {
+    icon: "health_and_safety",
+    title: "Women-Safe Travel",
+    desc: "Verified captains & women-friendly groups for worry-free trips.",
+    tint: "bg-primary/10",
+    fg: "text-primary",
+  },
+  {
+    icon: "diversity_3",
+    title: "Meet New Friends",
+    desc: "Bond with like-minded travelers on every group journey.",
+    tint: "bg-secondary/10",
+    fg: "text-secondary",
+  },
+  {
+    icon: "map",
+    title: "Fully Planned Trips",
+    desc: "Handpicked itineraries — just pack your bags and show up.",
+    tint: "bg-success/10",
+    fg: "text-success",
+  },
+  {
+    icon: "verified_user",
+    title: "Transparent Pricing",
+    desc: "No hidden charges. Secure payments with clear inclusions.",
+    tint: "bg-tertiary/15",
+    fg: "text-tertiary",
+  },
+];
+
+// Rotating "go travel" prompts shown under the greeting.
+const PROVOCATIONS = [
+  "The mountains are calling — answer with a group trip this weekend.",
+  "New places, new friends, unforgettable memories. Your next adventure is one tap away.",
+  "Life's short and India's big. Where will you wander next?",
+  "Pack light, travel far — your crew is already waiting.",
 ];
 
 // ---------------------------------------------------------------------------
@@ -54,9 +98,13 @@ function TripCard({ trip }: { trip: TripCardData }) {
               {trip.category}
             </Chip>
           </div>
+          {/* Favourite heart */}
+          <div className="absolute right-3 top-3">
+            <FavoriteButton tripId={trip.id} size={18} />
+          </div>
           {/* Spots left badge */}
           {spotsLeft <= 5 && spotsLeft > 0 && (
-            <div className="absolute right-3 top-3">
+            <div className="absolute right-3 bottom-3">
               <span className="inline-flex items-center gap-1 rounded-full bg-error px-2.5 py-1 text-[11px] font-semibold text-on-error">
                 <Icon name="local_fire_department" size={14} />
                 {spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} left
@@ -107,75 +155,14 @@ function TripCard({ trip }: { trip: TripCardData }) {
 // Horizontal Trip Card (for scrollable rows)
 // ---------------------------------------------------------------------------
 
-function HorizontalTripCard({ trip }: { trip: TripCardData }) {
-  const spotsLeft = trip.maxGroupSize - trip.currentBookings;
-
-  return (
-    <Link href={`/trips/${trip.id}`} className="block w-[260px] shrink-0">
-      <Card clickable className="overflow-hidden p-0 h-full">
-        <div className="relative h-[140px] w-full overflow-hidden">
-          <Image
-            src={trip.coverImage || "/placeholder-trip.jpg"}
-            alt={trip.title}
-            fill
-            className="object-cover"
-            sizes="260px"
-          />
-          {spotsLeft <= 5 && spotsLeft > 0 && (
-            <div className="absolute right-2 top-2">
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-error/90 px-2 py-0.5 text-[10px] font-bold text-on-error">
-                {spotsLeft} left
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="p-3">
-          <h4 className="text-label-lg font-semibold text-on-surface line-clamp-1">
-            {trip.title}
-          </h4>
-          <div className="mt-1 flex items-center gap-1 text-label-sm text-on-surface-variant">
-            <Icon name="location_on" size={13} className="text-primary" />
-            <span className="line-clamp-1">{trip.destination}</span>
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-0.5">
-              <Icon name="star" size={14} filled className="text-tertiary" />
-              <span className="text-label-sm font-semibold">{trip.rating.toFixed(1)}</span>
-            </div>
-            <span className="text-label-lg font-bold text-primary">
-              {formatCurrency(trip.basePricePaise)}
-            </span>
-          </div>
-        </div>
-      </Card>
-    </Link>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Skeleton Loaders
 // ---------------------------------------------------------------------------
 
-function HeroSkeleton() {
-  return <Skeleton variant="rectangular" height={400} className="rounded-none" />;
-}
-
-function HorizontalCardsSkeleton() {
-  return (
-    <div className="flex gap-3 overflow-hidden px-5">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="w-[260px] shrink-0">
-          <Skeleton variant="card" height={220} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function GridCardsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 px-5">
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="grid grid-cols-2 gap-3 px-5 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
         <Skeleton key={i} variant="card" height={260} />
       ))}
     </div>
@@ -191,6 +178,40 @@ export default function HomePage() {
   const [trips, setTrips] = useState<TripCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [view, setView] = useState<TripView>("all");
+
+  const savedIds = useWishlistStore((s) => s.ids);
+  const ensureWishlistLoaded = useWishlistStore((s) => s.ensureLoaded);
+
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState("Welcome");
+  const [provoke, setProvoke] = useState(PROVOCATIONS[0]);
+
+  useEffect(() => {
+    ensureWishlistLoaded();
+  }, [ensureWishlistLoaded]);
+
+  // Time-based greeting + a random travel prompt (client-only to avoid hydration mismatch).
+  useEffect(() => {
+    const h = new Date().getHours();
+    setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
+    setProvoke(PROVOCATIONS[Math.floor(Math.random() * PROVOCATIONS.length)]);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then((j) => {
+        if (active) setDisplayName((j?.data ?? j?.user ?? j)?.name ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const firstName = displayName?.trim().split(" ")[0] || null;
 
   const fetchTrips = useCallback(async () => {
     try {
@@ -213,14 +234,17 @@ export default function HomePage() {
     fetchTrips();
   }, [fetchTrips]);
 
-  const featuredTrip = trips.find((t) => t.isFeatured) ?? trips[0];
   const trendingTrips = trips.filter((t) => t.isTrending);
   const weekendGetaways = trips.filter((t) => t.duration <= 3);
-  const filteredPopular = selectedCategory
-    ? trips.filter(
-        (t) => t.category.toLowerCase() === selectedCategory.toLowerCase()
-      )
-    : trips;
+  const favouriteCount = trips.filter((t) => savedIds.has(t.id)).length;
+
+  const filteredPopular = trips
+    .filter((t) =>
+      selectedCategory
+        ? t.category.toLowerCase() === selectedCategory.toLowerCase()
+        : true
+    )
+    .filter((t) => (view === "favourites" ? savedIds.has(t.id) : true));
 
   return (
     <div className="min-h-screen bg-background pb-6">
@@ -242,54 +266,42 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* ===== Hero Section ===== */}
-      {loading ? (
-        <HeroSkeleton />
-      ) : featuredTrip ? (
-        <Link href={`/trips/${featuredTrip.id}`} className="block">
-          <section className="relative h-[400px] w-full overflow-hidden">
-            <Image
-              src={featuredTrip.coverImage || "/placeholder-trip.jpg"}
-              alt={featuredTrip.title}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-            {/* Location badge */}
-            <div className="absolute left-5 top-5">
-              <GlassCard className="flex items-center gap-2 rounded-full px-3 py-1.5">
-                <Icon name="location_on" size={16} className="text-primary" />
-                <span className="text-label-sm font-semibold text-on-surface">
-                  {featuredTrip.destination}
-                </span>
-              </GlassCard>
-            </div>
-
-            {/* Bottom content */}
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <Chip variant="filled" color="secondary" className="mb-2">
-                Featured
-              </Chip>
-              <h1 className="text-headline-lg font-bold text-white text-shadow-premium">
-                {featuredTrip.title}
-              </h1>
-              <p className="mt-1 text-body-md text-white/80">
-                {formatDateRange(featuredTrip.startDate, featuredTrip.endDate)} &middot;{" "}
-                {featuredTrip.duration} Days
-              </p>
-              <div className="mt-4">
-                <Button size="md">
-                  Explore Trip &rarr;
-                </Button>
+      {/* ===== Greeting + Perks ===== */}
+      <section className="px-5 pt-5 md:pt-8">
+        <p className="text-label-lg font-semibold text-primary">
+          {greeting} &#128075;
+        </p>
+        <h1 className="mt-1 text-headline-md font-bold tracking-[-0.01em] text-on-surface md:text-headline-lg">
+          {firstName
+            ? `Hey ${firstName}, ready for your next adventure?`
+            : "Ready for your next adventure?"}
+        </h1>
+        <p className="mt-1.5 max-w-2xl text-body-md text-on-surface-variant md:text-body-lg">
+          {provoke}
+        </p>
+        <div className="mt-5 grid grid-cols-2 gap-3 md:mt-6 md:grid-cols-4 md:gap-4">
+          {PERKS.map((perk) => (
+            <Card key={perk.title} className="flex flex-col gap-3 p-4">
+              <div
+                className={cn(
+                  "flex h-11 w-11 items-center justify-center rounded-xl",
+                  perk.tint
+                )}
+              >
+                <Icon name={perk.icon} filled size={24} className={perk.fg} />
               </div>
-            </div>
-          </section>
-        </Link>
-      ) : null}
+              <div>
+                <h3 className="text-title-md font-semibold text-on-surface">
+                  {perk.title}
+                </h3>
+                <p className="mt-1 text-body-md text-on-surface-variant">
+                  {perk.desc}
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       {/* ===== Trending Now ===== */}
       <section className="mt-8">
@@ -306,21 +318,21 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <HorizontalCardsSkeleton />
-        ) : (
-          <div className="flex gap-3 overflow-x-auto px-5 pb-2 hide-scrollbar">
-            {trendingTrips.length > 0
-              ? trendingTrips.map((trip) => (
-                  <HorizontalTripCard key={trip.id} trip={trip} />
-                ))
-              : trips.slice(0, 5).map((trip) => (
-                  <HorizontalTripCard key={trip.id} trip={trip} />
-                ))}
+          <div className="px-5">
+            <Skeleton
+              variant="rectangular"
+              height={300}
+              className="rounded-3xl"
+            />
           </div>
+        ) : (
+          <TripCarousel
+            trips={trendingTrips.length > 0 ? trendingTrips : trips.slice(0, 5)}
+          />
         )}
       </section>
 
-      {/* ===== Weekend Getaways - Bento Grid ===== */}
+      {/* ===== Weekend Getaways ===== */}
       <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
           <h2 className="text-title-lg font-title-lg text-on-surface">
@@ -337,61 +349,12 @@ export default function HomePage() {
         {loading ? (
           <GridCardsSkeleton />
         ) : (
-          <div className="grid grid-cols-2 gap-3 px-5">
-            {/* Large featured card spanning 2 columns */}
-            {weekendGetaways[0] && (
-              <Link
-                href={`/trips/${weekendGetaways[0].id}`}
-                className="col-span-2 block"
-              >
-                <div className="relative h-[200px] w-full overflow-hidden rounded-[20px]">
-                  <Image
-                    src={weekendGetaways[0].coverImage || "/placeholder-trip.jpg"}
-                    alt={weekendGetaways[0].title}
-                    fill
-                    className="object-cover"
-                    sizes="100vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="text-title-lg font-bold text-white">
-                      {weekendGetaways[0].title}
-                    </h3>
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="text-body-md text-white/80">
-                        {weekendGetaways[0].destination}
-                      </span>
-                      <span className="text-label-lg font-bold text-white">
-                        {formatCurrency(weekendGetaways[0].basePricePaise)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )}
-
-            {/* Smaller cards */}
-            {weekendGetaways.slice(1, 3).map((trip) => (
-              <Link key={trip.id} href={`/trips/${trip.id}`} className="block">
-                <div className="relative h-[160px] w-full overflow-hidden rounded-[20px]">
-                  <Image
-                    src={trip.coverImage || "/placeholder-trip.jpg"}
-                    alt={trip.title}
-                    fill
-                    className="object-cover"
-                    sizes="50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <h4 className="text-label-lg font-semibold text-white line-clamp-1">
-                      {trip.title}
-                    </h4>
-                    <span className="text-label-sm text-white/80">
-                      {formatCurrency(trip.basePricePaise)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
+          <div className="grid grid-cols-2 gap-3 px-5 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+            {(weekendGetaways.length > 0
+              ? weekendGetaways
+              : trips.slice(0, 4)
+            ).map((trip) => (
+              <TripCard key={trip.id} trip={trip} />
             ))}
           </div>
         )}
@@ -422,23 +385,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== Popular Destinations ===== */}
+      {/* ===== Popular Destinations / Favourites ===== */}
       <section className="mt-8">
-        <div className="flex items-center justify-between px-5 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 mb-3">
           <h2 className="text-title-lg font-title-lg text-on-surface">
-            {selectedCategory
-              ? `${selectedCategory} Trips`
-              : "Popular Destinations"}
+            {view === "favourites"
+              ? selectedCategory
+                ? `${selectedCategory} Favourites`
+                : "Your Favourites"
+              : selectedCategory
+                ? `${selectedCategory} Trips`
+                : "Popular Destinations"}
           </h2>
+          <FavouritesFilter
+            value={view}
+            onChange={setView}
+            favouriteCount={favouriteCount}
+          />
         </div>
 
         {loading ? (
           <GridCardsSkeleton />
         ) : filteredPopular.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 px-5">
+          <div className="grid grid-cols-2 gap-3 px-5 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
             {filteredPopular.map((trip) => (
               <TripCard key={trip.id} trip={trip} />
             ))}
+          </div>
+        ) : view === "favourites" ? (
+          <div className="px-5 py-16 text-center">
+            <Icon
+              name="favorite"
+              size={48}
+              className="mx-auto text-on-surface-variant/40"
+            />
+            <p className="mt-3 text-body-md text-on-surface-variant">
+              No favourites yet — tap the{" "}
+              <Icon
+                name="favorite"
+                size={16}
+                className="inline align-text-bottom text-primary"
+              />{" "}
+              on any trip to save it here.
+            </p>
           </div>
         ) : (
           <div className="px-5 py-16 text-center">
