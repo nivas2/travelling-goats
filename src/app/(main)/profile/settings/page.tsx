@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useGoatSound } from "@/hooks/use-goat-sound";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -18,10 +19,16 @@ export default function SettingsPage() {
 
   // Preferences
   const [darkMode, setDarkMode] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { isEnabled: isSoundEnabled, setEnabled: setSoundPref } = useGoatSound();
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [profileVisibility, setProfileVisibility] = useState(true);
   const [showOnCompanionList, setShowOnCompanionList] = useState(true);
+
+  useEffect(() => {
+    setSoundEnabled(isSoundEnabled());
+  }, [isSoundEnabled]);
 
   // Modals
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -93,6 +100,17 @@ export default function SettingsPage() {
           type: "toggle",
           checked: darkMode,
           onChange: handleDarkModeToggle,
+        },
+        {
+          icon: "volume_up",
+          label: "Sound Effects",
+          description: "Play goat sounds on achievements",
+          type: "toggle",
+          checked: soundEnabled,
+          onChange: (checked: boolean) => {
+            setSoundEnabled(checked);
+            setSoundPref(checked);
+          },
         },
         {
           icon: "language",

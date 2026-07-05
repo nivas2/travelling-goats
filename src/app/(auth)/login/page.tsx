@@ -8,17 +8,20 @@ import { Input } from "@/components/ui/input";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useAuthStore } from "@/stores/auth-store";
 import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
+import { useGoatSound } from "@/hooks/use-goat-sound";
 
 export default function LoginPage() {
   const router = useRouter();
   const { phone, setPhone, setOtpSent } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { prime: primeGoat } = useGoatSound();
 
   const isValidPhone = /^[6-9]\d{9}$/.test(phone);
 
   async function handleSendOtp(e: FormEvent) {
     e.preventDefault();
+    primeGoat();
     if (!isValidPhone) {
       setError("Please enter a valid 10-digit mobile number");
       return;

@@ -142,7 +142,7 @@ function SOSButton({
           "focus:outline-none focus-visible:ring-4 focus-visible:ring-error focus-visible:ring-offset-4",
           activated
             ? "bg-success shadow-lg"
-            : "bg-error shadow-[0_0_40px_rgba(186,26,26,0.4)] hover:shadow-[0_0_60px_rgba(186,26,26,0.6)]",
+            : "bg-error shadow-[0_0_40px_rgba(255,56,92,0.4)] hover:shadow-[0_0_60px_rgba(255,56,92,0.6)]",
           pressing && !activated && "scale-95",
           !pressing && !activated && "animate-pulse"
         )}

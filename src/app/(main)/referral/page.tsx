@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatCurrency } from "@/lib/utils";
+import { useGoatSound } from "@/hooks/use-goat-sound";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,6 +60,7 @@ export default function ReferralPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { play: playGoat } = useGoatSound();
 
   const fetchReferrals = useCallback(async () => {
     try {
@@ -103,6 +105,7 @@ export default function ReferralPage() {
 
   const handleShareWhatsApp = () => {
     if (!data) return;
+    playGoat();
     const msg = encodeURIComponent(
       `Join Travelling Goats and get rewarded! Use my referral code: ${data.referralCode}\n${data.referralLink}`
     );
@@ -111,6 +114,7 @@ export default function ReferralPage() {
 
   const handleShareMore = async () => {
     if (!data || !navigator.share) return;
+    playGoat();
     try {
       await navigator.share({
         title: "Join Travelling Goats",

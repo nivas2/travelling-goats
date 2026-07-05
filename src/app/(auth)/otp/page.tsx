@@ -16,6 +16,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@/lib/utils";
 import { maskPhone } from "@/lib/utils";
+import { useGoatSound } from "@/hooks/use-goat-sound";
 
 const OTP_LENGTH = 6;
 const RESEND_SECONDS = 30;
@@ -23,6 +24,7 @@ const RESEND_SECONDS = 30;
 export default function OtpPage() {
   const router = useRouter();
   const { phone, setIsVerifying } = useAuthStore();
+  const { play: playGoat, prime: primeGoat } = useGoatSound();
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [error, setError] = useState("");
@@ -112,6 +114,7 @@ export default function OtpPage() {
   async function handleVerify() {
     if (!isComplete) return;
 
+    primeGoat();
     setLoading(true);
     setIsVerifying(true);
     setError("");
@@ -133,6 +136,8 @@ export default function OtpPage() {
       // Check if user is new or returning
       const userRes = await fetch("/api/users");
       const userData = await userRes.json();
+
+      playGoat();
 
       if (userData.success && userData.data) {
         if (userData.data.isOnboarded) {

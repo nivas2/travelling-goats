@@ -350,3 +350,12 @@ body {
 .animate-goat-hop { animation: goat-hop 0.3s ease-in-out; }
 .animate-trail-draw { animation: trail-draw 1.5s ease-in-out forwards; }
 .animate-hoof-print { animation: hoof-print 0.4s ease-out; }
+
+@keyframes goat-celebrate {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.15) rotate(-3deg); }
+  50% { transform: scale(1.1) rotate(3deg); }
+  75% { transform: scale(1.05) rotate(-1deg); }
+  100% { transform: scale(1); }
+}
+.animate-goat-celebrate { animation: goat-celebrate 0.5s ease-in-out; }

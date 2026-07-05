@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
+import { useGoatSound } from "@/hooks/use-goat-sound";
 import type { BookingSummary } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -125,6 +126,7 @@ export default function PaymentPage() {
   const router = useRouter();
   const tripId = params.tripId;
   const { success: toastSuccess, error: toastError } = useToast();
+  const { play: playGoat, prime: primeGoat } = useGoatSound();
 
   const {
     bookingType,
@@ -305,6 +307,7 @@ export default function PaymentPage() {
 
   // Payment flow
   const handlePay = useCallback(async () => {
+    primeGoat();
     setPaying(true);
 
     try {
@@ -369,6 +372,7 @@ export default function PaymentPage() {
 
       // Test mode or full wallet payment — auto-completed
       if (order.testMode || order.fullWalletPayment) {
+        playGoat();
         toastSuccess("Booking confirmed!");
         router.push(`/${tripId}/success?bookingId=${bookingId}`);
         return;
@@ -405,6 +409,7 @@ export default function PaymentPage() {
               throw new Error("Payment verification failed");
             }
 
+            playGoat();
             toastSuccess("Payment successful!");
             router.push(`/${tripId}/success?bookingId=${bookingId}`);
           } catch {
@@ -439,7 +444,7 @@ export default function PaymentPage() {
     seatPreference, selectedSeatIds, sessionId,
     contactEmail, contactPhone, specialRequests, pickupPoint,
     selectedAddOns, selectedSnacks, couponCode, useWallet,
-    walletDeduction, totalPaise, summary, setSummary, router, toastSuccess, toastError,
+    walletDeduction, totalPaise, summary, setSummary, router, toastSuccess, toastError, playGoat, primeGoat,
   ]);
 
   if (loading) {

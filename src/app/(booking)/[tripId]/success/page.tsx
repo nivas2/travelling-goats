@@ -9,6 +9,7 @@ import { useBookingStore } from "@/stores/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGoatSound } from "@/hooks/use-goat-sound";
 
 // ---------------------------------------------------------------------------
 //  Confetti particle system
@@ -105,6 +106,7 @@ export default function SuccessPage() {
   const bookingId = searchParams.get("bookingId");
 
   const { travelers, travelerCount, selectedSeatIds, seatPreference, summary, setStep, reset } = useBookingStore();
+  const { play: playGoat } = useGoatSound();
 
   const [showConfetti, setShowConfetti] = useState(true);
   const [booking, setBooking] = useState<BookingDetails | null>(null);
@@ -116,6 +118,8 @@ export default function SuccessPage() {
 
     if (hasInitialized.current) return;
     hasInitialized.current = true;
+
+    playGoat();
 
     // Auto-hide confetti after animation
     const timer = setTimeout(() => setShowConfetti(false), 4000);
@@ -169,7 +173,7 @@ export default function SuccessPage() {
     fetchBooking();
 
     return () => clearTimeout(timer);
-  }, [tripId, bookingId, travelerCount, summary, setStep]);
+  }, [tripId, bookingId, travelerCount, summary, setStep, playGoat]);
 
   const handleShare = async () => {
     const shareData = {
