@@ -48,6 +48,10 @@ export default function ProfilePage() {
       setLoading(true);
       setError(null);
       const res = await fetch("/api/users");
+      if (res.status === 401 || res.status === 403) {
+        router.push("/login");
+        return;
+      }
       if (!res.ok) throw new Error("Failed to load profile");
       const json = await res.json();
       setUser(json.data ?? json);
@@ -56,7 +60,7 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     fetchUser();
