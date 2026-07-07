@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ function extractToken(raw: string): string {
   }
 }
 
-export default function VerifyTicketPage() {
+function VerifyTicketContent() {
   const params = useSearchParams();
   const [result, setResult] = useState<Result | null>(null);
   const [busy, setBusy] = useState(false);
@@ -232,6 +232,14 @@ export default function VerifyTicketPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function VerifyTicketPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-md px-5 py-6">Loading...</div>}>
+      <VerifyTicketContent />
+    </Suspense>
   );
 }
 
