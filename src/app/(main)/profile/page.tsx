@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { Card } from "@/components/ui/card";
@@ -39,17 +39,25 @@ const TIER_BADGES: Record<string, { label: string; icon: string; className: stri
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (sessionStatus === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [sessionStatus, router]);
 
   const fetchUser = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const res = await fetch("/api/users");
-      if (res.status === 401 || res.status === 403) {
-        router.push("/login");
+      if (res.redirected || !res.headers.get("content-type")?.includes("application/json")) {
+        router.replace("/login");
         return;
       }
       if (!res.ok) throw new Error("Failed to load profile");
@@ -63,8 +71,10 @@ export default function ProfilePage() {
   }, [router]);
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    if (sessionStatus === "authenticated") {
+      fetchUser();
+    }
+  }, [sessionStatus, fetchUser]);
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
@@ -95,7 +105,7 @@ export default function ProfilePage() {
 
   // -- Loading ---------------------------------------------------------------
 
-  if (loading) {
+  if (loading || sessionStatus === "loading") {
     return (
       <div className="px-5 py-6 space-y-6">
         <div className="flex flex-col items-center gap-3">
