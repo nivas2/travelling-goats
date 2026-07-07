@@ -13,6 +13,8 @@ import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Modal } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import type { ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -107,10 +109,46 @@ function TripCardSkeleton() {
 // Upcoming Trip Card
 // ---------------------------------------------------------------------------
 
-function UpcomingTripCard({ booking }: { booking: BookingTrip }) {
+function UpcomingTripCard({
+  booking,
+  onCancelled,
+}: {
+  booking: BookingTrip;
+  onCancelled: () => void;
+}) {
   const router = useRouter();
+  const { success: toastSuccess, error: toastError } = useToast();
   const daysLeft = getDaysUntil(booking.startDate);
   const statusBadge = getStatusBadgeProps(booking.status);
+
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+
+  async function confirmCancel() {
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: reason.trim() || "Changed my plans" }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error ?? "Failed to cancel");
+      const refund = json.data?.refundPaise ?? 0;
+      toastSuccess(
+        refund > 0
+          ? `Trip cancelled. ₹${(refund / 100).toLocaleString("en-IN")} refunded to your wallet.`
+          : "Trip cancelled."
+      );
+      setCancelOpen(false);
+      onCancelled();
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : "Failed to cancel trip");
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   return (
     <Card className="overflow-hidden p-0">
@@ -169,7 +207,7 @@ function UpcomingTripCard({ booking }: { booking: BookingTrip }) {
           <span>
             {booking.travelerCount} traveler{booking.travelerCount !== 1 ? "s" : ""}
           </span>
-          {booking.companions.length > 0 && (
+          {(booking.companions?.length ?? 0) > 0 && (
             <div className="flex -space-x-2 ml-1">
               {booking.companions.slice(0, 3).map((companion) => (
                 <Avatar
@@ -194,21 +232,64 @@ function UpcomingTripCard({ booking }: { booking: BookingTrip }) {
           <Button
             size="sm"
             variant="secondary"
+            className="flex-1"
             icon={<Icon name="confirmation_number" size={16} />}
-            onClick={() => router.push(`/trips/${booking.tripId}`)}
+            onClick={() => router.push(`/bookings/${booking.id}/ticket`)}
           >
             View Ticket
           </Button>
           <Button
             size="sm"
             variant="ghost"
+            className="flex-1"
             icon={<Icon name="chat" size={16} />}
             onClick={() => router.push(`/trips/${booking.tripId}/chat`)}
           >
             Chat
           </Button>
         </CardFooter>
+
+        <button
+          onClick={() => setCancelOpen(true)}
+          className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg py-2 text-label-md font-medium text-error transition-colors hover:bg-error/5"
+        >
+          <Icon name="cancel" size={16} />
+          Cancel Trip
+        </button>
       </div>
+
+      {/* Cancel confirmation */}
+      <Modal
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        title="Cancel this trip?"
+        description="Refunds are credited to your wallet based on how close the trip is: full refund (minus a small fee) more than 7 days out, 50% within 3–7 days, none within 3 days."
+        size="sm"
+      >
+        <div className="space-y-3">
+          <label className="block">
+            <span className="mb-1 block text-label-md text-on-surface-variant">
+              Reason (optional)
+            </span>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={2}
+              maxLength={500}
+              placeholder="Let us know why you're cancelling…"
+              className="w-full resize-y rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-body-md text-on-surface outline-none focus:border-primary"
+            />
+          </label>
+          <div className="flex justify-end gap-3 pt-1">
+            <Button variant="ghost" size="sm" onClick={() => setCancelOpen(false)}>
+              Keep Trip
+            </Button>
+            <Button variant="destructive" size="sm" loading={cancelling} onClick={confirmCancel}>
+              Cancel Trip
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Card>
   );
 }
@@ -297,14 +378,22 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
         )}
 
         {/* CTA */}
-        <Button
-          fullWidth
-          className="mt-4"
-          icon={<Icon name="explore" size={20} />}
-          onClick={() => router.push(`/trips/${booking.tripId}/hub`)}
-        >
-          Open Trip Hub
-        </Button>
+        <div className="mt-4 flex items-center gap-2">
+          <Button
+            className="flex-1"
+            icon={<Icon name="explore" size={20} />}
+            onClick={() => router.push(`/trips/${booking.tripId}/hub`)}
+          >
+            Open Trip Hub
+          </Button>
+          <Button
+            variant="secondary"
+            icon={<Icon name="sports" size={20} />}
+            onClick={() => router.push(`/trips/${booking.tripId}/shepherd`)}
+          >
+            Whistle
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -354,7 +443,7 @@ function CompletedTripCard({ booking }: { booking: BookingTrip }) {
         </div>
 
         {/* Trip Photos */}
-        {booking.photos.length > 0 && (
+        {(booking.photos?.length ?? 0) > 0 && (
           <div className="mt-3 flex gap-1.5 overflow-x-auto hide-scrollbar">
             {booking.photos.slice(0, 4).map((photo, idx) => (
               <div
@@ -499,7 +588,11 @@ export default function MyTripsPage() {
           ) : (
             <div className="space-y-4">
               {bookings.map((booking) => (
-                <UpcomingTripCard key={booking.id} booking={booking} />
+                <UpcomingTripCard
+                  key={booking.id}
+                  booking={booking}
+                  onCancelled={() => fetchBookings("upcoming")}
+                />
               ))}
             </div>
           )}

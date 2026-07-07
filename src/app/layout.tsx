@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { getThemeCss } from "@/lib/theme/server";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -65,13 +66,20 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
+  // When the on-screen keyboard opens, resize the layout viewport (and `dvh`)
+  // so sticky-bottom inputs (e.g. the chat composer) ride above the keyboard
+  // instead of being hidden behind it.
+  interactiveWidget: "resizes-content",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Admin-configurable theme, injected as :root overrides over globals.css.
+  const themeCss = await getThemeCss();
+
   return (
     <html
       lang="en"
@@ -82,6 +90,7 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
         />
+        {themeCss && <style id="tg-theme" dangerouslySetInnerHTML={{ __html: themeCss }} />}
       </head>
       <body className="min-h-dvh bg-background text-on-background antialiased">
         <Providers>{children}</Providers>

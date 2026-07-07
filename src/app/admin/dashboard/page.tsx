@@ -108,18 +108,29 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+  const [revenue, setRevenue] = useState<{
+    ongoing: number;
+    upcoming: number;
+    past: number;
+    all: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchDashboard() {
       try {
-        const res = await fetch("/api/admin");
+        const [res, revRes] = await Promise.all([
+          fetch("/api/admin"),
+          fetch("/api/admin/revenue"),
+        ]);
         const json = await res.json();
         if (json.success) {
           setStats(json.data);
           setRecentBookings(json.data.recentBookings ?? []);
           setRecentUsers(json.data.recentUsers ?? []);
         }
+        const revJson = await revRes.json();
+        if (revJson.success) setRevenue(revJson.data.totals);
       } catch (err) {
         console.error("Failed to load dashboard", err);
       } finally {
@@ -210,6 +221,35 @@ export default function AdminDashboardPage() {
           value={formatCurrency(s.totalRevenuePaise)}
           growth={s.revenueGrowth}
         />
+      </div>
+
+      {/* Revenue by Trail Status */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-title-lg font-title-lg text-on-surface">Revenue by Trail Status</h2>
+          <Link href="/admin/revenue" className="text-label-lg font-semibold text-primary">
+            View details →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {[
+            { key: "ongoing", label: "Ongoing", icon: "hiking", tint: "bg-success/10 text-success" },
+            { key: "upcoming", label: "Upcoming", icon: "flight_takeoff", tint: "bg-secondary/15 text-secondary" },
+            { key: "past", label: "Past", icon: "history", tint: "bg-surface-container-high text-on-surface-variant" },
+          ].map((c) => (
+            <Card key={c.key} variant="elevated" className="flex items-center gap-3 p-4">
+              <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${c.tint}`}>
+                <span className="material-symbols-outlined text-[22px]">{c.icon}</span>
+              </span>
+              <div>
+                <p className="text-label-sm text-on-surface-variant">{c.label} revenue</p>
+                <p className="text-title-lg font-bold text-on-surface">
+                  {revenue ? formatCurrency(revenue[c.key as "ongoing" | "upcoming" | "past"]) : "—"}
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* Tables Section */}

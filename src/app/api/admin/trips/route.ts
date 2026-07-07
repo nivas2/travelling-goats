@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       couplePricePaise, groupPricePaise, platformFeePaise, startDate,
       endDate, duration, maxGroupSize, minGroupSize, category, difficulty,
       tags, isFeatured, isTrending, cancellationPolicy, bookingCutoffHours,
-      status, itineraryDays, addOns, snackOptions, faqs,
+      status, tripCaptainId, itineraryDays, addOns, snackOptions, faqs,
     } = validation.data;
 
     // Check slug uniqueness
@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
         meetingTime: meetingTime || null,
         coverImage,
         images: images ?? [],
+        tripCaptainId: tripCaptainId || null,
         basePricePaise,
         couplePricePaise: couplePricePaise ?? null,
         groupPricePaise: groupPricePaise ?? null,

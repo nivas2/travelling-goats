@@ -9,6 +9,68 @@ import { auditLog } from "@/lib/audit";
 
 const logger = createLogger({ route: "reviews" });
 
+// List reviews for a trip + whether the current user may add one.
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const tripId = searchParams.get("tripId");
+    if (!tripId) {
+      return NextResponse.json({ success: false, error: "tripId is required" }, { status: 400 });
+    }
+
+    const reviews = await prisma.review.findMany({
+      where: { tripId },
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { name: true, avatar: true } } },
+    });
+
+    const session = await auth();
+    let canReview = false;
+    let hasReviewed = false;
+    if (session?.user?.id) {
+      hasReviewed = reviews.some((r) => r.userId === session.user!.id);
+      if (!hasReviewed) {
+        const booking = await prisma.booking.findFirst({
+          where: { userId: session.user.id, tripId, status: { in: ["CONFIRMED", "COMPLETED"] } },
+          select: { id: true },
+        });
+        canReview = !!booking;
+      }
+    }
+
+    const count = reviews.length;
+    const average = count
+      ? Math.round((reviews.reduce((s, r) => s + r.overallRating, 0) / count) * 10) / 10
+      : 0;
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        reviews: reviews.map((r) => ({
+          id: r.id,
+          userName: r.user.name ?? "Traveller",
+          userAvatar: r.user.avatar,
+          overallRating: r.overallRating,
+          safetyRating: r.safetyRating,
+          valueRating: r.valueRating,
+          funRating: r.funRating,
+          comment: r.comment,
+          isVerified: r.isVerified,
+          helpfulCount: r.helpfulCount,
+          createdAt: r.createdAt.toISOString(),
+        })),
+        canReview,
+        hasReviewed,
+        average,
+        count,
+      },
+    });
+  } catch (error) {
+    logger.error("Reviews fetch error", error);
+    return NextResponse.json({ success: false, error: "Failed to fetch reviews" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();

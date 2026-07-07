@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { cn, formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -443,14 +444,17 @@ function MessageListSkeleton() {
 // Main Chat Page
 // ---------------------------------------------------------------------------
 
-const CURRENT_USER_ID = "current-user"; // Placeholder - would come from auth context
 const POLL_INTERVAL = 3000;
 
 export default function TripChatPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { data: session } = useSession();
   const { error: toastError } = useToast();
   const tripId = params.id;
+
+  // Real logged-in user id — used to right-align the current user's own messages.
+  const currentUserId = session?.user?.id;
 
   const [room, setRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
@@ -498,10 +502,11 @@ export default function TripChatPage() {
       try {
         const res = await fetch(`/api/chat?tripId=${tripId}`);
         if (!res.ok) throw new Error("Failed to load messages");
-        const data: ApiResponse<ChatMessageData[]> = await res.json();
+        const data: ApiResponse<{ roomId: string; messages: ChatMessageData[] }> =
+          await res.json();
         if (!data.success) throw new Error(data.error ?? "Failed to load messages");
 
-        const newMessages = data.data ?? [];
+        const newMessages = data.data?.messages ?? [];
         setMessages((prev) => {
           // Only update if there are new messages
           if (prev.length !== newMessages.length || isInitial) {
@@ -676,7 +681,7 @@ export default function TripChatPage() {
 
                   {/* Messages */}
                   {group.messages.map((msg, idx) => {
-                    const isOwn = msg.userId === CURRENT_USER_ID;
+                    const isOwn = msg.userId === currentUserId;
                     const prevMsg = idx > 0 ? group.messages[idx - 1] : null;
                     const showAvatar = !prevMsg || prevMsg.userId !== msg.userId;
                     const showName = showAvatar;

@@ -94,7 +94,7 @@ export async function PUT(
       "basePricePaise", "couplePricePaise", "groupPricePaise",
       "platformFeePaise", "duration", "maxGroupSize", "minGroupSize",
       "category", "difficulty", "tags", "isFeatured", "isTrending",
-      "cancellationPolicy", "bookingCutoffHours", "status",
+      "cancellationPolicy", "bookingCutoffHours", "status", "tripCaptainId",
     ];
 
     for (const field of directFields) {

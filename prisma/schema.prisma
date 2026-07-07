@@ -59,6 +59,9 @@ model User {
   memoryEntries     MemoryEntry[]
   tripCompanions    TripCompanion[]
   savingsGoals      SavingsGoal[]
+  privateRequests   PrivateRequest[]
+  privateRequestMessages PrivateRequestMessage[]
+  playlistTracks    PlaylistTrack[]
 
   @@map("users")
 }
@@ -188,6 +191,8 @@ model Trip {
   chatRoom         ChatRoom?
   faqs             TripFaq[]
   seatReservations SeatReservation[]
+  privateRequests  PrivateRequest[]
+  playlistTracks   PlaylistTrack[]
 
   @@index([vehicleTemplateId])
   @@map("trips")
@@ -275,6 +280,8 @@ model Booking {
   specialRequests String?
   pickupPoint     String?
   qrToken         String?       @unique
+  checkedInAt     DateTime?
+  checkedInById   String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -444,6 +451,7 @@ model Review {
   comment       String?
   images        String[] @default([])
   isVerified    Boolean @default(false)
+  isFeatured    Boolean @default(false)
   helpfulCount  Int     @default(0)
   createdAt     DateTime @default(now())
 
@@ -452,6 +460,7 @@ model Review {
 
   @@unique([userId, tripId])
   @@index([tripId])
+  @@index([isFeatured])
   @@map("reviews")
 }
 
@@ -675,6 +684,67 @@ model CmsContent {
   updatedAt DateTime @updatedAt
 
   @@map("cms_contents")
+}
+
+// ===== PRIVATE SHEPHERD REQUESTS =====
+// A private 1:1 thread between a traveller and their trip's shepherd (captain).
+// Separate from the public group chat — used for sensitive/safety requests.
+
+model PrivateRequest {
+  id        String   @id @default(cuid())
+  tripId    String
+  userId    String
+  status    String   @default("OPEN") // OPEN | RESOLVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trip     Trip                    @relation(fields: [tripId], references: [id])
+  user     User                    @relation(fields: [userId], references: [id])
+  messages PrivateRequestMessage[]
+
+  @@unique([tripId, userId])
+  @@index([tripId])
+  @@index([userId])
+  @@map("private_requests")
+}
+
+model PrivateRequestMessage {
+  id        String   @id @default(cuid())
+  requestId String
+  senderId  String
+  content   String
+  isStaff   Boolean  @default(false) // true when the shepherd/admin replies
+  createdAt DateTime @default(now())
+
+  request PrivateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender  User           @relation(fields: [senderId], references: [id])
+
+  @@index([requestId])
+  @@map("private_request_messages")
+}
+
+// ===== TRIP BUS PLAYLIST =====
+// Songs travellers suggest for the shared trip ("bus") playlist. Metadata comes
+// from the free iTunes Search API (title, artist, artwork, 30s preview).
+
+model PlaylistTrack {
+  id         String   @id @default(cuid())
+  tripId     String
+  addedById  String
+  title      String
+  artist     String
+  artworkUrl String?
+  previewUrl String?
+  sourceUrl  String?
+  externalId String?
+  createdAt  DateTime @default(now())
+
+  trip    Trip @relation(fields: [tripId], references: [id])
+  addedBy User @relation(fields: [addedById], references: [id])
+
+  @@unique([tripId, externalId])
+  @@index([tripId])
+  @@map("playlist_tracks")
 }
 
 // ===== AUDIT LOG =====

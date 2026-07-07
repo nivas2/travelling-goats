@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, use } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { cn, formatCurrency, formatDateRange, formatDate } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
@@ -16,18 +16,8 @@ import { Rating } from "@/components/ui/rating";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { Avatar } from "@/components/ui/avatar";
+import { WriteReviewModal } from "@/components/reviews/write-review-modal";
 import type { TripDetail, ApiResponse } from "@/types";
-
-// ---------------------------------------------------------------------------
-// Difficulty Badge Color Map
-// ---------------------------------------------------------------------------
-
-const difficultyColorMap: Record<string, "primary" | "secondary" | "tertiary"> = {
-  Easy: "secondary",
-  Moderate: "tertiary",
-  Hard: "primary",
-  Challenging: "primary",
-};
 
 // ---------------------------------------------------------------------------
 // Image Carousel
@@ -245,12 +235,9 @@ function TripDetailSkeleton() {
 // Trip Detail Page
 // ---------------------------------------------------------------------------
 
-export default function TripDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function TripDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -258,42 +245,50 @@ export default function TripDetailPage({
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Mock review data for the reviews tab
-  const [reviews] = useState<ReviewData[]>([
-    {
-      id: "r1",
-      userName: "Priya Sharma",
-      userAvatar: null,
-      rating: 5,
-      comment:
-        "Absolutely incredible experience! The organizers were so thoughtful, every detail was taken care of. Would definitely recommend to anyone looking for a hassle-free adventure.",
-      date: "2025-03-15",
-    },
-    {
-      id: "r2",
-      userName: "Arjun Patel",
-      userAvatar: null,
-      rating: 4,
-      comment:
-        "Great trip overall. The itinerary was well-planned and the group was amazing. Only minor issue was the accommodation on day 2, but the rest made up for it.",
-      date: "2025-03-01",
-    },
-    {
-      id: "r3",
-      userName: "Neha Gupta",
-      userAvatar: null,
-      rating: 5,
-      comment:
-        "Best trail I have ever been on! Met some wonderful people and the views were breathtaking. Travelling Goats really knows how to curate experiences.",
-      date: "2025-02-20",
-    },
-  ]);
+  // Real reviews for the reviews tab
+  const [reviews, setReviews] = useState<ReviewData[]>([]);
+  const [canReview, setCanReview] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+  const [writeOpen, setWriteOpen] = useState(false);
+
+  const loadReviews = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/reviews?tripId=${id}`);
+      const json = await res.json();
+      if (json.success) {
+        const d = json.data;
+        setReviews(
+          (d.reviews ?? []).slice(0, 3).map(
+            (r: {
+              id: string;
+              userName: string;
+              userAvatar: string | null;
+              overallRating: number;
+              comment: string | null;
+              createdAt: string;
+            }) => ({
+              id: r.id,
+              userName: r.userName,
+              userAvatar: r.userAvatar,
+              rating: r.overallRating,
+              comment: r.comment ?? "",
+              date: r.createdAt,
+            })
+          )
+        );
+        setCanReview(!!d.canReview);
+        setHasReviewed(!!d.hasReviewed);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [id]);
 
   const fetchTrip = useCallback(async () => {
     try {
       setLoading(true);
       setFetchError(false);
-      const res = await fetch(`/api/trips/${id}`);
+      const [res] = await Promise.all([fetch(`/api/trips/${id}`), loadReviews()]);
       const json: ApiResponse<TripDetail> = await res.json();
       if (json.success && json.data) {
         setTrip(json.data);
@@ -303,7 +298,7 @@ export default function TripDetailPage({
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, loadReviews]);
 
   useEffect(() => {
     fetchTrip();
@@ -364,10 +359,8 @@ export default function TripDetailPage({
 
   const spotsLeft = trip.maxGroupSize - trip.currentBookings;
   const spotsPercentage = (trip.currentBookings / trip.maxGroupSize) * 100;
-  const averageRating =
-    reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-      : trip.rating;
+  // Trip.rating is kept accurate across all reviews by the review API.
+  const averageRating = trip.rating;
 
   return (
     <div className="min-h-screen bg-background pb-40">
@@ -422,17 +415,11 @@ export default function TripDetailPage({
           <span>{trip.destination}</span>
         </div>
 
-        {/* Duration & Difficulty */}
+        {/* Duration */}
         <div className="mt-3 flex items-center gap-2.5">
           <Chip variant="outlined" color="secondary" className="gap-1">
             <Icon name="schedule" size={14} />
             {trip.duration} Days
-          </Chip>
-          <Chip
-            variant="filled"
-            color={difficultyColorMap[trip.difficulty] ?? "primary"}
-          >
-            {trip.difficulty}
           </Chip>
           {trip.isTrending && (
             <Chip variant="filled" color="tertiary">
@@ -768,21 +755,47 @@ export default function TripDetailPage({
                 </div>
               </div>
 
+              {/* Write a review CTA */}
+              {hasReviewed ? (
+                <div className="mb-4 flex items-center gap-2 rounded-xl bg-success/10 px-4 py-3 text-body-md text-success">
+                  <Icon name="check_circle" size={20} filled />
+                  You&apos;ve reviewed this trip. Thanks!
+                </div>
+              ) : canReview ? (
+                <Button
+                  fullWidth
+                  className="mb-4"
+                  icon={<Icon name="rate_review" size={18} />}
+                  onClick={() => setWriteOpen(true)}
+                >
+                  Write a Review
+                </Button>
+              ) : null}
+
               {/* Review Cards */}
-              <div className="space-y-3">
-                {reviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </div>
+              {reviews.length > 0 ? (
+                <div className="space-y-3">
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-body-md text-on-surface-variant">
+                  No reviews yet.{" "}
+                  {canReview ? "Be the first to review this trip!" : "Reviews will appear here."}
+                </div>
+              )}
 
               {/* View all reviews link */}
-              <Link
-                href={`/trips/${id}/reviews`}
-                className="mt-4 flex items-center justify-center gap-1 text-label-lg font-semibold text-primary"
-              >
-                View All Reviews
-                <Icon name="arrow_forward" size={18} />
-              </Link>
+              {reviews.length > 0 && (
+                <Link
+                  href={`/trips/${id}/reviews`}
+                  className="mt-4 flex items-center justify-center gap-1 text-label-lg font-semibold text-primary"
+                >
+                  View All Reviews
+                  <Icon name="arrow_forward" size={18} />
+                </Link>
+              )}
             </TabPanel>
 
             {/* FAQs Tab */}
@@ -862,6 +875,13 @@ export default function TripDetailPage({
           </Button>
         </div>
       </div>
+
+      <WriteReviewModal
+        tripId={id}
+        open={writeOpen}
+        onClose={() => setWriteOpen(false)}
+        onSubmitted={loadReviews}
+      />
     </div>
   );
 }

@@ -10,6 +10,8 @@ import { Rating } from "@/components/ui/rating";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Modal } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
 import { PageHeader } from "@/components/layout/page-header";
 import type { TripDetail, ApiResponse } from "@/types";
 
@@ -167,110 +169,117 @@ export default function ReviewsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [trip, setTrip] = useState<TripDetail | null>(null);
+  const { success: toastSuccess, error: toastError } = useToast();
+  const [, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [filterRating, setFilterRating] = useState<FilterRating>(0);
 
-  // Mock reviews data (in production these would come from an API)
-  const [reviews] = useState<ReviewData[]>([
-    {
-      id: "r1",
-      userName: "Priya Sharma",
-      userAvatar: null,
-      rating: 5,
-      comment:
-        "Absolutely incredible experience! The organizers were so thoughtful, every detail was taken care of. From the breathtaking views to the cozy accommodations, everything was perfect. The group was full of amazing people and we made memories that will last a lifetime. Would definitely recommend to anyone looking for a hassle-free adventure.",
-      date: "2025-03-15",
-      isVerified: true,
-      helpfulCount: 12,
-    },
-    {
-      id: "r2",
-      userName: "Arjun Patel",
-      userAvatar: null,
-      rating: 4,
-      comment:
-        "Great trip overall. The itinerary was well-planned and the group was amazing. Only minor issue was the accommodation on day 2, but the rest made up for it. The food was excellent and the activities were well-organized.",
-      date: "2025-03-01",
-      isVerified: true,
-      helpfulCount: 8,
-    },
-    {
-      id: "r3",
-      userName: "Neha Gupta",
-      userAvatar: null,
-      rating: 5,
-      comment:
-        "Best trail I have ever been on! Met some wonderful people and the views were breathtaking. Travelling Goats really knows how to curate experiences. Every moment was special and the Shepherd was fantastic.",
-      date: "2025-02-20",
-      isVerified: false,
-      helpfulCount: 15,
-    },
-    {
-      id: "r4",
-      userName: "Rahul Verma",
-      userAvatar: null,
-      rating: 4,
-      comment:
-        "Had an amazing time! The trek was challenging but rewarding. The campsite was beautiful and the stargazing session was unforgettable. Slight improvement needed in the transport arrangements but otherwise a solid trip.",
-      date: "2025-02-10",
-      isVerified: true,
-      helpfulCount: 6,
-    },
-    {
-      id: "r5",
-      userName: "Ananya Reddy",
-      userAvatar: null,
-      rating: 5,
-      comment:
-        "Travelling Goats exceeded all my expectations. As a solo trekker, I was nervous at first, but the herd vibe was incredible. Made friends for life! The trail was perfectly paced with a great mix of adventure and relaxation.",
-      date: "2025-01-28",
-      isVerified: true,
-      helpfulCount: 20,
-    },
-    {
-      id: "r6",
-      userName: "Vikram Singh",
-      userAvatar: null,
-      rating: 3,
-      comment:
-        "Decent experience. The destination was beautiful but some of the logistics could have been better. The group dynamics were great though, and the trip leader was very accommodating.",
-      date: "2025-01-15",
-      isVerified: false,
-      helpfulCount: 3,
-    },
-    {
-      id: "r7",
-      userName: "Kavya Nair",
-      userAvatar: null,
-      rating: 5,
-      comment:
-        "Wonderful trail from start to finish! The sunrise hike was the highlight for me. Such a well-curated experience. I have already recommended Travelling Goats to all my friends.",
-      date: "2025-01-05",
-      isVerified: true,
-      helpfulCount: 11,
-    },
-  ]);
+  const [reviews, setReviews] = useState<ReviewData[]>([]);
+  const [canReview, setCanReview] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
 
-  const fetchTrip = useCallback(async () => {
+  // Write-review form state
+  const [formOpen, setFormOpen] = useState(false);
+  const [overall, setOverall] = useState(0);
+  const [safety, setSafety] = useState(0);
+  const [value, setValue] = useState(0);
+  const [fun, setFun] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadReviews = useCallback(async () => {
     try {
-      setLoading(true);
-      const res = await fetch(`/api/trips/${id}`);
-      const json: ApiResponse<TripDetail> = await res.json();
-      if (json.success && json.data) {
-        setTrip(json.data);
+      const res = await fetch(`/api/reviews?tripId=${id}`);
+      const json = await res.json();
+      if (json.success) {
+        const d = json.data;
+        setReviews(
+          (d.reviews ?? []).map(
+            (r: {
+              id: string;
+              userName: string;
+              userAvatar: string | null;
+              overallRating: number;
+              comment: string | null;
+              createdAt: string;
+              isVerified: boolean;
+              helpfulCount: number;
+            }) => ({
+              id: r.id,
+              userName: r.userName,
+              userAvatar: r.userAvatar,
+              rating: r.overallRating,
+              comment: r.comment ?? "",
+              date: r.createdAt,
+              isVerified: r.isVerified,
+              helpfulCount: r.helpfulCount,
+            })
+          )
+        );
+        setCanReview(!!d.canReview);
+        setHasReviewed(!!d.hasReviewed);
       }
     } catch {
-      // Handle error silently
-    } finally {
-      setLoading(false);
+      /* ignore */
     }
   }, [id]);
 
   useEffect(() => {
-    fetchTrip();
-  }, [fetchTrip]);
+    let active = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const tripRes = await fetch(`/api/trips/${id}`);
+        const json: ApiResponse<TripDetail> = await tripRes.json();
+        if (active && json.success && json.data) setTrip(json.data);
+        await loadReviews();
+      } catch {
+        /* ignore */
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [id, loadReviews]);
+
+  async function submitReview() {
+    if (overall < 1) {
+      toastError("Please give an overall star rating");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tripId: id,
+          overallRating: overall,
+          safetyRating: safety || undefined,
+          valueRating: value || undefined,
+          funRating: fun || undefined,
+          comment: comment.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error ?? "Failed to submit review");
+      toastSuccess("Thanks for your review! +100 points");
+      setFormOpen(false);
+      setOverall(0);
+      setSafety(0);
+      setValue(0);
+      setFun(0);
+      setComment("");
+      await loadReviews();
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : "Failed to submit review");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   // Computed values
   const averageRating = useMemo(() => {
@@ -353,6 +362,23 @@ export default function ReviewsPage({
             </div>
           </div>
 
+          {/* ===== Write a Review CTA ===== */}
+          {hasReviewed ? (
+            <div className="mb-6 flex items-center gap-2 rounded-xl bg-success/10 px-4 py-3 text-body-md text-success">
+              <Icon name="check_circle" size={20} filled />
+              You&apos;ve reviewed this trip. Thanks for sharing!
+            </div>
+          ) : canReview ? (
+            <Button
+              fullWidth
+              className="mb-6"
+              icon={<Icon name="rate_review" size={18} />}
+              onClick={() => setFormOpen(true)}
+            >
+              Write a Review
+            </Button>
+          ) : null}
+
           {/* ===== Filter by Rating ===== */}
           <div className="mb-6">
             <p className="text-label-lg font-semibold text-on-surface mb-2">
@@ -431,9 +457,11 @@ export default function ReviewsPage({
               <p className="text-body-md text-on-surface-variant/70 mt-1">
                 Be the first to review this trip
               </p>
-              <Button variant="secondary" className="mt-4">
-                Write a Review
-              </Button>
+              {canReview && (
+                <Button variant="secondary" className="mt-4" onClick={() => setFormOpen(true)}>
+                  Write a Review
+                </Button>
+              )}
             </div>
           ) : (
             <EmptyState
@@ -449,6 +477,58 @@ export default function ReviewsPage({
           )}
         </div>
       )}
+
+      {/* ===== Write Review Modal ===== */}
+      <Modal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        title="Write a Review"
+        description="Share your experience to help other travellers."
+        size="md"
+      >
+        <div className="space-y-4">
+          <div>
+            <p className="mb-1 text-label-lg font-semibold text-on-surface">
+              Overall rating <span className="text-error">*</span>
+            </p>
+            <Rating value={overall} onChange={setOverall} size="lg" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {[
+              { label: "Safety", val: safety, set: setSafety },
+              { label: "Value", val: value, set: setValue },
+              { label: "Fun", val: fun, set: setFun },
+            ].map((row) => (
+              <div key={row.label}>
+                <p className="mb-1 text-label-md text-on-surface-variant">{row.label}</p>
+                <Rating value={row.val} onChange={row.set} size="sm" />
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <p className="mb-1 text-label-lg font-semibold text-on-surface">Your review</p>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+              maxLength={2000}
+              placeholder="What did you love? What could be better?"
+              className="w-full resize-y rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-body-md text-on-surface outline-none focus:border-primary"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-1">
+            <Button variant="ghost" size="sm" onClick={() => setFormOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" loading={submitting} onClick={submitReview} disabled={overall < 1}>
+              Submit Review
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

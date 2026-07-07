@@ -2,10 +2,11 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { cn, slugify, formatCurrency, paiseToRupees, rupeesToPaise } from "@/lib/utils";
+import { cn, slugify, formatCurrency, paiseToRupees, rupeesToPaise, formatSaveError } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Switch } from "@/components/ui/switch";
 
@@ -70,11 +71,6 @@ const difficultyOptions = [
   { label: "Extreme", value: "EXTREME" },
 ];
 
-const cancellationOptions = [
-  { label: "Flexible", value: "FLEXIBLE" },
-  { label: "Moderate", value: "MODERATE" },
-  { label: "Strict", value: "STRICT" },
-];
 
 const mealOptions = ["Breakfast", "Lunch", "Dinner", "Snacks"];
 
@@ -140,11 +136,12 @@ export default function CreateTripPage() {
   // Vehicle assignment
   const [vehicleTemplateId, setVehicleTemplateId] = useState("");
   const [vehicleTemplates, setVehicleTemplates] = useState<Array<{ id: string; name: string; totalSeats: number; vehicleType: { name: string } }>>([]);
+  const [captainId, setCaptainId] = useState("");
+  const [captains, setCaptains] = useState<Array<{ id: string; name: string | null; role: string }>>([]);
 
   // Settings
   const [isFeatured, setIsFeatured] = useState(false);
   const [isTrending, setIsTrending] = useState(false);
-  const [cancellationPolicy, setCancellationPolicy] = useState("MODERATE");
 
   // Itinerary
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
@@ -181,6 +178,22 @@ export default function CreateTripPage() {
       }
     }
     fetchVehicles();
+    async function fetchCaptains() {
+      try {
+        const res = await fetch("/api/admin/users");
+        if (res.ok) {
+          const json = await res.json();
+          setCaptains(
+            (json.data ?? []).filter(
+              (u: { role: string }) => u.role === "TRIP_CAPTAIN" || u.role === "ADMIN"
+            )
+          );
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+    fetchCaptains();
   }, []);
 
   const handleTitleChange = useCallback((val: string) => {
@@ -364,8 +377,8 @@ export default function CreateTripPage() {
         .filter(Boolean),
       isFeatured,
       isTrending,
-      cancellationPolicy,
       vehicleTemplateId: vehicleTemplateId || undefined,
+      tripCaptainId: captainId || undefined,
       status,
       itineraryDays: itinerary.map((day) => ({
         dayNumber: day.dayNumber,
@@ -410,11 +423,11 @@ export default function CreateTripPage() {
       if (json.success) {
         router.push("/admin/trips");
       } else {
-        alert(json.error ?? "Failed to save trip");
+        alert(formatSaveError(json));
       }
     } catch (err) {
       console.error("Failed to save trip", err);
-      alert("Something went wrong");
+      alert("Something went wrong. Check that dates and prices are filled in.");
     } finally {
       setLoading(false);
     }
@@ -453,6 +466,7 @@ export default function CreateTripPage() {
       <FormSection title="Basic Info">
         <Input
           label="Title"
+          required
           placeholder="e.g. Manali Winter Wonderland"
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
@@ -460,6 +474,7 @@ export default function CreateTripPage() {
         />
         <Input
           label="Slug"
+          required
           placeholder="auto-generated-slug"
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
@@ -468,7 +483,7 @@ export default function CreateTripPage() {
         />
         <div>
           <label className="text-label-lg font-semibold text-on-surface mb-1.5 block">
-            Description
+            Description <span className="text-error">*</span>
           </label>
           <textarea
             className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[120px] resize-y"
@@ -491,6 +506,7 @@ export default function CreateTripPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input
             label="Destination"
+            required
             placeholder="e.g. Manali, Himachal Pradesh"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
@@ -522,8 +538,9 @@ export default function CreateTripPage() {
 
       {/* Media */}
       <FormSection title="Media">
+        <ImageUpload label="Cover Image" required value={coverImage} onChange={setCoverImage} recommend="Trip cover ~1200×800px (landscape), JPG" minWidth={800} minHeight={500} aspect="3/2" />
         <Input
-          label="Cover Image URL"
+          label="…or paste an image URL"
           placeholder="https://example.com/image.jpg"
           value={coverImage}
           onChange={(e) => setCoverImage(e.target.value)}
@@ -540,15 +557,6 @@ export default function CreateTripPage() {
             onChange={(e) => setAdditionalImages(e.target.value)}
           />
         </div>
-        {coverImage && (
-          <div className="h-40 w-60 overflow-hidden rounded-xl bg-surface-container-low">
-            <img
-              src={coverImage}
-              alt="Cover preview"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        )}
       </FormSection>
 
       {/* Pricing */}
@@ -556,6 +564,7 @@ export default function CreateTripPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Input
             label="Base Price (₹)"
+            required
             type="number"
             placeholder="4999"
             value={basePrice}
@@ -594,6 +603,7 @@ export default function CreateTripPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Input
             label="Start Date"
+            required
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -601,6 +611,7 @@ export default function CreateTripPage() {
           />
           <Input
             label="End Date"
+            required
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
@@ -637,8 +648,21 @@ export default function CreateTripPage() {
         </div>
       </FormSection>
 
-      {/* Vehicle Assignment */}
-      <FormSection title="Vehicle Assignment">
+      {/* Captain & Vehicle */}
+      <FormSection title="Captain & Vehicle">
+        <Dropdown
+          label="Trip Captain / Shepherd"
+          placeholder="No captain assigned"
+          options={[
+            { label: "No captain", value: "" },
+            ...captains.map((c) => ({
+              label: `${c.name ?? "Unnamed"}${c.role === "ADMIN" ? " (Admin)" : ""}`,
+              value: c.id,
+            })),
+          ]}
+          value={captainId}
+          onChange={setCaptainId}
+        />
         <Dropdown
           label="Assign Vehicle (optional)"
           placeholder="No vehicle assigned"
@@ -662,6 +686,7 @@ export default function CreateTripPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Dropdown
             label="Category"
+            required
             options={categoryOptions}
             value={category}
             onChange={setCategory}
@@ -696,12 +721,6 @@ export default function CreateTripPage() {
             onChange={setIsTrending}
           />
         </div>
-        <Dropdown
-          label="Cancellation Policy"
-          options={cancellationOptions}
-          value={cancellationPolicy}
-          onChange={setCancellationPolicy}
-        />
       </FormSection>
 
       {/* Itinerary Builder */}

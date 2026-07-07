@@ -111,6 +111,36 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Notify the other trip members that a new message was posted.
+    try {
+      const members = await prisma.booking.findMany({
+        where: { tripId, status: { in: ["PENDING", "CONFIRMED", "COMPLETED"] } },
+        select: { userId: true },
+      });
+      const recipientIds = [...new Set(members.map((m) => m.userId))].filter(
+        (uid) => uid !== session.user!.id
+      );
+      if (recipientIds.length > 0) {
+        const trip = await prisma.trip.findUnique({
+          where: { id: tripId },
+          select: { title: true },
+        });
+        const senderName = message.user.name ?? "A traveller";
+        const preview = content ? content.slice(0, 80) : "📷 sent a photo";
+        await prisma.notification.createMany({
+          data: recipientIds.map((uid) => ({
+            userId: uid,
+            title: `New message · ${trip?.title ?? "your trip"}`,
+            body: `${senderName}: ${preview}`,
+            type: "CHAT" as const,
+            data: { tripId, roomId: chatRoom.id, kind: "group" },
+          })),
+        });
+      }
+    } catch {
+      // Notifications are best-effort; never fail the message send.
+    }
+
     return NextResponse.json({
       success: true,
       data: {

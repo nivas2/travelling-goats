@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { cn, slugify, rupeesToPaise, paiseToRupees } from "@/lib/utils";
+import { cn, slugify, rupeesToPaise, paiseToRupees, formatSaveError } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Switch } from "@/components/ui/switch";
 
@@ -74,11 +75,6 @@ const difficultyOptions = [
   { label: "Extreme", value: "EXTREME" },
 ];
 
-const cancellationOptions = [
-  { label: "Flexible", value: "FLEXIBLE" },
-  { label: "Moderate", value: "MODERATE" },
-  { label: "Strict", value: "STRICT" },
-];
 
 const mealOptions = ["Breakfast", "Lunch", "Dinner", "Snacks"];
 
@@ -149,10 +145,13 @@ export default function EditTripPage() {
   const [vehicleTemplateId, setVehicleTemplateId] = useState("");
   const [vehicleTemplates, setVehicleTemplates] = useState<Array<{ id: string; name: string; totalSeats: number; vehicleType: { name: string } }>>([]);
 
+  // Trip captain (shepherd) assignment
+  const [captainId, setCaptainId] = useState("");
+  const [captains, setCaptains] = useState<Array<{ id: string; name: string | null; role: string }>>([]);
+
   // Settings
   const [isFeatured, setIsFeatured] = useState(false);
   const [isTrending, setIsTrending] = useState(false);
-  const [cancellationPolicy, setCancellationPolicy] = useState("MODERATE");
   const [currentStatus, setCurrentStatus] = useState("DRAFT");
 
   // Itinerary
@@ -208,9 +207,9 @@ export default function EditTripPage() {
         setTags((t.tags ?? []).join(", "));
         setIsFeatured(t.isFeatured);
         setIsTrending(t.isTrending);
-        setCancellationPolicy(t.cancellationPolicy);
         setCurrentStatus(t.status);
         setVehicleTemplateId(t.vehicleTemplateId ?? "");
+        setCaptainId(t.tripCaptainId ?? "");
 
         // Itinerary
         setItinerary(
@@ -277,6 +276,23 @@ export default function EditTripPage() {
       }
     }
     fetchVehicles();
+
+    // Fetch trip-captain candidates (captains + admins).
+    async function fetchCaptains() {
+      try {
+        const res = await fetch("/api/admin/users");
+        if (res.ok) {
+          const json = await res.json();
+          const list = (json.data ?? []).filter(
+            (u: { role: string }) => u.role === "TRIP_CAPTAIN" || u.role === "ADMIN"
+          );
+          setCaptains(list);
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+    fetchCaptains();
   }, [tripId]);
 
   /* ---------- Itinerary Helpers ---------- */
@@ -452,8 +468,8 @@ export default function EditTripPage() {
       tags: tags.split(",").map((s) => s.trim()).filter(Boolean),
       isFeatured,
       isTrending,
-      cancellationPolicy,
       vehicleTemplateId: vehicleTemplateId || null,
+      tripCaptainId: captainId || null,
       status,
       itineraryDays: itinerary.map((day) => ({
         dayNumber: day.dayNumber,
@@ -498,11 +514,11 @@ export default function EditTripPage() {
       if (json.success) {
         router.push("/admin/trips");
       } else {
-        alert(json.error ?? "Failed to update trip");
+        alert(formatSaveError(json));
       }
     } catch (err) {
       console.error("Failed to update trip", err);
-      alert("Something went wrong");
+      alert("Something went wrong. Check that dates and prices are filled in.");
     } finally {
       setLoadingFn(false);
     }
@@ -560,6 +576,7 @@ export default function EditTripPage() {
       <FormSection title="Basic Info">
         <Input
           label="Title"
+          required
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
@@ -567,10 +584,10 @@ export default function EditTripPage() {
           }}
           fullWidth
         />
-        <Input label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} fullWidth />
+        <Input label="Slug" required value={slug} onChange={(e) => setSlug(e.target.value)} fullWidth />
         <div>
           <label className="text-label-lg font-semibold text-on-surface mb-1.5 block">
-            Description
+            Description <span className="text-error">*</span>
           </label>
           <textarea
             className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[120px] resize-y"
@@ -589,7 +606,7 @@ export default function EditTripPage() {
       {/* Location */}
       <FormSection title="Location">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Input label="Destination" value={destination} onChange={(e) => setDestination(e.target.value)} fullWidth />
+          <Input label="Destination" required value={destination} onChange={(e) => setDestination(e.target.value)} fullWidth />
           <Input label="Origin" value={origin} onChange={(e) => setOrigin(e.target.value)} fullWidth />
           <Input label="Meeting Point" value={meetingPoint} onChange={(e) => setMeetingPoint(e.target.value)} fullWidth />
           <Input label="Meeting Time" value={meetingTime} onChange={(e) => setMeetingTime(e.target.value)} fullWidth />
@@ -598,7 +615,14 @@ export default function EditTripPage() {
 
       {/* Media */}
       <FormSection title="Media">
-        <Input label="Cover Image URL" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} fullWidth />
+        <ImageUpload label="Cover Image" required value={coverImage} onChange={setCoverImage} recommend="Trip cover ~1200×800px (landscape), JPG" minWidth={800} minHeight={500} aspect="3/2" />
+        <Input
+          label="…or paste an image URL"
+          value={coverImage}
+          onChange={(e) => setCoverImage(e.target.value)}
+          placeholder="https://…"
+          fullWidth
+        />
         <div>
           <label className="text-label-lg font-semibold text-on-surface mb-1.5 block">
             Additional Image URLs
@@ -610,17 +634,12 @@ export default function EditTripPage() {
             onChange={(e) => setAdditionalImages(e.target.value)}
           />
         </div>
-        {coverImage && (
-          <div className="h-40 w-60 overflow-hidden rounded-xl bg-surface-container-low">
-            <img src={coverImage} alt="Cover" className="h-full w-full object-cover" />
-          </div>
-        )}
       </FormSection>
 
       {/* Pricing */}
       <FormSection title="Pricing">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Input label="Base Price (₹)" type="number" value={basePrice} onChange={(e) => setBasePrice(e.target.value)} fullWidth />
+          <Input label="Base Price (₹)" required type="number" value={basePrice} onChange={(e) => setBasePrice(e.target.value)} fullWidth />
           <Input label="Couple Price (₹)" type="number" value={couplePrice} onChange={(e) => setCouplePrice(e.target.value)} fullWidth />
           <Input label="Group Price (₹)" type="number" value={groupPrice} onChange={(e) => setGroupPrice(e.target.value)} fullWidth />
           <Input label="Platform Fee (₹)" type="number" value={platformFee} onChange={(e) => setPlatformFee(e.target.value)} fullWidth />
@@ -630,8 +649,8 @@ export default function EditTripPage() {
       {/* Schedule */}
       <FormSection title="Schedule">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Input label="Start Date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} fullWidth />
-          <Input label="End Date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} fullWidth />
+          <Input label="Start Date" required type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} fullWidth />
+          <Input label="End Date" required type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} fullWidth />
           <div>
             <label className="text-label-lg font-semibold text-on-surface mb-1.5 block">Duration</label>
             <div className="flex h-12 items-center rounded-xl border border-outline-variant bg-surface-container-low px-4 text-on-surface-variant">
@@ -649,8 +668,21 @@ export default function EditTripPage() {
         </div>
       </FormSection>
 
-      {/* Vehicle Assignment */}
-      <FormSection title="Vehicle Assignment">
+      {/* Captain & Vehicle */}
+      <FormSection title="Captain & Vehicle">
+        <Dropdown
+          label="Trip Captain / Shepherd"
+          placeholder="No captain assigned"
+          options={[
+            { label: "No captain", value: "" },
+            ...captains.map((c) => ({
+              label: `${c.name ?? "Unnamed"}${c.role === "ADMIN" ? " (Admin)" : ""}`,
+              value: c.id,
+            })),
+          ]}
+          value={captainId}
+          onChange={setCaptainId}
+        />
         <Dropdown
           label="Assign Vehicle (optional)"
           placeholder="No vehicle assigned"
@@ -672,7 +704,7 @@ export default function EditTripPage() {
       {/* Category & Tags */}
       <FormSection title="Category & Tags">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Dropdown label="Category" options={categoryOptions} value={category} onChange={setCategory} />
+          <Dropdown label="Category" required options={categoryOptions} value={category} onChange={setCategory} />
           <Dropdown label="Difficulty" options={difficultyOptions} value={difficulty} onChange={setDifficulty} />
         </div>
         <Input label="Tags" value={tags} onChange={(e) => setTags(e.target.value)} fullWidth />
@@ -684,7 +716,6 @@ export default function EditTripPage() {
           <Switch label="Featured" checked={isFeatured} onChange={setIsFeatured} />
           <Switch label="Trending" checked={isTrending} onChange={setIsTrending} />
         </div>
-        <Dropdown label="Cancellation Policy" options={cancellationOptions} value={cancellationPolicy} onChange={setCancellationPolicy} />
       </FormSection>
 
       {/* Itinerary Builder */}

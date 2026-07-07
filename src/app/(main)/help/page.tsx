@@ -136,17 +136,15 @@ export default function HelpPage() {
       setLoading(true);
       setError(null);
 
-      // Fetch FAQs and tickets -- the API may combine or be separate.
-      // We attempt a single endpoint first.
-      const res = await fetch("/api/notifications?type=help");
+      // Load the user's support tickets.
+      const res = await fetch("/api/support");
       if (res.ok) {
         const json = await res.json();
         setData({
-          faqs: json.data?.faqs ?? defaultFaqs,
+          faqs: defaultFaqs,
           tickets: json.data?.tickets ?? [],
         });
       } else {
-        // Fallback to built-in FAQ data
         setData({ faqs: defaultFaqs, tickets: [] });
       }
     } catch {
@@ -167,34 +165,35 @@ export default function HelpPage() {
 
     try {
       setSubmittingTicket(true);
-      const res = await fetch("/api/notifications", {
+      const res = await fetch("/api/support", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "SUPPORT_TICKET",
           subject: ticketSubject.trim(),
           category: ticketCategory,
           description: ticketDescription.trim(),
         }),
       });
 
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data?.ticket) {
-          setData((prev) => ({
-            ...prev,
-            tickets: [json.data.ticket, ...prev.tickets],
-          }));
-        }
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error ?? "Failed to submit ticket");
       }
 
-      toastSuccess("Ticket submitted successfully");
+      if (json.data?.ticket) {
+        setData((prev) => ({
+          ...prev,
+          tickets: [json.data.ticket, ...prev.tickets],
+        }));
+      }
+
+      toastSuccess("Ticket raised successfully");
       setTicketModalOpen(false);
       setTicketSubject("");
       setTicketCategory("");
       setTicketDescription("");
-    } catch {
-      toastError("Failed to submit ticket. Please try again.");
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : "Failed to submit ticket. Please try again.");
     } finally {
       setSubmittingTicket(false);
     }

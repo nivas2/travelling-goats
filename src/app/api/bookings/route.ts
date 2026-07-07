@@ -66,6 +66,11 @@ export async function GET(req: NextRequest) {
             startDate: true,
             endDate: true,
             duration: true,
+            reviews: {
+              where: { userId: session.user.id },
+              select: { id: true },
+              take: 1,
+            },
           },
         },
         payment: true,
@@ -73,7 +78,41 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: bookings });
+    // Shape each booking into the flattened `BookingTrip` contract the UI expects.
+    const data = bookings.map((b) => {
+      const isCancelled = b.status === "CANCELLED" || b.status === "REFUNDED";
+      const start = b.trip.startDate;
+      const end = b.trip.endDate;
+      const uiStatus = isCancelled
+        ? "CANCELLED"
+        : end < now
+          ? "COMPLETED"
+          : start <= now
+            ? "ONGOING"
+            : "UPCOMING";
+
+      return {
+        id: b.id,
+        tripId: b.trip.id,
+        tripTitle: b.trip.title,
+        tripSlug: b.trip.slug,
+        coverImage: b.trip.coverImage ?? "",
+        destination: b.trip.destination,
+        startDate: start,
+        endDate: end,
+        duration: b.trip.duration,
+        status: uiStatus,
+        travelerCount: b.travelerCount,
+        bookingType: b.bookingType,
+        totalPricePaise: b.totalPricePaise,
+        tripCaptain: null,
+        companions: [],
+        photos: [],
+        hasReviewed: (b.trip.reviews?.length ?? 0) > 0,
+      };
+    });
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     logger.error("Bookings fetch error", error);
     return NextResponse.json(

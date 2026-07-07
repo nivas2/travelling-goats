@@ -127,3 +127,17 @@ export function calculateAge(dob: Date): number {
   }
   return age;
 }
+
+// Turn an API validation response into a readable, field-by-field message.
+export function formatSaveError(json: {
+  error?: string;
+  details?: Record<string, string[]>;
+}): string {
+  if (json.details && typeof json.details === "object") {
+    const fields = Object.entries(json.details)
+      .map(([f, errs]) => `• ${f}: ${(errs as string[]).join(", ")}`)
+      .join("\n");
+    return `${json.error ?? "Please fix these fields"}:\n${fields}`;
+  }
+  return json.error ?? "Failed to save trip";
+}

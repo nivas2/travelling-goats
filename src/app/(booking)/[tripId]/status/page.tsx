@@ -354,20 +354,6 @@ export default function StatusPage() {
         </div>
       </Card>
 
-      {/* Cancellation policy */}
-      {canCancel && (
-        <Card variant="outlined" className="flex flex-col gap-3">
-          <h3 className="text-title-md font-title-md text-on-surface flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-warning">
-              policy
-            </span>
-            Cancellation Policy
-          </h3>
-          <p className="text-body-md text-on-surface-variant">
-            {order.cancellationPolicy}
-          </p>
-        </Card>
-      )}
 
       {/* Actions */}
       <div className="flex flex-col gap-3">
@@ -410,17 +396,10 @@ export default function StatusPage() {
         open={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         title="Cancel Booking?"
-        description="This action cannot be undone. Refund will be processed as per our cancellation policy."
+        description="This action cannot be undone."
         size="sm"
       >
         <div className="flex flex-col gap-4 pt-2">
-          {/* Policy reminder */}
-          <div className="rounded-lg bg-warning-container/30 p-3">
-            <p className="text-body-md text-on-surface-variant">
-              {order.cancellationPolicy}
-            </p>
-          </div>
-
           <div className="flex gap-3">
             <Button
               variant="ghost"

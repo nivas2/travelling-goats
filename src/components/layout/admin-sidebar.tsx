@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 interface NavItem {
   label: string;
@@ -24,6 +24,13 @@ const navItems: NavItem[] = [
   { label: "Referrals", icon: "share", href: "/admin/referrals" },
   { label: "Notifications", icon: "notifications", href: "/admin/notifications" },
   { label: "Reviews", icon: "reviews", href: "/admin/reviews" },
+  { label: "Theme", icon: "palette", href: "/admin/theme" },
+  { label: "Site Content", icon: "edit_note", href: "/admin/content" },
+  { label: "FAQs", icon: "quiz", href: "/admin/faqs" },
+  { label: "Testimonials", icon: "format_quote", href: "/admin/testimonials" },
+  { label: "Private Requests", icon: "shield", href: "/admin/private-requests" },
+  { label: "SOS Alerts", icon: "sos", href: "/admin/sos" },
+  { label: "Revenue", icon: "payments", href: "/admin/revenue" },
   { label: "Herd Analytics", icon: "analytics", href: "/admin/analytics" },
   { label: "Support", icon: "support_agent", href: "/admin/support" },
 ];
@@ -89,7 +96,7 @@ export function AdminSidebar() {
               className="flex items-center gap-1.5"
               onClick={() => setMobileOpen(false)}
             >
-              <TravellingGoatsLogo size="sm" />
+              <BrandLogo size="sm" />
               <span className="ml-1 text-label-sm text-on-surface-variant/60 font-medium">
                 Admin
               </span>

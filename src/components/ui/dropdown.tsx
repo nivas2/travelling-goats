@@ -34,6 +34,7 @@ export interface DropdownProps {
   /** Error message or boolean. */
   error?: string | boolean;
   label?: string;
+  required?: boolean;
   className?: string;
 }
 
@@ -67,6 +68,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
       disabled = false,
       error,
       label,
+      required,
       className,
     },
     ref,
@@ -129,6 +131,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
         {label && (
           <label className="mb-1.5 block text-label-lg font-label-lg text-on-surface">
             {label}
+            {required && <span className="text-error"> *</span>}
           </label>
         )}
 

@@ -24,6 +24,7 @@ export async function GET() {
         phone: true,
         email: true,
         avatar: true,
+        role: true,
         dateOfBirth: true,
         gender: true,
         bio: true,
@@ -107,6 +108,58 @@ export async function PUT(req: NextRequest) {
     logger.error("User update error", error);
     return NextResponse.json(
       { success: false, error: "Failed to update user" },
+      { status: 500 }
+    );
+  }
+}
+
+// Account deletion — soft delete + anonymize. We keep the row (bookings, payments
+// and other records reference it via FK) but mark it DELETED and strip personal
+// data so it can no longer sign in or be identified.
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rateLimitResponse = applyRateLimit("api", session.user.id);
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const userId = session.user.id;
+    const stamp = Date.now();
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        status: "DELETED",
+        // Release unique fields (phone/email) so they can be reused, and clear PII.
+        phone: `deleted-${stamp}-${userId}`,
+        email: null,
+        name: "Deleted User",
+        avatar: null,
+        bio: null,
+        city: null,
+        isOnboarded: false,
+      },
+    });
+
+    // Invalidate any pending sign-in artifacts.
+    await prisma.session.deleteMany({ where: { userId } }).catch(() => {});
+
+    auditLog({
+      userId,
+      action: "USER_DELETED",
+      entityType: "user",
+      entityId: userId,
+      ipAddress: getClientIp(req),
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logger.error("User delete error", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to delete account" },
       { status: 500 }
     );
   }

@@ -31,6 +31,7 @@ export const createTripSchema = z.object({
   cancellationPolicy: z.enum(["FLEXIBLE", "MODERATE", "STRICT"]).optional().default("MODERATE"),
   bookingCutoffHours: z.number().int().min(0).optional().default(24),
   status: z.enum(["DRAFT", "PUBLISHED", "SOLD_OUT", "ONGOING", "COMPLETED", "CANCELLED"]).optional().default("DRAFT"),
+  tripCaptainId: z.string().optional().nullable(),
   itineraryDays: z.array(z.object({
     dayNumber: z.number().int().positive(),
     title: z.string().min(1),

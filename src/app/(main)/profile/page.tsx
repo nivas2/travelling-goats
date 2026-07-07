@@ -25,6 +25,14 @@ interface MenuItem {
   chevron?: boolean;
 }
 
+// Reward tier → badge display (matches the Rewards page tiers).
+const TIER_BADGES: Record<string, { label: string; icon: string; className: string }> = {
+  EXPLORER: { label: "Explorer", icon: "hiking", className: "bg-surface-container-high text-on-surface-variant" },
+  ADVENTURER: { label: "Adventurer", icon: "landscape", className: "bg-secondary/15 text-secondary" },
+  VOYAGER: { label: "Voyager", icon: "flight_takeoff", className: "bg-tertiary/15 text-tertiary" },
+  LEGEND: { label: "Legend", icon: "diamond", className: "bg-primary/15 text-primary" },
+};
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -58,14 +66,21 @@ export default function ProfilePage() {
     signOut({ callbackUrl: "/login" });
   };
 
+  const isCaptain =
+    (user as { role?: string } | null)?.role === "TRIP_CAPTAIN" ||
+    (user as { role?: string } | null)?.role === "ADMIN";
+
   const MENU_ITEMS: MenuItem[] = [
+    ...(isCaptain
+      ? [{ icon: "hiking", label: "Captain Dashboard", href: "/captain", chevron: true }]
+      : []),
     { icon: "edit", label: "Edit Profile", href: "/profile/edit", chevron: true },
     { icon: "account_balance_wallet", label: "Wallet", href: "/wallet", chevron: true },
     { icon: "stars", label: "Rewards", href: "/rewards", chevron: true },
     { icon: "group_add", label: "Referral", href: "/referral", chevron: true },
     { icon: "settings", label: "Settings", href: "/profile/settings", chevron: true },
     { icon: "help", label: "Help & Support", href: "/help", chevron: true },
-    { icon: "info", label: "About Travelling Goats", chevron: true },
+    { icon: "info", label: "About Travelling Goats", href: "/about", chevron: true },
     {
       icon: "logout",
       label: "Logout",
@@ -125,6 +140,26 @@ export default function ProfilePage() {
         <h1 className="mt-3 text-headline-md font-headline-md text-on-surface">
           {user.name ?? "Travelling Goats Explorer"}
         </h1>
+
+        {/* Current reward tier badge */}
+        {(() => {
+          const tier =
+            TIER_BADGES[(user.rewardTier ?? "EXPLORER").toUpperCase()] ?? TIER_BADGES.EXPLORER;
+          return (
+            <button
+              type="button"
+              onClick={() => router.push("/rewards")}
+              className={cn(
+                "mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-label-md font-semibold transition-transform active:scale-95",
+                tier.className
+              )}
+            >
+              <Icon name={tier.icon} size={16} filled />
+              {tier.label}
+              <span className="opacity-70">· {(user.rewardPoints ?? 0).toLocaleString("en-IN")} pts</span>
+            </button>
+          );
+        })()}
 
         {user.phone && (
           <p className="mt-0.5 text-body-md text-on-surface-variant">

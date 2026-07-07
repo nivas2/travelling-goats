@@ -16,9 +16,15 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
+    const data: Record<string, unknown> = {};
+    if (typeof body.isVerified === "boolean") data.isVerified = body.isVerified;
+    if (typeof body.isFeatured === "boolean") data.isFeatured = body.isFeatured;
+    // Backwards-compatible default: a bare PUT verifies the review.
+    if (Object.keys(data).length === 0) data.isVerified = true;
+
     const review = await prisma.review.update({
       where: { id },
-      data: { isVerified: body.isVerified ?? true },
+      data,
     });
 
     return NextResponse.json({ success: true, data: review });

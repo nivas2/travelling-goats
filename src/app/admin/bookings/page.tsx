@@ -20,6 +20,7 @@ interface Booking {
   travelerCount: number;
   totalPricePaise: number;
   status: string;
+  checkedInAt: string | null;
   createdAt: string;
 }
 
@@ -62,6 +63,9 @@ export default function AdminBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [tripFilter, setTripFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [checkinFilter, setCheckinFilter] = useState<"ALL" | "IN" | "NOT">("ALL");
   const [actionBooking, setActionBooking] = useState<Booking | null>(null);
   const [actionType, setActionType] = useState<"confirm" | "cancel" | "refund" | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -115,10 +119,18 @@ export default function AdminBookingsPage() {
       (b.user.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
       b.trip.title.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || b.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesTrip = tripFilter === "ALL" || b.trip.title === tripFilter;
+    const matchesType = typeFilter === "ALL" || b.bookingType === typeFilter;
+    const matchesCheckin =
+      checkinFilter === "ALL" ||
+      (checkinFilter === "IN" ? !!b.checkedInAt : !b.checkedInAt);
+    return matchesSearch && matchesStatus && matchesTrip && matchesType && matchesCheckin;
   });
 
   const statuses: StatusFilter[] = ["ALL", "PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"];
+  const trailOptions = Array.from(new Set(bookings.map((b) => b.trip.title))).sort();
+  const typeOptions = Array.from(new Set(bookings.map((b) => b.bookingType))).sort();
+  const hasFilters = tripFilter !== "ALL" || typeFilter !== "ALL" || !!search || statusFilter !== "ALL" || checkinFilter !== "ALL";
 
   return (
     <div className="space-y-6">
@@ -127,15 +139,72 @@ export default function AdminBookingsPage() {
         <p className="text-body-md text-on-surface-variant">Track and manage all bookings</p>
       </div>
 
-      {/* Search */}
-      <div className="sm:w-80">
-        <Input
-          placeholder="Search bookings..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          inputSize="sm"
-          iconLeft={<span className="material-symbols-outlined text-[20px]">search</span>}
-        />
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-full sm:w-72">
+          <Input
+            placeholder="Search booking #, user, trail..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            inputSize="sm"
+            iconLeft={<span className="material-symbols-outlined text-[20px]">search</span>}
+          />
+        </div>
+
+        <select
+          value={tripFilter}
+          onChange={(e) => setTripFilter(e.target.value)}
+          className="h-9 rounded-xl border border-outline-variant bg-surface-container-low px-3 text-body-md text-on-surface outline-none focus:border-primary"
+        >
+          <option value="ALL">All Trails</option>
+          {trailOptions.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="h-9 rounded-xl border border-outline-variant bg-surface-container-low px-3 text-body-md text-on-surface outline-none focus:border-primary"
+        >
+          <option value="ALL">All Types</option>
+          {typeOptions.map((t) => (
+            <option key={t} value={t}>
+              {t.charAt(0) + t.slice(1).toLowerCase()}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={checkinFilter}
+          onChange={(e) => setCheckinFilter(e.target.value as "ALL" | "IN" | "NOT")}
+          className="h-9 rounded-xl border border-outline-variant bg-surface-container-low px-3 text-body-md text-on-surface outline-none focus:border-primary"
+        >
+          <option value="ALL">All Check-in</option>
+          <option value="IN">Checked in</option>
+          <option value="NOT">Not checked in</option>
+        </select>
+
+        <span className="text-label-md text-on-surface-variant">
+          {filtered.length} of {bookings.length}
+        </span>
+
+        {hasFilters && (
+          <button
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("ALL");
+              setTripFilter("ALL");
+              setTypeFilter("ALL");
+              setCheckinFilter("ALL");
+            }}
+            className="text-label-md font-medium text-primary hover:underline"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       {/* Status Tabs */}
@@ -165,6 +234,7 @@ export default function AdminBookingsPage() {
                 <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Travelers</th>
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Amount</th>
                 <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Checked In</th>
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
@@ -173,14 +243,14 @@ export default function AdminBookingsPage() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="border-b border-outline-variant/10">
-                    <td colSpan={9} className="px-5 py-4">
+                    <td colSpan={10} className="px-5 py-4">
                       <div className="h-5 animate-pulse rounded bg-surface-container-low" />
                     </td>
                   </tr>
                 ))
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-12 text-center text-on-surface-variant">No bookings found</td>
+                  <td colSpan={10} className="px-5 py-12 text-center text-on-surface-variant">No bookings found</td>
                 </tr>
               ) : (
                 filtered.map((booking) => (
@@ -197,6 +267,15 @@ export default function AdminBookingsPage() {
                     <td className="px-5 py-3 text-center">{booking.travelerCount}</td>
                     <td className="px-5 py-3 text-right font-medium">{formatCurrency(booking.totalPricePaise)}</td>
                     <td className="px-5 py-3 text-center"><BookingStatusBadge status={booking.status} /></td>
+                    <td className="px-5 py-3 text-center">
+                      {booking.checkedInAt ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-label-sm font-semibold text-success" title={formatDate(booking.checkedInAt)}>
+                          <span className="material-symbols-outlined text-[14px]">check_circle</span> In
+                        </span>
+                      ) : (
+                        <span className="text-label-sm text-on-surface-variant/60">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-right text-on-surface-variant text-label-sm">{formatDate(booking.createdAt)}</td>
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">

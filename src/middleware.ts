@@ -8,6 +8,8 @@ const publicPaths = [
   "/api/auth",
   "/api/otp",
   "/api/trips",
+  "/api/content",
+  "/api/faqs",
   "/api/health",
   "/trips",
   "/home",
@@ -46,6 +48,20 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Captain area — trip captains (and admins) only
+  if (pathname.startsWith("/captain")) {
+    if (!req.auth) {
+      const loginUrl = new URL("/login", req.nextUrl.origin);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    const user = req.auth.user as Record<string, unknown>;
+    if (user?.role !== "TRIP_CAPTAIN" && user?.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/home", req.nextUrl.origin));
+    }
+    return NextResponse.next();
+  }
+
   // Check auth for protected routes
   if (!req.auth) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
@@ -57,5 +73,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icons|sw.js|manifest.json|logo.png|sounds/).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icons|uploads/|sw.js|manifest.json|logo.png|logo-mark.png|logo-full.png|sounds/|inspiration/).*)"],
 };

@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
-@theme inline {
+
+/* Non-inline so color/radius utilities reference the CSS vars, enabling the
+   admin Theme Manager to override them at runtime. */
+@theme {
   /* ===== FONT FAMILIES ===== */
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
   /* ===== COLOR TOKENS (3-Color System) ===== */
   /* Primary — #FF385C coral */
-  --color-primary: #FF385C;
+  --color-primary: var(--brand-primary, #FF385C);
   --color-on-primary: #ffffff;
-  --color-primary-container: #FF385C;
+  --color-primary-container: var(--brand-primary, #FF385C);
   --color-on-primary-container: #ffffff;
   --color-inverse-primary: #FF6B7D;
   --color-primary-fixed: #FFE0E5;
@@ -18,7 +21,7 @@
   --color-on-primary-fixed-variant: #CC2D4A;
 
   /* Secondary — #222222 dark charcoal */
-  --color-secondary: #222222;
+  --color-secondary: var(--brand-secondary, #222222);
   --color-on-secondary: #ffffff;
   --color-secondary-container: #555555;
   --color-on-secondary-container: #ffffff;
@@ -28,9 +31,9 @@
   --color-on-secondary-fixed-variant: #444444;
 
   /* Tertiary — same as primary */
-  --color-tertiary: #FF385C;
+  --color-tertiary: var(--brand-accent, #FF385C);
   --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #FF385C;
+  --color-tertiary-container: var(--brand-accent, #FF385C);
   --color-on-tertiary-container: #ffffff;
   --color-tertiary-fixed: #FFE0E5;
   --color-tertiary-fixed-dim: #FF8FA0;
@@ -38,16 +41,16 @@
   --color-on-tertiary-fixed-variant: #CC2D4A;
 
   /* Error — coral-red family */
-  --color-error: #FF385C;
+  --color-error: var(--brand-error, #FF385C);
   --color-on-error: #ffffff;
   --color-error-container: #FFE0E5;
   --color-on-error-container: #5C0017;
 
   /* Surface — white and subtle grays */
-  --color-surface: #FFFFFF;
+  --color-surface: var(--brand-surface, #FFFFFF);
   --color-surface-dim: #E0E0E0;
   --color-surface-bright: #FFFFFF;
-  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-lowest: var(--brand-surface, #FFFFFF);
   --color-surface-container-low: #F7F7F7;
   --color-surface-container: #F0F0F0;
   --color-surface-container-high: #E8E8E8;
@@ -55,7 +58,7 @@
   --color-on-surface: #222222;
   --color-on-surface-variant: #717171;
   --color-surface-variant: #E8E8E8;
-  --color-surface-tint: #FF385C;
+  --color-surface-tint: var(--brand-primary, #FF385C);
   --color-inverse-surface: #222222;
   --color-inverse-on-surface: #F0F0F0;
 
@@ -64,16 +67,16 @@
   --color-outline-variant: #E0E0E0;
 
   /* Background */
-  --color-background: #FFFFFF;
+  --color-background: var(--brand-background, #FFFFFF);
   --color-on-background: #222222;
 
   /* Success */
-  --color-success: #2e7d32;
+  --color-success: var(--brand-success, #2e7d32);
   --color-success-container: #c8e6c9;
   --color-on-success: #ffffff;
 
   /* Warning */
-  --color-warning: #f57c00;
+  --color-warning: var(--brand-warning, #f57c00);
   --color-warning-container: #ffe0b2;
 
   /* ===== BORDER RADIUS ===== */
@@ -87,7 +90,7 @@
 
   /* ===== SHADOWS ===== */
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.05);
-  --shadow-elevated: 0 15px 35px rgba(255, 56, 92, 0.15);
+  --shadow-elevated: 0 15px 35px color-mix(in srgb, var(--color-primary) 18%, transparent);
   --shadow-nav: 0 -10px 30px rgba(0, 0, 0, 0.05);
 
   /* ===== FONT SIZES (Custom Design Scale) ===== */
@@ -154,12 +157,12 @@ body {
 }
 
 .primary-gradient {
-  background: linear-gradient(135deg, #FF6B7D 0%, #FF385C 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 68%, #fff) 0%, var(--color-primary) 100%);
   color: #ffffff;
 }
 
 .coral-gradient {
-  background: linear-gradient(180deg, #FF6B7D 0%, #FF385C 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 68%, #fff) 0%, var(--color-primary) 100%);
   color: #ffffff;
 }
 
@@ -196,6 +199,31 @@ body {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+
+/* Subtle topographic contour texture — evokes trail maps on nature sections */
+.topo-texture {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320'%3E%3Cg fill='none' stroke='%23223' stroke-width='1.2' opacity='0.045'%3E%3Cpath d='M0,90 C60,50 120,130 190,90 C250,55 300,110 320,88'/%3E%3Cpath d='M0,150 C60,110 120,190 190,150 C250,115 300,170 320,148'/%3E%3Cpath d='M0,210 C60,170 120,250 190,210 C250,175 300,230 320,208'/%3E%3Ccircle cx='160' cy='150' r='42'/%3E%3Ccircle cx='160' cy='150' r='74'/%3E%3Ccircle cx='160' cy='150' r='106'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 340px 340px;
+}
+
+/* Gentle drift for hero clouds/sun accents */
+.animate-float-slow {
+  animation: float 11s ease-in-out infinite;
+}
+
+/* Slow horizontal drift for hero clouds */
+@keyframes drift {
+  0% { transform: translateX(-6%); }
+  50% { transform: translateX(6%); }
+  100% { transform: translateX(-6%); }
+}
+.animate-drift {
+  animation: drift 26s ease-in-out infinite;
+}
+.animate-drift-rev {
+  animation: drift 34s ease-in-out infinite reverse;
 }
 
 @keyframes float {
@@ -298,14 +326,14 @@ body {
 }
 
 .btn-primary-landing {
-  background: linear-gradient(180deg, #FF6B7D 0%, #FF385C 100%);
-  box-shadow: 0 4px 14px rgba(255, 56, 92, 0.4);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 68%, #fff) 0%, var(--color-primary) 100%);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 40%, transparent);
   transition: all 0.3s ease;
 }
 
 .btn-primary-landing:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 56, 92, 0.6);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
 
 .landing-card-shadow {
@@ -359,3 +387,5 @@ body {
   100% { transform: scale(1); }
 }
 .animate-goat-celebrate { animation: goat-celebrate 0.5s ease-in-out; }
+
+

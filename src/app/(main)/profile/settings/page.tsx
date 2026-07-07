@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Icon } from "@/components/ui/icon";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -18,13 +19,10 @@ export default function SettingsPage() {
   const router = useRouter();
 
   // Preferences
-  const [darkMode, setDarkMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const { isEnabled: isSoundEnabled, setEnabled: setSoundPref } = useGoatSound();
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [profileVisibility, setProfileVisibility] = useState(true);
-  const [showOnCompanionList, setShowOnCompanionList] = useState(true);
 
   useEffect(() => {
     setSoundEnabled(isSoundEnabled());
@@ -34,20 +32,15 @@ export default function SettingsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const handleDarkModeToggle = (checked: boolean) => {
-    setDarkMode(checked);
-    if (checked) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
   const handleDeleteAccount = async () => {
     try {
       setDeleting(true);
-      await fetch("/api/users", { method: "DELETE" });
-      router.push("/login");
+      const res = await fetch("/api/users", { method: "DELETE" });
+      const json = await res.json().catch(() => ({ success: res.ok }));
+      if (json.success) {
+        // Clear the session so the deleted account can't stay signed in.
+        await signOut({ callbackUrl: "/login" });
+      }
     } catch {
       // error handled silently
     } finally {
@@ -95,13 +88,6 @@ export default function SettingsPage() {
       title: "Preferences",
       items: [
         {
-          icon: "dark_mode",
-          label: "Dark Mode",
-          type: "toggle",
-          checked: darkMode,
-          onChange: handleDarkModeToggle,
-        },
-        {
           icon: "volume_up",
           label: "Sound Effects",
           description: "Play goat sounds on achievements",
@@ -136,27 +122,6 @@ export default function SettingsPage() {
           type: "toggle",
           checked: emailNotifications,
           onChange: setEmailNotifications,
-        },
-      ],
-    },
-    {
-      title: "Privacy",
-      items: [
-        {
-          icon: "visibility",
-          label: "Profile Visibility",
-          description: "Allow others to see your profile",
-          type: "toggle",
-          checked: profileVisibility,
-          onChange: setProfileVisibility,
-        },
-        {
-          icon: "group",
-          label: "Show on Companion List",
-          description: "Appear in trip companion suggestions",
-          type: "toggle",
-          checked: showOnCompanionList,
-          onChange: setShowOnCompanionList,
         },
       ],
     },
@@ -210,6 +175,10 @@ export default function SettingsPage() {
           <Card variant="outlined" className="p-0 overflow-hidden">
             {section.items.map((item, idx) => {
               const isLast = idx === section.items.length - 1;
+              // A row is interactive only if it can actually do something.
+              const isInteractive =
+                (item.type === "link" && !!item.href) ||
+                (item.type === "action" && !!item.onClick);
 
               return (
                 <div
@@ -217,7 +186,7 @@ export default function SettingsPage() {
                   className={cn(
                     "flex items-center gap-4 px-5 py-4",
                     !isLast && "border-b border-outline-variant/50",
-                    item.type !== "toggle" &&
+                    isInteractive &&
                       "cursor-pointer hover:bg-surface-container transition-colors"
                   )}
                   onClick={() => {
@@ -227,8 +196,8 @@ export default function SettingsPage() {
                       item.onClick();
                     }
                   }}
-                  role={item.type !== "toggle" ? "button" : undefined}
-                  tabIndex={item.type !== "toggle" ? 0 : undefined}
+                  role={isInteractive ? "button" : undefined}
+                  tabIndex={isInteractive ? 0 : undefined}
                 >
                   <Icon
                     name={item.icon}
@@ -263,7 +232,7 @@ export default function SettingsPage() {
                       onChange={item.onChange}
                     />
                   )}
-                  {item.type === "link" && (
+                  {item.type === "link" && item.href && (
                     <Icon
                       name="chevron_right"
                       size={20}

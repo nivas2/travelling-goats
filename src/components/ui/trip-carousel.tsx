@@ -79,10 +79,14 @@ export function TripCarousel({ trips, interval = 3000 }: TripCarouselProps) {
 
               {/* Content */}
               <div className="absolute bottom-0 left-0 right-0 p-5 md:p-7">
-                <Chip variant="filled" color="primary" className="mb-2">
+                <Chip
+                  variant="filled"
+                  color="primary"
+                  className="mb-2 text-[11px] px-2.5 py-1 md:text-label-md md:px-3 md:py-1.5"
+                >
                   {trip.category}
                 </Chip>
-                <h3 className="text-headline-md font-bold text-white text-shadow-premium md:text-headline-lg">
+                <h3 className="text-title-lg font-bold text-white text-shadow-premium md:text-headline-lg">
                   {trip.title}
                 </h3>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-md text-white/85">
@@ -120,7 +124,7 @@ export function TripCarousel({ trips, interval = 3000 }: TripCarouselProps) {
               type="button"
               aria-label="Previous trip"
               onClick={() => goTo(index - 1)}
-              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-on-surface shadow-md backdrop-blur transition hover:bg-white active:scale-95"
+              className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-on-surface shadow-md backdrop-blur transition hover:bg-white active:scale-95 md:flex"
             >
               <Icon name="chevron_left" size={24} />
             </button>
@@ -128,7 +132,7 @@ export function TripCarousel({ trips, interval = 3000 }: TripCarouselProps) {
               type="button"
               aria-label="Next trip"
               onClick={() => goTo(index + 1)}
-              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-on-surface shadow-md backdrop-blur transition hover:bg-white active:scale-95"
+              className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-on-surface shadow-md backdrop-blur transition hover:bg-white active:scale-95 md:flex"
             >
               <Icon name="chevron_right" size={24} />
             </button>

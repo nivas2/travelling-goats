@@ -9,6 +9,9 @@ import { auditLog } from "@/lib/audit";
 
 const logger = createLogger({ route: "referrals" });
 
+// Flat reward: every successful referral credits the referrer 50 points.
+const REFERRAL_REWARD_POINTS = 50;
+
 export async function GET() {
   try {
     const session = await auth();
@@ -115,35 +118,41 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Anti-fraud: cap pending referrals per referrer (50 max)
-    const pendingReferralCount = await prisma.referral.count({
-      where: { referrerId: referrer.id, status: "PENDING" },
+    // Anti-fraud: cap total referrals per referrer (50 max)
+    const referralCount = await prisma.referral.count({
+      where: { referrerId: referrer.id },
     });
 
-    if (pendingReferralCount >= 50) {
+    if (referralCount >= 50) {
       return NextResponse.json(
         { success: false, error: "Referral limit reached" },
         { status: 400 }
       );
     }
 
-    // PRD alignment: Create referral as PENDING with rewardPaise = 0
-    // Rewards are only credited when referred user completes their FIRST trip
-    const referral = await prisma.referral.create({
-      data: {
-        referrerId: referrer.id,
-        referredId: session.user.id,
-        code,
-        rewardPaise: 0,
-        status: "PENDING",
-        tier: 1,
-      },
-    });
-
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { referredBy: code },
-    });
+    // Flat reward: each referral credits the referrer a single 50 points.
+    // Referral + point credit + referred-by tag are written atomically.
+    const [referral] = await prisma.$transaction([
+      prisma.referral.create({
+        data: {
+          referrerId: referrer.id,
+          referredId: session.user.id,
+          code,
+          rewardPaise: 0,
+          status: "COMPLETED",
+          tier: 1,
+          convertedAt: new Date(),
+        },
+      }),
+      prisma.user.update({
+        where: { id: referrer.id },
+        data: { rewardPoints: { increment: REFERRAL_REWARD_POINTS } },
+      }),
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { referredBy: code },
+      }),
+    ]);
 
     const ip = getClientIp(req);
     auditLog({

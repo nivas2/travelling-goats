@@ -10,9 +10,12 @@ import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TripCarousel } from "@/components/ui/trip-carousel";
+import { InspirationCarousel } from "@/components/ui/inspiration-carousel";
+import { OffersBanner } from "@/components/ui/offers-banner";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { FavouritesFilter, type TripView } from "@/components/ui/favourites-filter";
 import { useWishlistStore } from "@/stores/wishlist-store";
+import { asList, asObject, type ContentMap } from "@/lib/content/registry";
 import type { TripCardData, ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -63,6 +66,15 @@ const PERKS = [
     tint: "bg-tertiary/15",
     fg: "text-tertiary",
   },
+];
+
+// Colour palette applied to perk cards by index (content-editable perks only
+// carry icon/title/desc; the tints stay design-controlled here).
+const PERK_TINTS = [
+  { tint: "bg-primary/10", fg: "text-primary" },
+  { tint: "bg-secondary/10", fg: "text-secondary" },
+  { tint: "bg-success/10", fg: "text-success" },
+  { tint: "bg-tertiary/15", fg: "text-tertiary" },
 ];
 
 // Rotating "go travel" prompts shown under the greeting.
@@ -119,29 +131,31 @@ function TripCard({ trip }: { trip: TripCardData }) {
             {trip.title}
           </h3>
 
-          <div className="mt-1 flex items-center gap-1 text-body-md text-on-surface-variant">
-            <Icon name="location_on" size={16} className="text-primary" />
-            <span className="line-clamp-1">{trip.destination}</span>
+          <div className="mt-1 flex items-center gap-1 text-label-md text-on-surface-variant md:text-body-md">
+            <Icon name="location_on" size={15} className="shrink-0 text-primary" />
+            <span className="truncate">{trip.destination}</span>
           </div>
 
-          <div className="mt-2 flex items-center gap-1 text-body-md text-on-surface-variant">
-            <Icon name="calendar_today" size={14} />
-            <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
-            <span className="mx-1 text-outline-variant">|</span>
-            <span>{trip.duration}D</span>
+          <div className="mt-2 flex items-center gap-1 text-label-md text-on-surface-variant md:text-body-md">
+            <Icon name="calendar_today" size={14} className="shrink-0" />
+            <span className="truncate">
+              {formatDateRange(trip.startDate, trip.endDate)}
+            </span>
+            <span className="text-outline-variant">|</span>
+            <span className="shrink-0">{trip.duration}D</span>
           </div>
 
-          <div className="mt-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <Icon name="star" size={16} filled className="text-tertiary" />
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <div className="flex shrink-0 items-center gap-0.5">
+              <Icon name="star" size={15} filled className="shrink-0 text-tertiary" />
               <span className="text-label-lg font-semibold text-on-surface">
                 {trip.rating.toFixed(1)}
               </span>
-              <span className="text-label-sm text-on-surface-variant">
+              <span className="hidden text-label-sm text-on-surface-variant min-[380px]:inline">
                 ({trip.reviewCount})
               </span>
             </div>
-            <p className="text-title-md font-bold text-primary">
+            <p className="shrink-0 text-title-sm font-bold text-primary md:text-title-md">
               {formatCurrency(trip.basePricePaise)}
             </p>
           </div>
@@ -186,17 +200,80 @@ export default function HomePage() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Welcome");
   const [provoke, setProvoke] = useState(PROVOCATIONS[0]);
+  const [content, setContent] = useState<ContentMap | null>(null);
 
   useEffect(() => {
     ensureWishlistLoaded();
   }, [ensureWishlistLoaded]);
 
+  // Admin-editable content (perks, categories, greeting prompts).
+  useEffect(() => {
+    let active = true;
+    fetch("/api/content")
+      .then((r) => r.json())
+      .then((j) => {
+        if (active && j?.success) setContent(j.data as ContentMap);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Resolve content blocks, falling back to built-in defaults.
+  const provocations = content
+    ? asList(content["home.provocations"]).map((p) => p.text).filter(Boolean)
+    : [];
+  const provokeList = provocations.length ? provocations : PROVOCATIONS;
+
+  const perkSource = content ? asList(content["home.perks"]) : [];
+  const perks = (perkSource.length ? perkSource : PERKS).map((p, i) => ({
+    icon: p.icon,
+    title: p.title,
+    desc: p.desc,
+    ...PERK_TINTS[i % PERK_TINTS.length],
+  }));
+
+  const categorySource = content ? asList(content["home.categories"]) : [];
+  const categories = categorySource.length ? categorySource : CATEGORIES;
+
+  const vis = asObject(content?.["home.visibility"]);
+  const show = (k: string) => vis[k] !== "false"; // default: visible
+
+  const offers = asList(content?.["home.offers"]).map((o) => ({
+    title: o.title,
+    subtitle: o.subtitle,
+    badge: o.badge,
+    color: o.color,
+    ctaText: o.ctaText,
+    link: o.link,
+    image: o.image,
+  }));
+
+  const inspirationSlides = asList(content?.["home.inspirationSlides"]).map((sl) => ({
+    img: sl.img,
+    tag: sl.tag,
+    icon: sl.icon,
+    quote: sl.quote,
+    author: sl.author,
+  }));
+
+  const s = asObject(content?.["home.sections"]);
+  const sect = {
+    searchPlaceholder: s.searchPlaceholder || "Search trips, destinations...",
+    trendingTitle: s.trendingTitle || "Trending Now",
+    weekendTitle: s.weekendTitle || "Weekend Getaways",
+    categoriesTitle: s.categoriesTitle || "Explore by Category",
+    popularTitle: s.popularTitle || "Popular Destinations",
+  };
+
   // Time-based greeting + a random travel prompt (client-only to avoid hydration mismatch).
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
-    setProvoke(PROVOCATIONS[Math.floor(Math.random() * PROVOCATIONS.length)]);
-  }, []);
+    setProvoke(provokeList[Math.floor(Math.random() * provokeList.length)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content]);
 
   useEffect(() => {
     let active = true;
@@ -261,7 +338,7 @@ export default function HomePage() {
         >
           <Icon name="search" size={22} className="text-on-surface-variant" />
           <span className="text-body-md text-on-surface-variant/60">
-            Search trips, destinations...
+            {sect.searchPlaceholder}
           </span>
         </button>
       </div>
@@ -279,8 +356,24 @@ export default function HomePage() {
         <p className="mt-1.5 max-w-2xl text-body-md text-on-surface-variant md:text-body-lg">
           {provoke}
         </p>
+
+        {/* Promotional offer banners */}
+        {show("offers") && (
+          <div className="-mx-5 mt-5">
+            <OffersBanner offers={offers} />
+          </div>
+        )}
+
+        {/* Inspiration carousel — travel perks + quotes to provoke wanderlust */}
+        {show("inspiration") && (
+          <div className="mt-5 md:mt-6">
+            <InspirationCarousel slides={inspirationSlides} />
+          </div>
+        )}
+
+        {show("perks") && (
         <div className="mt-5 grid grid-cols-2 gap-3 md:mt-6 md:grid-cols-4 md:gap-4">
-          {PERKS.map((perk) => (
+          {perks.map((perk) => (
             <Card key={perk.title} className="flex flex-col gap-3 p-4">
               <div
                 className={cn(
@@ -301,13 +394,14 @@ export default function HomePage() {
             </Card>
           ))}
         </div>
+        )}
       </section>
 
       {/* ===== Trending Now ===== */}
       <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
           <h2 className="text-title-lg font-title-lg text-on-surface">
-            Trending Now
+            {sect.trendingTitle}
           </h2>
           <button
             onClick={() => router.push("/search?sort=popularity")}
@@ -336,7 +430,7 @@ export default function HomePage() {
       <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
           <h2 className="text-title-lg font-title-lg text-on-surface">
-            Weekend Getaways
+            {sect.weekendTitle}
           </h2>
           <button
             onClick={() => router.push("/search?duration=1-3")}
@@ -361,12 +455,13 @@ export default function HomePage() {
       </section>
 
       {/* ===== Category Chips ===== */}
+      {show("categories") && (
       <section className="mt-8 px-5">
         <h2 className="text-title-lg font-title-lg text-on-surface mb-3">
-          Explore by Category
+          {sect.categoriesTitle}
         </h2>
         <div className="flex gap-2.5 overflow-x-auto pb-2 hide-scrollbar">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Chip
               key={cat.label}
               variant={selectedCategory === cat.label ? "selected" : "outlined"}
@@ -384,6 +479,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* ===== Popular Destinations / Favourites ===== */}
       <section className="mt-8">
@@ -395,7 +491,7 @@ export default function HomePage() {
                 : "Your Favourites"
               : selectedCategory
                 ? `${selectedCategory} Trips`
-                : "Popular Destinations"}
+                : sect.popularTitle}
           </h2>
           <FavouritesFilter
             value={view}

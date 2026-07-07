@@ -13,7 +13,7 @@ interface NavTab {
 const tabs: NavTab[] = [
   { label: "Explore", icon: "home", href: "/" },
   { label: "My Trails", icon: "travel_explore", href: "/my-trips" },
-  { label: "Saved", icon: "bookmark", href: "/saved" },
+  { label: "Wishlist", icon: "favorite", href: "/saved" },
   { label: "Profile", icon: "person", href: "/profile" },
 ];
 
@@ -32,12 +32,13 @@ export function BottomNavBar() {
   return (
     <nav
       className={cn(
-        "fixed bottom-4 left-4 right-4 z-50 md:hidden",
+        "fixed left-4 right-4 z-50 md:hidden",
+        "bottom-[max(1rem,env(safe-area-inset-bottom))]",
         "rounded-2xl bg-surface-container-lowest/90 backdrop-blur-xl shadow-nav",
         "border border-outline-variant/20"
       )}
     >
-      <div className="flex items-center justify-around px-2 py-2 pb-safe">
+      <div className="flex items-center justify-around gap-1 px-3 py-2.5">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
           return (

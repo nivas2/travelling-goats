@@ -6,6 +6,13 @@ import { createLogger } from "@/lib/logger";
 
 const logger = createLogger({ route: "ticket" });
 
+function ageFromDob(dob: Date | null): number | undefined {
+  if (!dob) return undefined;
+  const ms = Date.now() - new Date(dob).getTime();
+  if (ms <= 0) return undefined;
+  return Math.floor(ms / (365.25 * 24 * 60 * 60 * 1000));
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -28,10 +35,14 @@ export async function GET(
             destination: true,
             startDate: true,
             endDate: true,
+            duration: true,
             meetingPoint: true,
             meetingTime: true,
             coverImage: true,
           },
+        },
+        user: {
+          select: { name: true, dateOfBirth: true, gender: true, phone: true },
         },
       },
     });
@@ -44,9 +55,9 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    if (booking.status !== "CONFIRMED") {
+    if (booking.status === "CANCELLED" || booking.status === "REFUNDED") {
       return NextResponse.json(
-        { success: false, error: "Ticket is only available for confirmed bookings" },
+        { success: false, error: "No ticket available for cancelled bookings" },
         { status: 400 }
       );
     }
@@ -68,14 +79,34 @@ export async function GET(
       });
     }
 
+    // Use the travellers captured at booking time; if none were stored, fall
+    // back to the booking owner's profile so the ticket always shows a name/age.
+    const storedTravelers = Array.isArray(booking.travelers)
+      ? (booking.travelers as unknown[])
+      : [];
+    const travelers =
+      storedTravelers.length > 0
+        ? storedTravelers
+        : [
+            {
+              name: booking.user?.name ?? "Traveller",
+              age: ageFromDob(booking.user?.dateOfBirth ?? null),
+              gender: booking.user?.gender ?? undefined,
+              phone: booking.user?.phone ?? undefined,
+            },
+          ];
+
     return NextResponse.json({
       success: true,
       data: {
         bookingNumber: booking.bookingNumber,
         qrToken,
+        status: booking.status,
+        bookingType: booking.bookingType,
         travelerCount: booking.travelerCount,
-        travelers: booking.travelers,
+        travelers,
         pickupPoint: booking.pickupPoint,
+        totalPricePaise: booking.totalPricePaise,
         trip: booking.trip,
       },
     });

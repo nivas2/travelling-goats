@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useAuthStore } from "@/stores/auth-store";
-import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { useGoatSound } from "@/hooks/use-goat-sound";
 
 export default function LoginPage() {
@@ -74,11 +74,12 @@ export default function LoginPage() {
       />
 
       {/* Logo */}
-      <div className="animate-float mb-8 flex flex-col items-center gap-2">
-        <TravellingGoatsLogo size="lg" />
-        <p className="text-body-md text-on-surface-variant text-center">
-          Roam with the herd
-        </p>
+      <div className="mb-3 flex w-full flex-col items-center">
+        <BrandLogo
+          size="lg"
+          variant="stacked"
+          className="max-w-[70vw]"
+        />
       </div>
 
       {/* Login Card */}

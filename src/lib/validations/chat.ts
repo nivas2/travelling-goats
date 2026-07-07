@@ -5,6 +5,8 @@ export const sendMessageSchema = z.object({
   tripId: cuidSchema,
   content: z.string().min(1, "Message cannot be empty").max(2000),
   type: z.enum(["TEXT", "IMAGE", "SYSTEM", "LOCATION"]).optional().default("TEXT"),
-  imageUrl: z.string().url().optional(),
-  replyToId: z.string().optional(),
+  // The client sends `null` (not `undefined`) when there is no image / no reply,
+  // so these must accept null as well as being optional.
+  imageUrl: z.string().url().optional().nullable(),
+  replyToId: z.string().optional().nullable(),
 });

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { TravellingGoatsLogo } from "@/components/ui/travelling-goats-logo";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 interface TopNavBarProps {
   notificationCount?: number;
@@ -16,7 +16,7 @@ interface TopNavBarProps {
 const NAV_LINKS = [
   { label: "Explore", href: "/" },
   { label: "My Trails", href: "/my-trips" },
-  { label: "Saved", href: "/saved" },
+  { label: "Wishlist", href: "/saved" },
   { label: "Profile", href: "/profile" },
 ];
 
@@ -28,15 +28,7 @@ export function TopNavBar({
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
-  // Hide on trip detail pages (they have their own back/share/wishlist)
-  const isTripDetail = /^\/trips\/[^/]+$/.test(pathname);
-  if (isTripDetail) return null;
-
-  const isActive = (href: string) => {
-    if (href === "/") return pathname === "/" || pathname === "/home";
-    return pathname.startsWith(href);
-  };
-
+  // All hooks must run unconditionally before any early return (rules of hooks).
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -45,6 +37,15 @@ export function TopNavBar({
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Hide on trip detail pages (they have their own back/share/wishlist)
+  const isTripDetail = /^\/trips\/[^/]+$/.test(pathname);
+  if (isTripDetail) return null;
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/" || pathname === "/home";
+    return pathname.startsWith(href);
+  };
 
   return (
     <header
@@ -58,7 +59,7 @@ export function TopNavBar({
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-3 md:px-6">
         {/* Logo / App Name */}
         <Link href="/" className="flex items-center">
-          <TravellingGoatsLogo size="sm" />
+          <BrandLogo size="sm" />
         </Link>
 
         {/* Desktop Nav Links */}

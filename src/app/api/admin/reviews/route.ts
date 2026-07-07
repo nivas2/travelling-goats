@@ -19,6 +19,7 @@ export async function GET() {
         overallRating: true,
         comment: true,
         isVerified: true,
+        isFeatured: true,
         createdAt: true,
       },
     });

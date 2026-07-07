@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { cn, formatDate } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
@@ -35,6 +35,7 @@ interface TripHubData {
     phone: string;
     city: string;
   };
+  isCaptain: boolean;
   companions: CompanionData[];
   memories: MemoryData[];
 }
@@ -57,7 +58,7 @@ interface MemoryData {
   createdAt: string;
 }
 
-type HubSection = "main" | "journal" | "companions" | "playlist";
+type HubSection = "main" | "journal" | "playlist";
 
 // ---------------------------------------------------------------------------
 // Quick Action Button
@@ -172,10 +173,25 @@ function StatusBanner({
 // Memory Card
 // ---------------------------------------------------------------------------
 
-function MemoryCard({ memory }: { memory: MemoryData }) {
+function MemoryCard({
+  memory,
+  canDelete,
+  onDelete,
+  onOpen,
+}: {
+  memory: MemoryData;
+  canDelete?: boolean;
+  onDelete?: (id: string) => void;
+  onOpen?: (memory: MemoryData) => void;
+}) {
   return (
     <div className="overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
-      <div className="relative h-48 w-full overflow-hidden">
+      <button
+        type="button"
+        onClick={() => onOpen?.(memory)}
+        className="relative block h-48 w-full overflow-hidden"
+        aria-label="Open photo"
+      >
         <Image
           src={memory.imageUrl}
           alt={memory.caption || "Trip memory"}
@@ -183,7 +199,21 @@ function MemoryCard({ memory }: { memory: MemoryData }) {
           className="object-cover"
           sizes="(max-width: 768px) 50vw, 33vw"
         />
-      </div>
+        {canDelete && onDelete && (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(memory.id);
+            }}
+            aria-label="Delete memory"
+            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-error"
+          >
+            <Icon name="delete" size={18} />
+          </span>
+        )}
+      </button>
       <div className="p-3">
         {memory.caption && (
           <p className="text-body-md text-on-surface line-clamp-2 mb-2">
@@ -319,31 +349,45 @@ function AddMemoryForm({
 }
 
 // ---------------------------------------------------------------------------
-// Companion Card
+// Memory Preview (full-screen lightbox)
 // ---------------------------------------------------------------------------
 
-function CompanionCard({ companion }: { companion: CompanionData }) {
+function MemoryPreview({
+  memory,
+  onClose,
+}: {
+  memory: MemoryData | null;
+  onClose: () => void;
+}) {
+  if (!memory) return null;
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-3">
-      <Avatar
-        src={companion.avatar}
-        name={companion.name}
-        size="md"
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 p-4"
+    >
+      <button
+        onClick={onClose}
+        aria-label="Close preview"
+        className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+      >
+        <Icon name="close" size={24} />
+      </button>
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={memory.imageUrl}
+        alt={memory.caption || "Trip memory"}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[80vh] max-w-full rounded-lg object-contain"
       />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-label-lg font-semibold text-on-surface truncate">
-            {companion.name}
-          </p>
-          {companion.isCaptain && (
-            <Badge variant="default" className="text-[10px] px-1.5 h-4">
-              Captain
-            </Badge>
-          )}
-        </div>
-        <p className="text-label-sm text-on-surface-variant flex items-center gap-1">
-          <Icon name="location_city" size={14} />
-          {companion.city || "Unknown City"}
+
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="mt-4 w-full max-w-lg text-center text-white"
+      >
+        {memory.caption && <p className="text-body-lg">{memory.caption}</p>}
+        <p className="mt-1 text-label-sm text-white/60">
+          {memory.userName} · {formatDate(memory.createdAt, "relative")}
         </p>
       </div>
     </div>
@@ -382,23 +426,25 @@ function SafetyInfoCard() {
       </button>
 
       {expanded && (
-        <div className="mt-3 space-y-2 border-t border-outline-variant pt-3">
-          <div className="flex items-center gap-2 text-body-md text-on-surface">
-            <Icon name="emergency" size={18} className="text-error" />
-            <span>Emergency: 112</span>
-          </div>
-          <div className="flex items-center gap-2 text-body-md text-on-surface">
-            <Icon name="local_police" size={18} className="text-secondary" />
-            <span>Police: 100</span>
-          </div>
-          <div className="flex items-center gap-2 text-body-md text-on-surface">
-            <Icon name="local_hospital" size={18} className="text-error" />
-            <span>Ambulance: 108</span>
-          </div>
-          <div className="flex items-center gap-2 text-body-md text-on-surface">
-            <Icon name="fire_truck" size={18} className="text-warning" />
-            <span>Fire: 101</span>
-          </div>
+        <div className="mt-3 space-y-1 border-t border-outline-variant pt-3">
+          {[
+            { icon: "emergency", color: "text-error", label: "Emergency", num: "112" },
+            { icon: "local_police", color: "text-secondary", label: "Police", num: "100" },
+            { icon: "local_hospital", color: "text-error", label: "Ambulance", num: "108" },
+            { icon: "fire_truck", color: "text-warning", label: "Fire", num: "101" },
+          ].map((e) => (
+            <a
+              key={e.num}
+              href={`tel:${e.num}`}
+              className="flex items-center gap-2 rounded-lg px-1 py-1.5 text-body-md text-on-surface hover:bg-surface-container"
+            >
+              <Icon name={e.icon} size={18} className={e.color} />
+              <span className="flex-1">
+                {e.label}: {e.num}
+              </span>
+              <Icon name="call" size={16} className="text-primary" />
+            </a>
+          ))}
           <p className="mt-2 text-label-sm text-on-surface-variant">
             Keep your phone charged. Share your live location with your emergency
             contact. Stay with the group and follow the Shepherd&apos;s
@@ -411,85 +457,291 @@ function SafetyInfoCard() {
 }
 
 // ---------------------------------------------------------------------------
-// Spotify-like Playlist Placeholder
+// Trip "Bus" Playlist — travellers suggest songs (iTunes search) & play 30s previews
 // ---------------------------------------------------------------------------
 
-function PlaylistSection({ onBack }: { onBack: () => void }) {
-  const tracks = [
-    { title: "Road Trip Vibes", artist: "Travel Beats", duration: "3:42" },
-    { title: "Mountain Sunrise", artist: "Nature Sounds", duration: "4:15" },
-    { title: "Coastal Breeze", artist: "Chill Waves", duration: "3:58" },
-    { title: "Campfire Stories", artist: "Acoustic Mix", duration: "5:01" },
-    { title: "Highway Winds", artist: "Indie Road", duration: "4:22" },
-    { title: "Starlit Sky", artist: "Ambient Space", duration: "6:10" },
-  ];
+interface PlaylistTrack {
+  id: string;
+  title: string;
+  artist: string;
+  artworkUrl: string | null;
+  previewUrl: string | null;
+  sourceUrl: string | null;
+  addedById: string;
+  addedByName: string;
+}
+
+interface SongResult {
+  externalId: string;
+  title: string;
+  artist: string;
+  artworkUrl: string | null;
+  previewUrl: string | null;
+  sourceUrl: string | null;
+}
+
+function PlaylistSection({ tripId, onBack }: { tripId: string; onBack: () => void }) {
+  const { data: session } = useSession();
+  const { error: toastError } = useToast();
+  const myId = session?.user?.id;
+
+  const [tracks, setTracks] = useState<PlaylistTrack[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SongResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Load the trip playlist.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/trips/${tripId}/playlist`);
+        const json = await res.json();
+        if (active && json.success) setTracks(json.data ?? []);
+      } catch {
+        /* ignore */
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [tripId]);
+
+  // Debounced song search via the iTunes proxy.
+  useEffect(() => {
+    const q = query.trim();
+    const t = setTimeout(async () => {
+      if (!q) {
+        setResults([]);
+        return;
+      }
+      setSearching(true);
+      try {
+        const res = await fetch(`/api/music/search?q=${encodeURIComponent(q)}`);
+        const json = await res.json();
+        setResults(json.success ? json.data ?? [] : []);
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 350);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  function togglePlay(id: string, previewUrl: string | null) {
+    if (!previewUrl) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playingId === id) {
+      audio.pause();
+      setPlayingId(null);
+      return;
+    }
+    audio.src = previewUrl;
+    audio.play().then(() => setPlayingId(id)).catch(() => setPlayingId(null));
+  }
+
+  async function addSong(song: SongResult) {
+    setAddingId(song.externalId);
+    try {
+      const res = await fetch(`/api/trips/${tripId}/playlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(song),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error ?? "Failed to add");
+      setTracks((prev) => [...prev, json.data as PlaylistTrack]);
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : "Failed to add song");
+    } finally {
+      setAddingId(null);
+    }
+  }
+
+  async function removeSong(id: string) {
+    const prev = tracks;
+    setTracks((t) => t.filter((x) => x.id !== id));
+    if (playingId === id) {
+      audioRef.current?.pause();
+      setPlayingId(null);
+    }
+    const res = await fetch(`/api/trips/${tripId}/playlist/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      setTracks(prev);
+      toastError("Couldn't remove song");
+    }
+  }
+
+  const inPlaylist = new Set(tracks.map((t) => t.title + "|" + t.artist));
+
+  // A single song shown as a card (artwork + title/artist, with preview + add).
+  const songCard = (s: SongResult, pidPrefix: string) => {
+    const already = inPlaylist.has(s.title + "|" + s.artist);
+    const pid = pidPrefix + s.externalId;
+    return (
+      <div>
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={s.artworkUrl ?? "/placeholder-trip.jpg"}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          {s.previewUrl && (
+            <button
+              onClick={() => togglePlay(pid, s.previewUrl)}
+              aria-label="Preview"
+              className="absolute bottom-1 left-1 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm"
+            >
+              <Icon name={playingId === pid ? "pause" : "play_arrow"} size={18} filled />
+            </button>
+          )}
+          <button
+            onClick={() => addSong(s)}
+            disabled={already || addingId === s.externalId}
+            aria-label="Add to playlist"
+            className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm disabled:opacity-50"
+          >
+            <Icon name={already ? "check" : "add"} size={18} />
+          </button>
+        </div>
+        <p className="mt-1 truncate text-label-md text-on-surface">{s.title}</p>
+        <p className="truncate text-label-sm text-on-surface-variant">{s.artist}</p>
+      </div>
+    );
+  };
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="mb-4 flex items-center gap-3">
         <button
           onClick={onBack}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high"
           aria-label="Go back"
         >
           <Icon name="arrow_back" size={22} />
         </button>
-        <h2 className="text-title-lg font-semibold text-on-surface">
-          Trip Playlist
-        </h2>
+        <h2 className="flex-1 text-title-lg font-semibold text-on-surface">Bus Playlist</h2>
+        <Button size="sm" icon={<Icon name="add" size={16} />} onClick={() => setSearchOpen((v) => !v)}>
+          Suggest
+        </Button>
       </div>
 
-      <Card className="bg-inverse-surface text-inverse-on-surface p-0 overflow-hidden">
-        {/* Playlist Header */}
-        <div className="primary-gradient p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20">
-              <Icon name="headphones" size={28} className="text-white" />
-            </div>
-            <div>
-              <p className="text-label-sm text-white/70">TRIP PLAYLIST</p>
-              <h3 className="text-title-md font-semibold text-white">
-                Road Trip Mix
-              </h3>
-              <p className="text-label-sm text-white/70">
-                {tracks.length} songs
-              </p>
-            </div>
+      {/* Search panel */}
+      {searchOpen && (
+        <Card variant="outlined" className="mb-4 p-3">
+          <div className="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3">
+            <Icon name="search" size={18} className="text-on-surface-variant" />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search songs, artists…"
+              className="w-full bg-transparent py-2.5 text-body-md text-on-surface outline-none"
+            />
+            {searching && <Icon name="progress_activity" size={18} className="animate-spin text-primary" />}
+          </div>
+
+          <div className="mt-2 max-h-96 overflow-y-auto">
+            {results.length > 0 && (
+              <div className="grid grid-cols-3 gap-3">
+                {results.map((r) => (
+                  <div key={r.externalId}>{songCard(r, "s-")}</div>
+                ))}
+              </div>
+            )}
+            {!searching && query.trim() && results.length === 0 && (
+              <p className="py-4 text-center text-label-md text-on-surface-variant">No songs found.</p>
+            )}
+          </div>
+        </Card>
+      )}
+
+
+      {/* Playlist */}
+      <Card variant="elevated" className="overflow-hidden p-0">
+        <div className="primary-gradient flex items-center gap-3 p-5">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20">
+            <Icon name="headphones" size={28} className="text-white" filled />
+          </div>
+          <div>
+            <p className="text-label-sm text-white/70">TRIP PLAYLIST</p>
+            <h3 className="text-title-md font-semibold text-white">On the Bus</h3>
+            <p className="text-label-sm text-white/70">{tracks.length} song{tracks.length !== 1 ? "s" : ""}</p>
           </div>
         </div>
 
-        {/* Track List */}
-        <div className="divide-y divide-inverse-on-surface/10">
-          {tracks.map((track, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-inverse-on-surface/5 transition-colors"
-            >
-              <span className="w-5 text-label-sm text-inverse-on-surface/50 text-center">
-                {idx + 1}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-body-md text-inverse-on-surface truncate">
-                  {track.title}
-                </p>
-                <p className="text-label-sm text-inverse-on-surface/60">
-                  {track.artist}
-                </p>
+        {loading ? (
+          <div className="space-y-2 p-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-12 animate-pulse rounded-lg bg-surface-container-low" />
+            ))}
+          </div>
+        ) : tracks.length === 0 ? (
+          <div className="px-4 py-10 text-center">
+            <Icon name="queue_music" size={40} className="mx-auto text-on-surface-variant/40" />
+            <p className="mt-2 text-body-md text-on-surface-variant">
+              No songs yet. Tap <span className="font-semibold text-primary">Suggest</span> to add the first one!
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-outline-variant/40">
+            {tracks.map((t, idx) => (
+              <div key={t.id} className="flex items-center gap-3 px-3 py-2.5">
+                <span className="w-5 text-center text-label-sm text-on-surface-variant/60">{idx + 1}</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={t.artworkUrl ?? "/placeholder-trip.jpg"}
+                  alt=""
+                  className="h-11 w-11 shrink-0 rounded-md object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-body-md text-on-surface">{t.title}</p>
+                  <p className="truncate text-label-sm text-on-surface-variant">
+                    {t.artist} · <span className="opacity-70">{t.addedByName}</span>
+                  </p>
+                </div>
+                {t.previewUrl && (
+                  <button
+                    onClick={() => togglePlay(t.id, t.previewUrl)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-primary hover:bg-primary/10"
+                    aria-label={playingId === t.id ? "Pause" : "Play"}
+                  >
+                    <Icon name={playingId === t.id ? "pause_circle" : "play_circle"} size={26} filled />
+                  </button>
+                )}
+                {(t.addedById === myId) && (
+                  <button
+                    onClick={() => removeSong(t.id)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error"
+                    aria-label="Remove"
+                  >
+                    <Icon name="close" size={18} />
+                  </button>
+                )}
               </div>
-              <span className="text-label-sm text-inverse-on-surface/50">
-                {track.duration}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {/* Player Bar */}
-        <div className="border-t border-inverse-on-surface/10 px-4 py-3">
-          <p className="text-center text-label-sm text-inverse-on-surface/40">
-            Connect your Spotify to listen together
+        <div className="border-t border-outline-variant/40 px-4 py-3">
+          <p className="text-center text-label-sm text-on-surface-variant/70">
+            30-second previews · powered by iTunes
           </p>
         </div>
       </Card>
+
+      {/* Hidden shared audio element for previews */}
+      <audio ref={audioRef} onEnded={() => setPlayingId(null)} className="hidden" />
     </div>
   );
 }
@@ -519,7 +771,9 @@ function HubSkeleton() {
 export default function TripHubPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { error: toastError } = useToast();
+  const { data: session } = useSession();
+  const myId = session?.user?.id;
+  const { error: toastError, success: toastSuccess, info: toastInfo } = useToast();
   const tripId = params.id;
 
   const [hubData, setHubData] = useState<TripHubData | null>(null);
@@ -528,6 +782,49 @@ export default function TripHubPage() {
   const [section, setSection] = useState<HubSection>("main");
   const [showAddMemory, setShowAddMemory] = useState(false);
   const [submittingMemory, setSubmittingMemory] = useState(false);
+  const [previewMemory, setPreviewMemory] = useState<MemoryData | null>(null);
+  const [locating, setLocating] = useState(false);
+
+  // Get the device's current location and share it (native share → WhatsApp etc.,
+  // otherwise open Google Maps at the pin). Requires a secure context
+  // (localhost or https) and location permission.
+  const shareLiveLocation = useCallback(() => {
+    if (!("geolocation" in navigator)) {
+      toastError("Location isn't supported on this device");
+      return;
+    }
+    setLocating(true);
+    toastInfo("Getting your location…");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        const text = `📍 My live location on the trip: ${mapsUrl}`;
+        try {
+          const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+          if (nav.share) {
+            await nav.share({ title: "My Live Location", text, url: mapsUrl });
+          } else {
+            window.open(mapsUrl, "_blank", "noopener,noreferrer");
+            toastSuccess("Opened your location in Maps");
+          }
+        } catch {
+          /* user cancelled the share sheet */
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocating(false);
+        toastError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location permission denied — enable it in your browser settings"
+            : "Couldn't get your location. Try again outdoors."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }, [toastError, toastInfo, toastSuccess]);
 
   const fetchHubData = useCallback(async () => {
     setLoading(true);
@@ -580,6 +877,20 @@ export default function TripHubPage() {
     }
   };
 
+  const handleDeleteMemory = async (memoryId: string) => {
+    const prev = hubData;
+    if (hubData) {
+      setHubData({ ...hubData, memories: hubData.memories.filter((m) => m.id !== memoryId) });
+    }
+    try {
+      const res = await fetch(`/api/trips/${tripId}/memories/${memoryId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      if (prev) setHubData(prev);
+      toastError("Couldn't delete memory");
+    }
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-lg">
@@ -615,18 +926,21 @@ export default function TripHubPage() {
   if (section === "playlist") {
     return (
       <div className="mx-auto max-w-lg px-4 py-6">
-        <PlaylistSection onBack={() => setSection("main")} />
+        <PlaylistSection tripId={tripId} onBack={() => setSection("main")} />
       </div>
     );
   }
 
-  if (section === "journal") {
+  // Completed trips: the Hub is just the Memory Journal (nothing live to show).
+  const isCompleted = hubData.status === "COMPLETED";
+
+  if (section === "journal" || isCompleted) {
     return (
       <div className="mx-auto max-w-lg px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <button
-            onClick={() => setSection("main")}
+            onClick={() => (isCompleted ? router.back() : setSection("main"))}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"
             aria-label="Go back"
           >
@@ -670,41 +984,18 @@ export default function TripHubPage() {
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3">
             {hubData.memories.map((memory) => (
-              <MemoryCard key={memory.id} memory={memory} />
+              <MemoryCard
+                key={memory.id}
+                memory={memory}
+                canDelete={memory.userId === myId}
+                onDelete={handleDeleteMemory}
+                onOpen={setPreviewMemory}
+              />
             ))}
           </div>
         )}
-      </div>
-    );
-  }
 
-  if (section === "companions") {
-    return (
-      <div className="mx-auto max-w-lg px-4 py-6">
-        <div className="flex items-center gap-3 mb-4">
-          <button
-            onClick={() => setSection("main")}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"
-            aria-label="Go back"
-          >
-            <Icon name="arrow_back" size={22} />
-          </button>
-          <h2 className="text-title-lg font-semibold text-on-surface">
-            Companions
-          </h2>
-          <Badge variant="secondary" className="ml-auto">
-            {hubData.companions.length}
-          </Badge>
-        </div>
-
-        <div className="space-y-3">
-          {/* Sort: captain first */}
-          {[...hubData.companions]
-            .sort((a, b) => (b.isCaptain ? 1 : 0) - (a.isCaptain ? 1 : 0))
-            .map((companion) => (
-              <CompanionCard key={companion.id} companion={companion} />
-            ))}
-        </div>
+        <MemoryPreview memory={previewMemory} onClose={() => setPreviewMemory(null)} />
       </div>
     );
   }
@@ -752,11 +1043,15 @@ export default function TripHubPage() {
           />
           <QuickActionButton
             icon="my_location"
-            label="Live Location"
+            label={locating ? "Locating…" : "Live Location"}
             color="blue"
-            onClick={() => {
-              /* Would open native maps or share location */
-            }}
+            onClick={shareLiveLocation}
+          />
+          <QuickActionButton
+            icon="chat"
+            label="Group Chat"
+            color="orange"
+            onClick={() => router.push(`/trips/${tripId}/chat`)}
           />
           <QuickActionButton
             icon="music_note"
@@ -771,17 +1066,23 @@ export default function TripHubPage() {
             onClick={() => setSection("journal")}
           />
           <QuickActionButton
-            icon="group"
-            label="Companions"
-            color="orange"
-            onClick={() => setSection("companions")}
-          />
-          <QuickActionButton
             icon="call"
             label="Shepherd"
             color="default"
-            onClick={() => window.open(`tel:${hubData.tripCaptain.phone}`)}
+            onClick={() =>
+              hubData.tripCaptain.phone
+                ? window.open(`tel:${hubData.tripCaptain.phone}`)
+                : toastError("Your Shepherd's number isn't available yet")
+            }
           />
+          {hubData.isCaptain && (
+            <QuickActionButton
+              icon="qr_code_scanner"
+              label="Verify Tickets"
+              color="green"
+              onClick={() => router.push("/verify")}
+            />
+          )}
         </div>
       </div>
 
@@ -819,9 +1120,12 @@ export default function TripHubPage() {
         ) : (
           <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
             {hubData.memories.slice(0, 6).map((memory) => (
-              <div
+              <button
                 key={memory.id}
+                type="button"
+                onClick={() => setPreviewMemory(memory)}
                 className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl shadow-card"
+                aria-label="Open photo"
               >
                 <Image
                   src={memory.imageUrl}
@@ -830,7 +1134,7 @@ export default function TripHubPage() {
                   className="object-cover"
                   sizes="112px"
                 />
-              </div>
+              </button>
             ))}
             {hubData.memories.length > 6 && (
               <button
@@ -847,42 +1151,10 @@ export default function TripHubPage() {
         )}
       </div>
 
-      {/* Companions Preview */}
+      {/* Your Shepherd */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-label-sm text-on-surface-variant">
-            Your Companions
-          </h3>
-          <button
-            onClick={() => setSection("companions")}
-            className="text-label-lg font-semibold text-primary"
-          >
-            View All
-          </button>
-        </div>
-
-        <div className="flex -space-x-3">
-          {hubData.companions.slice(0, 5).map((companion) => (
-            <Avatar
-              key={companion.id}
-              src={companion.avatar}
-              name={companion.name}
-              size="lg"
-              className="ring-3 ring-surface"
-            />
-          ))}
-          {hubData.companions.length > 5 && (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-high text-label-lg font-semibold text-on-surface-variant ring-3 ring-surface">
-              +{hubData.companions.length - 5}
-            </div>
-          )}
-        </div>
-
-        {/* Trip Captain highlight */}
-        <Card
-          variant="outlined"
-          className="mt-3 flex items-center gap-3 p-3"
-        >
+        <h3 className="text-label-sm text-on-surface-variant mb-3">Your Shepherd</h3>
+        <Card variant="outlined" className="flex items-center gap-3 p-3">
           <Avatar
             src={hubData.tripCaptain.avatar}
             name={hubData.tripCaptain.name}
@@ -893,24 +1165,30 @@ export default function TripHubPage() {
             <p className="text-label-lg font-semibold text-on-surface truncate">
               {hubData.tripCaptain.name}
             </p>
-            <p className="text-label-sm text-on-surface-variant flex items-center gap-1">
-              <Icon name="location_city" size={14} />
-              {hubData.tripCaptain.city}
-            </p>
+            {hubData.tripCaptain.city && (
+              <p className="text-label-sm text-on-surface-variant flex items-center gap-1">
+                <Icon name="location_city" size={14} />
+                {hubData.tripCaptain.city}
+              </p>
+            )}
           </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            icon={<Icon name="call" size={16} />}
-            onClick={() => window.open(`tel:${hubData.tripCaptain.phone}`)}
-          >
-            Call
-          </Button>
+          {hubData.tripCaptain.phone && (
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<Icon name="call" size={16} />}
+              onClick={() => window.open(`tel:${hubData.tripCaptain.phone}`)}
+            >
+              Call
+            </Button>
+          )}
         </Card>
       </div>
 
       {/* Safety Info */}
       <SafetyInfoCard />
+
+      <MemoryPreview memory={previewMemory} onClose={() => setPreviewMemory(null)} />
     </div>
   );
 }

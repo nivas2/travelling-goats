@@ -43,6 +43,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       fullWidth = false,
       type = "text",
       id: externalId,
+      required,
       ...props
     },
     ref
@@ -60,6 +61,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             className="mb-1.5 text-label-lg font-semibold text-on-surface"
           >
             {label}
+            {required && <span className="text-error"> *</span>}
           </label>
         )}
 

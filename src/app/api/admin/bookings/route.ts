@@ -22,6 +22,7 @@ export async function GET() {
         travelerCount: true,
         totalPricePaise: true,
         status: true,
+        checkedInAt: true,
         createdAt: true,
       },
     });

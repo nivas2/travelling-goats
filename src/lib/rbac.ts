@@ -63,3 +63,8 @@ export async function requireRole(
 export async function requireAdmin(): Promise<AuthSuccess | AuthFailure> {
   return requireRole("ADMIN");
 }
+
+/** Trip captains (and admins) — used to scope captain-only functionality. */
+export async function requireCaptain(): Promise<AuthSuccess | AuthFailure> {
+  return requireRole("TRIP_CAPTAIN", "ADMIN");
+}

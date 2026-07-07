@@ -87,7 +87,9 @@ export default function NotificationsPage() {
       const res = await fetch("/api/notifications");
       if (!res.ok) throw new Error("Failed to load notifications");
       const json = await res.json();
-      setNotifications(json.data?.items ?? json.data ?? json.items ?? []);
+      // API returns { data: { notifications, unreadCount } }.
+      const list = json.data?.notifications ?? (Array.isArray(json.data) ? json.data : []);
+      setNotifications(Array.isArray(list) ? list : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
