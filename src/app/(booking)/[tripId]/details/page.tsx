@@ -145,6 +145,30 @@ export default function DetailsPage() {
     setStep(2);
   }, [setStep]);
 
+  // Prefill from user profile
+  useEffect(() => {
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then((j) => {
+        if (!j.success || !j.data) return;
+        const user = j.data;
+        // Prefill contact email if empty
+        if (user.email && !watch("contactEmail")) {
+          setValue("contactEmail", user.email);
+        }
+        // Prefill contact phone if empty
+        if (user.phone && !watch("contactPhone")) {
+          setValue("contactPhone", user.phone);
+        }
+        // Prefill first traveler name if empty
+        if (user.name && !watch("travelers.0.name")) {
+          setValue("travelers.0.name", user.name);
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setSubmitting(true);
     try {
