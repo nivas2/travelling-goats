@@ -57,7 +57,12 @@ export default function ProfilePage() {
       setError(null);
       const res = await fetch("/api/users");
       if (res.redirected || !res.headers.get("content-type")?.includes("application/json")) {
-        router.replace("/login");
+        await signOut({ callbackUrl: "/login" });
+        return;
+      }
+      // Session expired or user no longer exists — clear stale JWT and redirect
+      if (res.status === 401 || res.status === 403 || res.status === 404) {
+        await signOut({ callbackUrl: "/login" });
         return;
       }
       if (!res.ok) throw new Error("Failed to load profile");
@@ -68,7 +73,7 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (sessionStatus === "authenticated") {
