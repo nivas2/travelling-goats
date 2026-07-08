@@ -19,8 +19,8 @@ export const createBookingSchema = z.object({
   seatPreference: z.string().optional(),
   seatIds: z.array(z.string()).optional(),
   sessionId: z.string().optional(),
-  contactEmail: z.string().email().optional().nullable(),
-  contactPhone: z.string().optional().nullable(),
+  contactEmail: z.preprocess((v) => (v === "" ? undefined : v), z.string().email().optional().nullable()),
+  contactPhone: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional().nullable()),
   specialRequests: z.string().max(500).optional(),
   pickupPoint: z.string().optional(),
   addOns: z

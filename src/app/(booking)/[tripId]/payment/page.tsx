@@ -303,19 +303,17 @@ export default function PaymentPage() {
           seatPreference,
           seatIds: selectedSeatIds.length > 0 ? selectedSeatIds : undefined,
           sessionId: selectedSeatIds.length > 0 ? sessionId : undefined,
-          contactEmail,
-          contactPhone,
-          specialRequests,
-          pickupPoint,
-          addOns: Object.entries(selectedAddOns).map(([id, qty]) => ({
-            addOnId: id,
-            quantity: qty,
-          })),
-          snacks: Object.entries(selectedSnacks).map(([id, qty]) => ({
-            snackId: id,
-            quantity: qty,
-          })),
-          couponCode: couponCode ?? undefined,
+          contactEmail: contactEmail || undefined,
+          contactPhone: contactPhone || undefined,
+          specialRequests: specialRequests || undefined,
+          pickupPoint: pickupPoint || undefined,
+          addOns: Object.entries(selectedAddOns)
+            .filter(([, qty]) => qty > 0)
+            .map(([id, qty]) => ({ addOnId: id, quantity: qty })),
+          snacks: Object.entries(selectedSnacks)
+            .filter(([, qty]) => qty > 0)
+            .map(([id, qty]) => ({ snackId: id, quantity: qty })),
+          couponCode: couponCode || undefined,
         }),
       });
 
