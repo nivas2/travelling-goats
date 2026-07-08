@@ -57,7 +57,7 @@ export async function GET() {
   }
 }
 
-// Add money / debit / transfer
+// Add money / debit / transfer / create goal
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -70,6 +70,18 @@ export async function POST(req: NextRequest) {
     if (rateLimitResponse) return rateLimitResponse;
 
     const body = await req.json();
+
+    // Route by action
+    if (body.action === "createGoal") {
+      return handleCreateGoal(body, session.user.id, req);
+    }
+
+    // "add" action from frontend means CREDIT — set type if not provided
+    if (body.action === "add" && !body.type) {
+      body.type = "CREDIT";
+    }
+
+    // Default: wallet transaction (add money / debit / transfer)
     const validation = validateBody(walletTransactionSchema, body);
     if (!validation.success) return validation.response;
     const { amountPaise, type, description, recipientId } = validation.data;
@@ -183,6 +195,64 @@ export async function POST(req: NextRequest) {
     logger.error("Wallet transaction error", error);
     return NextResponse.json(
       { success: false, error: "Transaction failed" },
+      { status: 500 }
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Create savings goal handler
+// ---------------------------------------------------------------------------
+
+async function handleCreateGoal(
+  body: Record<string, unknown>,
+  userId: string,
+  req: NextRequest
+) {
+  try {
+    const name = String(body.name ?? "").trim();
+    const targetPaise = Number(body.targetPaise);
+    const targetDate = body.targetDate ? new Date(String(body.targetDate)) : null;
+
+    if (!name || name.length < 1) {
+      return NextResponse.json(
+        { success: false, error: "Goal name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!targetPaise || targetPaise <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Target amount must be greater than 0" },
+        { status: 400 }
+      );
+    }
+
+    const goal = await prisma.savingsGoal.create({
+      data: {
+        userId,
+        name,
+        targetPaise,
+        currentPaise: 0,
+        targetDate,
+        isActive: true,
+      },
+    });
+
+    auditLog({
+      userId,
+      action: "SAVINGS_GOAL_CREATED",
+      entityType: "savingsGoal",
+      entityId: goal.id,
+      metadata: { name, targetPaise, targetDate: targetDate?.toISOString() ?? null },
+      ipAddress: getClientIp(req),
+    });
+
+    return NextResponse.json({ success: true, data: goal });
+  } catch (error) {
+    logger.error("Create savings goal error", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to create savings goal" },
       { status: 500 }
     );
   }

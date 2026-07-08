@@ -147,8 +147,10 @@ export default function SavedPage() {
     setSavedTrips((prev) => prev.filter((t) => t.id !== tripId));
 
     try {
-      await fetch(`/api/users/wishlist/${tripId}`, {
-        method: "DELETE",
+      await fetch("/api/users/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tripId }),
       });
     } catch {
       toastError("Failed to remove trip");
