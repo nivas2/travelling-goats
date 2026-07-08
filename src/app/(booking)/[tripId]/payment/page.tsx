@@ -60,43 +60,17 @@ interface RazorpayResponse {
 }
 
 // ---------------------------------------------------------------------------
-//  Demo coupons
+//  Coupon type (from admin-managed DB)
 // ---------------------------------------------------------------------------
 
 interface Coupon {
   code: string;
-  description: string;
-  discountPaise: number;
-  discountPercent?: number;
+  description: string | null;
+  discountType: "PERCENTAGE" | "FIXED";
+  discountValue: number;
   minOrderPaise: number;
-  maxDiscountPaise: number;
+  maxDiscountPaise: number | null;
 }
-
-const AVAILABLE_COUPONS: Coupon[] = [
-  {
-    code: "FIRST50",
-    description: "50% off on your first trip",
-    discountPercent: 50,
-    discountPaise: 0,
-    minOrderPaise: 100000,
-    maxDiscountPaise: 200000,
-  },
-  {
-    code: "PACK200",
-    description: "Flat Rs.200 off",
-    discountPaise: 20000,
-    minOrderPaise: 50000,
-    maxDiscountPaise: 20000,
-  },
-  {
-    code: "GROUP15",
-    description: "15% off for group bookings",
-    discountPercent: 15,
-    discountPaise: 0,
-    minOrderPaise: 200000,
-    maxDiscountPaise: 150000,
-  },
-];
 
 // ---------------------------------------------------------------------------
 //  Helpers
@@ -151,6 +125,7 @@ export default function PaymentPage() {
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [showCoupons, setShowCoupons] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
 
   // Price state
   const [basePricePaise, setBasePricePaise] = useState(0);
@@ -214,8 +189,18 @@ export default function PaymentPage() {
             setWalletBalance(wallet.balancePaise ?? 0);
           }
         } catch {
-          // Wallet fetch is non-critical
           setWalletBalance(0);
+        }
+
+        // Fetch available coupons from admin-managed DB
+        try {
+          const couponRes = await fetch("/api/coupons");
+          if (couponRes.ok) {
+            const couponJson = await couponRes.json();
+            setAvailableCoupons(couponJson.data ?? []);
+          }
+        } catch {
+          // Non-critical
         }
       } catch {
         // Use fallback pricing
@@ -248,41 +233,33 @@ export default function PaymentPage() {
     [basePricePaise, addonsPricePaise, snacksPricePaise, platformFeePaise, discountPaise, walletDeduction, totalPaise],
   );
 
-  // Coupon logic
+  // Coupon logic — validates via API (admin-managed coupons)
   const handleApplyCoupon = useCallback(async () => {
     const code = couponInput.trim().toUpperCase();
     if (!code) return;
 
     setApplyingCoupon(true);
-    // Simulate API validation
-    await new Promise((r) => setTimeout(r, 800));
+    try {
+      const res = await fetch("/api/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, orderAmountPaise: subtotalPaise }),
+      });
+      const json = await res.json();
 
-    const coupon = AVAILABLE_COUPONS.find((c) => c.code === code);
-    if (!coupon) {
-      toastError("Invalid coupon code");
+      if (!res.ok || !json.success) {
+        toastError(json.error ?? "Invalid coupon code");
+        return;
+      }
+
+      const discount = json.data.discountPaise;
+      setCoupon(code, discount);
+      toastSuccess(`Coupon applied! You save ${formatCurrency(discount)}`);
+    } catch {
+      toastError("Failed to validate coupon");
+    } finally {
       setApplyingCoupon(false);
-      return;
     }
-
-    if (subtotalPaise < coupon.minOrderPaise) {
-      toastError(`Minimum order of ${formatCurrency(coupon.minOrderPaise)} required`);
-      setApplyingCoupon(false);
-      return;
-    }
-
-    let discount: number;
-    if (coupon.discountPercent) {
-      discount = Math.min(
-        Math.floor((subtotalPaise * coupon.discountPercent) / 100),
-        coupon.maxDiscountPaise,
-      );
-    } else {
-      discount = coupon.discountPaise;
-    }
-
-    setCoupon(code, discount);
-    toastSuccess(`Coupon applied! You save ${formatCurrency(discount)}`);
-    setApplyingCoupon(false);
   }, [couponInput, subtotalPaise, setCoupon, toastSuccess, toastError]);
 
   const handleRemoveCoupon = () => {
@@ -522,7 +499,7 @@ export default function PaymentPage() {
         )}
 
         {/* Available coupons toggle */}
-        {!couponCode && (
+        {!couponCode && availableCoupons.length > 0 && (
           <button
             type="button"
             onClick={() => setShowCoupons(!showCoupons)}
@@ -543,7 +520,7 @@ export default function PaymentPage() {
               exit={{ opacity: 0, height: 0 }}
               className="flex flex-col gap-2 overflow-hidden"
             >
-              {AVAILABLE_COUPONS.map((coupon) => (
+              {availableCoupons.map((coupon) => (
                 <button
                   key={coupon.code}
                   type="button"
@@ -555,7 +532,7 @@ export default function PaymentPage() {
                       {coupon.code}
                     </p>
                     <p className="text-label-sm text-on-surface-variant">
-                      {coupon.description}
+                      {coupon.description ?? `${coupon.discountType === "PERCENTAGE" ? `${coupon.discountValue}% off` : `Flat ₹${coupon.discountValue / 100} off`}`}
                     </p>
                   </div>
                   <span className="text-label-sm text-primary">Tap to apply</span>

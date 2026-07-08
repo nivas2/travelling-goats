@@ -107,7 +107,7 @@ export default function NotificationsPage() {
     );
     try {
       await fetch("/api/notifications", {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, isRead: true }),
       });
@@ -120,9 +120,9 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     try {
       await fetch("/api/notifications", {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAllRead: true }),
+        body: JSON.stringify({ markAll: true }),
       });
     } catch {
       // silent

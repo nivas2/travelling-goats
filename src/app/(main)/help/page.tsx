@@ -136,19 +136,34 @@ export default function HelpPage() {
       setLoading(true);
       setError(null);
 
-      // Load the user's support tickets.
-      const res = await fetch("/api/support");
-      if (res.ok) {
-        const json = await res.json();
-        setData({
-          faqs: defaultFaqs,
-          tickets: json.data?.tickets ?? [],
-        });
-      } else {
-        setData({ faqs: defaultFaqs, tickets: [] });
+      // Fetch FAQs from admin-managed API and support tickets in parallel
+      const [faqRes, ticketRes] = await Promise.all([
+        fetch("/api/faqs").catch(() => null),
+        fetch("/api/support").catch(() => null),
+      ]);
+
+      let faqs = defaultFaqs;
+      if (faqRes?.ok) {
+        const faqJson = await faqRes.json();
+        const apiFaqs = faqJson.data;
+        if (Array.isArray(apiFaqs) && apiFaqs.length > 0) {
+          faqs = apiFaqs.map((f: { id: string; question: string; answer: string; category?: string }) => ({
+            id: f.id,
+            question: f.question,
+            answer: f.answer,
+            category: f.category ?? "General",
+          }));
+        }
       }
+
+      let tickets: SupportTicket[] = [];
+      if (ticketRes?.ok) {
+        const ticketJson = await ticketRes.json();
+        tickets = ticketJson.data?.tickets ?? [];
+      }
+
+      setData({ faqs, tickets });
     } catch {
-      // Use default FAQs on error
       setData({ faqs: defaultFaqs, tickets: [] });
     } finally {
       setLoading(false);
