@@ -119,7 +119,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
               aria-label={title}
               variants={panelVariants}
               className={cn(
-                "relative z-10 w-full rounded-2xl bg-surface-container-lowest p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]",
+                "relative z-10 w-full max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-container-lowest p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]",
                 sizeClasses[size],
                 className,
               )}
