@@ -13,10 +13,16 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { cn, formatCurrency } from "@/lib/utils";
+import {
+  loadRazorpayScript,
+  type RazorpayOptions,
+  type RazorpayResponse,
+} from "@/lib/razorpay-client";
 import type {
   WalletData,
   WalletTransactionData,
   SavingsGoalData,
+  WalletTopupConfig,
 } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -31,7 +37,10 @@ type TransactionType =
   | "REFERRAL"
   | "GIFT"
   | "TRANSFER_IN"
-  | "TRANSFER_OUT";
+  | "TRANSFER_OUT"
+  | "TOPUP"
+  | "ADMIN_CREDIT"
+  | "ADMIN_DEBIT";
 
 const TX_META: Record<
   TransactionType,
@@ -45,6 +54,9 @@ const TX_META: Record<
   GIFT: { icon: "redeem", color: "text-success", sign: "+" },
   TRANSFER_IN: { icon: "call_received", color: "text-success", sign: "+" },
   TRANSFER_OUT: { icon: "call_made", color: "text-error", sign: "-" },
+  TOPUP: { icon: "account_balance_wallet", color: "text-success", sign: "+" },
+  ADMIN_CREDIT: { icon: "admin_panel_settings", color: "text-success", sign: "+" },
+  ADMIN_DEBIT: { icon: "admin_panel_settings", color: "text-error", sign: "-" },
 };
 
 function getTxMeta(type: string) {
@@ -65,6 +77,7 @@ export default function WalletPage() {
   const { success: toastSuccess, error: toastError } = useToast();
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [goals, setGoals] = useState<SavingsGoalData[]>([]);
+  const [topupConfig, setTopupConfig] = useState<WalletTopupConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,6 +112,7 @@ export default function WalletPage() {
       const json = await res.json();
       setWallet(json.data?.wallet ?? json.data ?? null);
       setGoals(json.data?.savingsGoals ?? []);
+      if (json.data?.topupConfig) setTopupConfig(json.data.topupConfig);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -113,21 +127,92 @@ export default function WalletPage() {
   const handleAddMoney = async () => {
     const paise = Math.round(Number(addAmount) * 100);
     if (!paise || paise <= 0) return;
+
+    // Validate against topup limits
+    if (topupConfig) {
+      if (paise < topupConfig.minPaise) {
+        toastError(`Minimum top-up is ${formatCurrency(topupConfig.minPaise)}`);
+        return;
+      }
+      if (paise > topupConfig.maxPaise) {
+        toastError(`Maximum top-up is ${formatCurrency(topupConfig.maxPaise)}`);
+        return;
+      }
+    }
+
     try {
       setAddingMoney(true);
-      const res = await fetch("/api/wallet", {
+
+      // 1. Create top-up order
+      const orderRes = await fetch("/api/wallet/topup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add", amountPaise: paise }),
+        body: JSON.stringify({ amountPaise: paise }),
       });
-      if (!res.ok) throw new Error("Payment failed");
-      setAddMoneyOpen(false);
-      setAddAmount("");
-      toastSuccess("Money added successfully");
-      fetchWallet();
+      const orderJson = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderJson.error ?? "Failed to create order");
+
+      // Test mode — auto-credited
+      if (orderJson.data?.testMode) {
+        setAddMoneyOpen(false);
+        setAddAmount("");
+        toastSuccess("Money added successfully");
+        fetchWallet();
+        return;
+      }
+
+      // 2. Load Razorpay script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) throw new Error("Failed to load payment gateway");
+
+      // 3. Open Razorpay checkout
+      const { orderId, amount, currency, key } = orderJson.data;
+
+      const options: RazorpayOptions = {
+        key,
+        amount,
+        currency,
+        name: "Travelling Goats",
+        description: "Wallet Top-up",
+        order_id: orderId,
+        handler: async (response: RazorpayResponse) => {
+          try {
+            const verifyRes = await fetch("/api/wallet/topup", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            if (!verifyRes.ok) throw new Error("Verification failed");
+            setAddMoneyOpen(false);
+            setAddAmount("");
+            toastSuccess("Money added successfully!");
+            fetchWallet();
+          } catch {
+            toastError("Top-up verification failed. Contact support.");
+          } finally {
+            setAddingMoney(false);
+          }
+        },
+        theme: { color: "#FF385C" },
+        modal: {
+          ondismiss: () => setAddingMoney(false),
+        },
+      };
+
+      const razorpay = new window.Razorpay!(options);
+      razorpay.on("payment.failed", () => {
+        toastError("Payment failed. Please try again.");
+        setAddingMoney(false);
+      });
+      razorpay.open();
+      // Don't setAddingMoney(false) here — Razorpay is still open
+      return;
     } catch (err) {
       toastError(err instanceof Error ? err.message : "Failed to add money");
-    } finally {
       setAddingMoney(false);
     }
   };
@@ -251,6 +336,19 @@ export default function WalletPage() {
 
   return (
     <div className="px-5 py-6 space-y-6">
+      {/* -------- Frozen Banner -------- */}
+      {wallet?.isFrozen && (
+        <Card variant="outlined" className="border-error/30 bg-error/5 flex items-center gap-3 p-4">
+          <Icon name="ac_unit" size={22} className="text-error shrink-0" />
+          <div>
+            <p className="text-title-md font-title-md text-error">Wallet Frozen</p>
+            <p className="text-body-sm text-on-surface-variant">
+              {wallet.frozenReason ?? "Your wallet has been frozen. Contact support for help."}
+            </p>
+          </div>
+        </Card>
+      )}
+
       {/* -------- Balance Card -------- */}
       <GlassCard className="primary-gradient text-on-primary p-6">
         <p className="text-on-primary/70 text-label-lg font-label-lg">
@@ -426,39 +524,74 @@ export default function WalletPage() {
       {/* -------- Add Money Modal -------- */}
       <Modal
         open={addMoneyOpen}
-        onClose={() => setAddMoneyOpen(false)}
+        onClose={() => { setAddMoneyOpen(false); setAddAmount(""); }}
         title="Add Money"
         description="Top up your Travelling Goats wallet"
       >
         <div className="space-y-4">
-          <Input
-            label="Amount (in Rupees)"
-            type="number"
-            placeholder="e.g. 500"
-            value={addAmount}
-            onChange={(e) => setAddAmount(e.target.value)}
-            iconLeft={<span className="text-on-surface-variant font-medium">&#x20B9;</span>}
-          />
+          {wallet?.isFrozen ? (
+            <div className="rounded-xl bg-error/10 px-4 py-3 text-body-md text-error">
+              Your wallet is frozen. Please contact support.
+            </div>
+          ) : (
+            <>
+              {/* Preset chips */}
+              {topupConfig && topupConfig.presetsPaise.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {topupConfig.presetsPaise.map((paise) => (
+                    <button
+                      key={paise}
+                      type="button"
+                      onClick={() => setAddAmount(String(paise / 100))}
+                      className={cn(
+                        "rounded-full px-4 py-2 text-label-lg font-label-lg border transition-colors",
+                        Number(addAmount) === paise / 100
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-outline-variant/30 text-on-surface-variant hover:bg-surface-container"
+                      )}
+                    >
+                      {formatCurrency(paise)}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-          {addAmount && Number(addAmount) > 0 && (
-            <p className="text-label-sm text-on-surface-variant">
-              You will add{" "}
-              <span className="font-semibold text-on-surface">
-                {formatCurrency(Math.round(Number(addAmount) * 100))}
-              </span>{" "}
-              to your wallet
-            </p>
+              <Input
+                label="Custom Amount (in Rupees)"
+                type="number"
+                placeholder="e.g. 500"
+                value={addAmount}
+                onChange={(e) => setAddAmount(e.target.value)}
+                iconLeft={<span className="text-on-surface-variant font-medium">&#x20B9;</span>}
+              />
+
+              {topupConfig && (
+                <p className="text-label-sm text-on-surface-variant">
+                  Min: {formatCurrency(topupConfig.minPaise)} &middot; Max: {formatCurrency(topupConfig.maxPaise)}
+                </p>
+              )}
+
+              {addAmount && Number(addAmount) > 0 && (
+                <p className="text-label-sm text-on-surface-variant">
+                  You will add{" "}
+                  <span className="font-semibold text-on-surface">
+                    {formatCurrency(Math.round(Number(addAmount) * 100))}
+                  </span>{" "}
+                  to your wallet
+                </p>
+              )}
+
+              <Button
+                fullWidth
+                loading={addingMoney}
+                onClick={handleAddMoney}
+                disabled={!addAmount || Number(addAmount) <= 0}
+                icon={<Icon name="lock" size={18} />}
+              >
+                Pay via Razorpay
+              </Button>
+            </>
           )}
-
-          <Button
-            fullWidth
-            loading={addingMoney}
-            onClick={handleAddMoney}
-            disabled={!addAmount || Number(addAmount) <= 0}
-            icon={<Icon name="lock" size={18} />}
-          >
-            Add via Razorpay
-          </Button>
         </div>
       </Modal>
 

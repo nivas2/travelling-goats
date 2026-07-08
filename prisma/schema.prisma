@@ -448,11 +448,14 @@ model Payment {
 // ===== WALLET =====
 
 model Wallet {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  balancePaise Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  balancePaise Int       @default(0)
+  isFrozen     Boolean   @default(false)
+  frozenAt     DateTime?
+  frozenReason String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   user         User                @relation(fields: [userId], references: [id])
   transactions WalletTransaction[]
@@ -829,6 +832,21 @@ model PlaylistTrack {
   @@map("playlist_tracks")
 }
 
+// ===== APP SETTINGS =====
+
+model AppSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  group     String   @default("general")
+  label     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+  @@map("app_settings")
+}
+
 // ===== AUDIT LOG =====
 
 model AuditLog {
@@ -955,6 +973,9 @@ enum WalletTransactionType {
   TRANSFER_IN
   TRANSFER_OUT
   AUTO_SAVE
+  TOPUP
+  ADMIN_CREDIT
+  ADMIN_DEBIT
 }
 
 enum ReferralStatus {

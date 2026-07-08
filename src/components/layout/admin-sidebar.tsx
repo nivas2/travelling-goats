@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { label: "Users", icon: "group", href: "/admin/users" },
   { label: "Bookings", icon: "confirmation_number", href: "/admin/bookings" },
   { label: "Payments", icon: "payments", href: "/admin/payments" },
+  { label: "Wallets", icon: "account_balance_wallet", href: "/admin/wallets" },
   { label: "Coupons", icon: "local_offer", href: "/admin/coupons" },
   { label: "Referrals", icon: "share", href: "/admin/referrals" },
   { label: "Notifications", icon: "notifications", href: "/admin/notifications" },
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { label: "Revenue", icon: "payments", href: "/admin/revenue" },
   { label: "Herd Analytics", icon: "analytics", href: "/admin/analytics" },
   { label: "Support", icon: "support_agent", href: "/admin/support" },
+  { label: "Settings", icon: "settings", href: "/admin/settings" },
 ];
 
 export function AdminSidebar() {

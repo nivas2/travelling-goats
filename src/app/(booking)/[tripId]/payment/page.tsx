@@ -16,48 +16,11 @@ import { useToast } from "@/components/ui/toast";
 import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
 import { useGoatSound } from "@/hooks/use-goat-sound";
 import type { BookingSummary } from "@/types";
-
-// ---------------------------------------------------------------------------
-//  Razorpay types (window augmentation)
-// ---------------------------------------------------------------------------
-
-declare global {
-  interface Window {
-    Razorpay?: new (options: RazorpayOptions) => RazorpayInstance;
-  }
-}
-
-interface RazorpayOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  handler: (response: RazorpayResponse) => void;
-  prefill?: {
-    name?: string;
-    email?: string;
-    contact?: string;
-  };
-  theme?: {
-    color?: string;
-  };
-  modal?: {
-    ondismiss?: () => void;
-  };
-}
-
-interface RazorpayInstance {
-  open: () => void;
-  on: (event: string, handler: (response: unknown) => void) => void;
-}
-
-interface RazorpayResponse {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-}
+import {
+  loadRazorpayScript,
+  type RazorpayOptions,
+  type RazorpayResponse,
+} from "@/lib/razorpay-client";
 
 // ---------------------------------------------------------------------------
 //  Coupon type (from admin-managed DB)
@@ -70,25 +33,6 @@ interface Coupon {
   discountValue: number;
   minOrderPaise: number;
   maxDiscountPaise: number | null;
-}
-
-// ---------------------------------------------------------------------------
-//  Helpers
-// ---------------------------------------------------------------------------
-
-function loadRazorpayScript(): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (document.getElementById("razorpay-script")) {
-      resolve(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.id = "razorpay-script";
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -360,13 +304,24 @@ export default function PaymentPage() {
       }
 
       // 4. Open Razorpay checkout
+      const razorpayKey = order.key ?? process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "";
+      const isLiveKey = razorpayKey.startsWith("rzp_live_");
+
       const options: RazorpayOptions = {
-        key: order.key ?? process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
+        key: razorpayKey,
         amount: order.amount ?? totalPaise,
         currency: order.currency ?? "INR",
         name: "Travelling Goats",
         description: `Trip Booking - ${travelerCount} traveler(s)`,
         order_id: order.orderId ?? order.payment?.razorpayOrderId,
+        ...(isLiveKey && {
+          method: {
+            upi: true,
+            card: true,
+            netbanking: true,
+            wallet: true,
+          },
+        }),
         handler: async (response: RazorpayResponse) => {
           try {
             const verifyRes = await fetch("/api/payments", {
@@ -394,7 +349,8 @@ export default function PaymentPage() {
         },
         prefill: {
           name: travelers[0]?.name ?? "",
-          contact: travelers[0]?.phone ?? "",
+          email: contactEmail || undefined,
+          contact: contactPhone || (travelers[0]?.phone ?? ""),
         },
         theme: { color: "#FF385C" },
         modal: {

@@ -7,6 +7,7 @@ import { validateBody } from "@/lib/validate";
 import { walletTransactionSchema } from "@/lib/validations/wallet";
 import { applyRateLimit } from "@/lib/rate-limit";
 import { auditLog } from "@/lib/audit";
+import { getWalletTopupConfig } from "@/lib/settings";
 
 const logger = createLogger({ route: "wallet" });
 
@@ -44,9 +45,11 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
+    const topupConfig = await getWalletTopupConfig();
+
     return NextResponse.json({
       success: true,
-      data: { wallet, savingsGoals },
+      data: { wallet, savingsGoals, topupConfig },
     });
   } catch (error) {
     logger.error("Wallet fetch error", error);
@@ -76,15 +79,26 @@ export async function POST(req: NextRequest) {
       return handleCreateGoal(body, session.user.id, req);
     }
 
-    // "add" action from frontend means CREDIT — set type if not provided
-    if (body.action === "add" && !body.type) {
-      body.type = "CREDIT";
+    // Direct "add" action removed — use /api/wallet/topup instead
+    if (body.action === "add") {
+      return NextResponse.json(
+        { success: false, error: "Direct wallet credit is disabled. Use the top-up flow." },
+        { status: 400 }
+      );
     }
 
-    // Default: wallet transaction (add money / debit / transfer)
+    // Default: wallet transaction (debit / transfer)
     const validation = validateBody(walletTransactionSchema, body);
     if (!validation.success) return validation.response;
     const { amountPaise, type, description, recipientId } = validation.data;
+
+    // Block server-initiated credit types — only admin/topup APIs can credit
+    if (["CREDIT", "TOPUP", "ADMIN_CREDIT", "ADMIN_DEBIT"].includes(type)) {
+      return NextResponse.json(
+        { success: false, error: "This transaction type is not allowed here" },
+        { status: 400 }
+      );
+    }
 
     const userId = session.user.id;
     const userName = session.user.name ?? "User";
@@ -94,9 +108,9 @@ export async function POST(req: NextRequest) {
     const result = await prisma.$transaction(async (tx) => {
       // Lock the sender's wallet row with FOR UPDATE
       const [senderWallet] = await tx.$queryRaw<
-        Array<{ id: string; balancePaise: number }>
+        Array<{ id: string; balancePaise: number; isFrozen: boolean }>
       >(
-        Prisma.sql`SELECT id, "balancePaise" FROM wallets WHERE "userId" = ${userId} FOR UPDATE`
+        Prisma.sql`SELECT id, "balancePaise", "isFrozen" FROM wallets WHERE "userId" = ${userId} FOR UPDATE`
       );
 
       let wallet = senderWallet;
@@ -104,8 +118,12 @@ export async function POST(req: NextRequest) {
         // Create wallet if it doesn't exist
         wallet = await tx.wallet.create({
           data: { userId },
-          select: { id: true, balancePaise: true },
-        }) as { id: string; balancePaise: number };
+          select: { id: true, balancePaise: true, isFrozen: true },
+        }) as { id: string; balancePaise: number; isFrozen: boolean };
+      }
+
+      if (wallet.isFrozen) {
+        throw new Error("WALLET_FROZEN");
       }
 
       if (isDebit && wallet.balancePaise < amountPaise) {
@@ -186,11 +204,19 @@ export async function POST(req: NextRequest) {
       data: result,
     });
   } catch (error) {
-    if (error instanceof Error && error.message === "INSUFFICIENT_BALANCE") {
-      return NextResponse.json(
-        { success: false, error: "Insufficient balance" },
-        { status: 400 }
-      );
+    if (error instanceof Error) {
+      if (error.message === "INSUFFICIENT_BALANCE") {
+        return NextResponse.json(
+          { success: false, error: "Insufficient balance" },
+          { status: 400 }
+        );
+      }
+      if (error.message === "WALLET_FROZEN") {
+        return NextResponse.json(
+          { success: false, error: "Wallet is frozen. Contact support." },
+          { status: 403 }
+        );
+      }
     }
     logger.error("Wallet transaction error", error);
     return NextResponse.json(

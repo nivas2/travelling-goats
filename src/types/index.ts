@@ -226,6 +226,8 @@ export interface ChatMessageData {
 export interface WalletData {
   id: string;
   balancePaise: number;
+  isFrozen?: boolean;
+  frozenReason?: string | null;
   transactions: WalletTransactionData[];
 }
 
@@ -277,6 +279,36 @@ export interface AdminTripData extends TripDetail {
   status: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ===== App Settings Types =====
+
+export interface AppSettingData {
+  id: string;
+  key: string;
+  value: string;
+  group: string;
+  label: string | null;
+}
+
+export interface WalletTopupConfig {
+  minPaise: number;
+  maxPaise: number;
+  presetsPaise: number[];
+}
+
+export interface AdminWalletUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  avatar: string | null;
+  wallet: {
+    id: string;
+    balancePaise: number;
+    isFrozen: boolean;
+    frozenReason: string | null;
+  } | null;
 }
 
 // ===== Filter Types =====
