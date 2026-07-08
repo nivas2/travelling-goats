@@ -6,6 +6,12 @@ import { handleAuthError } from "@/lib/auth-fetch";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { filterByDateRange } from "@/components/admin/date-range-filter";
+import type { DateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -53,8 +59,7 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
   const [summary, setSummary] = useState<RevenueSummary>({
     totalRevenuePaise: 0,
     capturedCount: 0,
@@ -81,18 +86,19 @@ export default function AdminPaymentsPage() {
     fetchPayments();
   }, []);
 
-  const filtered = payments.filter((p) => {
+  const preFiltered = payments.filter((p) => {
     const matchesSearch =
       !search ||
       p.id.toLowerCase().includes(search.toLowerCase()) ||
       (p.booking?.bookingNumber ?? "").toLowerCase().includes(search.toLowerCase()) ||
       (p.razorpayPaymentId ?? "").toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || p.status === statusFilter;
-    let matchesDate = true;
-    if (dateFrom) matchesDate = matchesDate && new Date(p.createdAt) >= new Date(dateFrom);
-    if (dateTo) matchesDate = matchesDate && new Date(p.createdAt) <= new Date(dateTo + "T23:59:59");
-    return matchesSearch && matchesStatus && matchesDate;
+    return matchesSearch && matchesStatus;
   });
+
+  const filtered = filterByDateRange(preFiltered, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   const statuses: StatusFilter[] = ["ALL", "PENDING", "CAPTURED", "FAILED", "REFUNDED"];
 
@@ -134,21 +140,23 @@ export default function AdminPaymentsPage() {
             iconLeft={<span className="material-symbols-outlined text-[20px]">search</span>}
           />
         </div>
-        <div className="flex gap-2">
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            inputSize="sm"
-          />
-          <span className="flex items-center text-on-surface-variant text-body-md">to</span>
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            inputSize="sm"
-          />
-        </div>
+        <AdminTableToolbar
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onExportCSV={() =>
+            downloadCSV(sortedData, [
+              { header: "Payment ID", accessor: "id" },
+              { header: "Booking #", accessor: "booking.bookingNumber" },
+              { header: "User", accessor: "booking.user.name" },
+              { header: "Amount", accessor: (p: Payment) => (p.amountPaise / 100).toFixed(2) },
+              { header: "Method", accessor: "method" },
+              { header: "Razorpay ID", accessor: "razorpayPaymentId" },
+              { header: "Status", accessor: "status" },
+              { header: "Date", accessor: "createdAt" },
+            ], `payments-${new Date().toISOString().slice(0, 10)}.csv`)
+          }
+          csvDisabled={sortedData.length === 0}
+        />
       </div>
 
       {/* Status Tabs */}
@@ -167,14 +175,14 @@ export default function AdminPaymentsPage() {
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Payment ID</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Booking</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Amount</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Method</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Razorpay ID</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
+                <SortHeader label="Payment ID" sortKey="id" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Booking" sortKey="booking.bookingNumber" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="User" sortKey="booking.user.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Amount" sortKey="amountPaise" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
+                <SortHeader label="Method" sortKey="method" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Razorpay ID" sortKey="razorpayPaymentId" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Date" sortKey="createdAt" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
               </tr>
             </thead>
             <tbody>
@@ -186,12 +194,12 @@ export default function AdminPaymentsPage() {
                     </td>
                   </tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-5 py-12 text-center text-on-surface-variant">No payments found</td>
                 </tr>
               ) : (
-                filtered.map((payment) => (
+                sortedData.map((payment) => (
                   <tr key={payment.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-4 py-3 font-mono text-label-sm text-on-surface-variant">{payment.id.slice(0, 12)}...</td>
                     <td className="px-4 py-3 font-mono text-label-sm">{payment.booking?.bookingNumber ?? "-"}</td>

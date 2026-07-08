@@ -9,6 +9,10 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { Modal } from "@/components/ui/modal";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -223,6 +227,9 @@ export default function AdminAddonsPage() {
     }
   }
 
+  const activeItems: (GlobalAddOn | GlobalSnack)[] = tab === "addons" ? addOns : snacks;
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: activeItems });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -267,14 +274,26 @@ export default function AdminAddonsPage() {
         </button>
       </div>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Name", accessor: "name" },
+            { header: "Price", accessor: (item: GlobalAddOn | GlobalSnack) => (item.pricePaise / 100).toFixed(2) },
+            { header: "Active", accessor: (item: GlobalAddOn | GlobalSnack) => item.isActive ? "Yes" : "No" },
+          ], `${tab}-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Name</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Price</th>
+                <SortHeader label="Name" sortKey="name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Price" sortKey="pricePaise" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
                 <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Icon</th>
                 <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Image</th>
                 {tab === "addons" && (
@@ -300,10 +319,10 @@ export default function AdminAddonsPage() {
                   </tr>
                 ))
               ) : tab === "addons" ? (
-                addOns.length === 0 ? (
+                (sortedData as GlobalAddOn[]).length === 0 ? (
                   <tr><td colSpan={8} className="px-5 py-12 text-center text-on-surface-variant">No add-ons yet</td></tr>
                 ) : (
-                  addOns.map((addon) => (
+                  (sortedData as GlobalAddOn[]).map((addon) => (
                     <tr key={addon.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                       <td className="px-5 py-3 font-medium text-on-surface">{addon.name}</td>
                       <td className="px-5 py-3 text-right">{formatCurrency(addon.pricePaise)}</td>
@@ -336,10 +355,10 @@ export default function AdminAddonsPage() {
                   ))
                 )
               ) : (
-                snacks.length === 0 ? (
+                (sortedData as GlobalSnack[]).length === 0 ? (
                   <tr><td colSpan={8} className="px-5 py-12 text-center text-on-surface-variant">No snacks yet</td></tr>
                 ) : (
-                  snacks.map((snack) => (
+                  (sortedData as GlobalSnack[]).map((snack) => (
                     <tr key={snack.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                       <td className="px-5 py-3 font-medium text-on-surface">{snack.name}</td>
                       <td className="px-5 py-3 text-right">{formatCurrency(snack.pricePaise)}</td>

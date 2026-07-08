@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Modal } from "@/components/ui/modal";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -65,6 +70,7 @@ export default function AdminUsersPage() {
   const [actionType, setActionType] = useState<"role" | "suspend" | "delete" | null>(null);
   const [selectedRole, setSelectedRole] = useState("USER");
   const [processing, setProcessing] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     async function fetchUsers() {
@@ -110,7 +116,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  const filtered = users.filter((u) => {
+  const preFiltered = users.filter((u) => {
     const matchesSearch =
       !search ||
       (u.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
@@ -120,6 +126,10 @@ export default function AdminUsersPage() {
     const matchesStatus = statusFilter === "ALL" || u.status === statusFilter;
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const filtered = filterByDateRange(preFiltered, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   return (
     <div className="space-y-6">
@@ -171,20 +181,39 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Name", accessor: "name" },
+            { header: "Email", accessor: "email" },
+            { header: "Phone", accessor: "phone" },
+            { header: "Role", accessor: "role" },
+            { header: "Status", accessor: "status" },
+            { header: "Verified", accessor: (u: User) => u.isVerified ? "Yes" : "No" },
+            { header: "Trips", accessor: "totalTrips" },
+            { header: "Joined", accessor: "createdAt" },
+          ], `users-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Email</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Phone</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Role</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Verified</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Joined</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Trips</th>
+                <SortHeader label="User" sortKey="name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Email" sortKey="email" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Phone" sortKey="phone" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Role" sortKey="role" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Verified" sortKey="isVerified" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Joined" sortKey="createdAt" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
+                <SortHeader label="Trips" sortKey="totalTrips" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
             </thead>
@@ -197,14 +226,14 @@ export default function AdminUsersPage() {
                     </td>
                   </tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-5 py-12 text-center text-on-surface-variant">
                     No users found
                   </td>
                 </tr>
               ) : (
-                filtered.map((user) => (
+                sortedData.map((user) => (
                   <tr key={user.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">

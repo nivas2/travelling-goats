@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -49,6 +54,7 @@ export default function AdminReferralsPage() {
     conversionRate: 0,
     totalPayoutsPaise: 0,
   });
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     async function fetchReferrals() {
@@ -67,6 +73,10 @@ export default function AdminReferralsPage() {
     }
     fetchReferrals();
   }, []);
+
+  const filtered = filterByDateRange(referrals, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   return (
     <div className="space-y-6">
@@ -112,19 +122,39 @@ export default function AdminReferralsPage() {
         </Card>
       </div>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Referrer", accessor: "referrer.name" },
+            { header: "Referrer Email", accessor: "referrer.email" },
+            { header: "Referred", accessor: "referred.name" },
+            { header: "Referred Email", accessor: "referred.email" },
+            { header: "Code", accessor: "code" },
+            { header: "Tier", accessor: "tier" },
+            { header: "Reward", accessor: (r: Referral) => (r.rewardPaise / 100).toFixed(2) },
+            { header: "Status", accessor: "status" },
+            { header: "Date", accessor: "createdAt" },
+          ], `referrals-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Referrer</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Referred User</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Code</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Tier</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Reward</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
+                <SortHeader label="Referrer" sortKey="referrer.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Referred User" sortKey="referred.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Code" sortKey="code" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Reward" sortKey="rewardPaise" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
+                <SortHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Date" sortKey="createdAt" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
               </tr>
             </thead>
             <tbody>
@@ -136,12 +166,12 @@ export default function AdminReferralsPage() {
                     </td>
                   </tr>
                 ))
-              ) : referrals.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-on-surface-variant">No referrals yet</td>
                 </tr>
               ) : (
-                referrals.map((ref) => (
+                sortedData.map((ref) => (
                   <tr key={ref.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3">
                       <div>

@@ -78,8 +78,24 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
+    // Deduplicate: keep one booking per trip (CONFIRMED > PENDING, then latest).
+    const STATUS_PRIORITY: Record<string, number> = { CONFIRMED: 2, PENDING: 1 };
+    const bestByTrip = new Map<string, (typeof bookings)[number]>();
+    for (const b of bookings) {
+      const existing = bestByTrip.get(b.tripId);
+      if (
+        !existing ||
+        (STATUS_PRIORITY[b.status] ?? 0) > (STATUS_PRIORITY[existing.status] ?? 0) ||
+        ((STATUS_PRIORITY[b.status] ?? 0) === (STATUS_PRIORITY[existing.status] ?? 0) &&
+          b.createdAt > existing.createdAt)
+      ) {
+        bestByTrip.set(b.tripId, b);
+      }
+    }
+    const dedupedBookings = [...bestByTrip.values()];
+
     // Shape each booking into the flattened `BookingTrip` contract the UI expects.
-    const data = bookings.map((b) => {
+    const data = dedupedBookings.map((b) => {
       const isCancelled = b.status === "CANCELLED" || b.status === "REFUNDED";
       const start = b.trip.startDate;
       const end = b.trip.endDate;

@@ -6,6 +6,11 @@ import { handleAuthError } from "@/lib/auth-fetch";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -91,6 +96,7 @@ export default function AdminReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Review | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     async function fetchReviews() {
@@ -107,6 +113,10 @@ export default function AdminReviewsPage() {
     }
     fetchReviews();
   }, []);
+
+  const filtered = filterByDateRange(reviews, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   async function verifyReview(reviewId: string) {
     try {
@@ -153,18 +163,35 @@ export default function AdminReviewsPage() {
         </div>
       )}
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "User", accessor: "user.name" },
+            { header: "Trip", accessor: "trip.title" },
+            { header: "Rating", accessor: "overallRating" },
+            { header: "Comment", accessor: "comment" },
+            { header: "Verified", accessor: (r: Review) => r.isVerified ? "Yes" : "No" },
+            { header: "Date", accessor: "createdAt" },
+          ], `reviews-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Trip</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Rating</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Comment</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Verified</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
+                <SortHeader label="User" sortKey="user.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Trip" sortKey="trip.title" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Rating" sortKey="overallRating" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Comment" sortKey="comment" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Verified" sortKey="isVerified" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Date" sortKey="createdAt" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
             </thead>
@@ -177,12 +204,12 @@ export default function AdminReviewsPage() {
                     </td>
                   </tr>
                 ))
-              ) : reviews.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-on-surface-variant">No reviews yet</td>
                 </tr>
               ) : (
-                reviews.map((review) => (
+                sortedData.map((review) => (
                   <tr key={review.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3 font-medium text-on-surface">{review.user.name ?? "N/A"}</td>
                     <td className="px-5 py-3 text-on-surface-variant max-w-[160px] truncate">{review.trip.title}</td>

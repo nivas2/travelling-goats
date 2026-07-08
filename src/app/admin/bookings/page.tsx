@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { Modal } from "@/components/ui/modal";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -70,6 +75,7 @@ export default function AdminBookingsPage() {
   const [actionBooking, setActionBooking] = useState<Booking | null>(null);
   const [actionType, setActionType] = useState<"confirm" | "cancel" | "refund" | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     async function fetchBookings() {
@@ -115,7 +121,7 @@ export default function AdminBookingsPage() {
     }
   }
 
-  const filtered = bookings.filter((b) => {
+  const preFiltered = bookings.filter((b) => {
     const matchesSearch =
       !search ||
       b.bookingNumber.toLowerCase().includes(search.toLowerCase()) ||
@@ -130,10 +136,14 @@ export default function AdminBookingsPage() {
     return matchesSearch && matchesStatus && matchesTrip && matchesType && matchesCheckin;
   });
 
+  const filtered = filterByDateRange(preFiltered, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
+
   const statuses: StatusFilter[] = ["ALL", "PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"];
   const trailOptions = Array.from(new Set(bookings.map((b) => b.trip.title))).sort();
   const typeOptions = Array.from(new Set(bookings.map((b) => b.bookingType))).sort();
-  const hasFilters = tripFilter !== "ALL" || typeFilter !== "ALL" || !!search || statusFilter !== "ALL" || checkinFilter !== "ALL";
+  const hasFilters = tripFilter !== "ALL" || typeFilter !== "ALL" || !!search || statusFilter !== "ALL" || checkinFilter !== "ALL" || !!dateRange.from || !!dateRange.to;
 
   return (
     <div className="space-y-6">
@@ -191,7 +201,7 @@ export default function AdminBookingsPage() {
         </select>
 
         <span className="text-label-md text-on-surface-variant">
-          {filtered.length} of {bookings.length}
+          {sortedData.length} of {bookings.length}
         </span>
 
         {hasFilters && (
@@ -202,6 +212,7 @@ export default function AdminBookingsPage() {
               setTripFilter("ALL");
               setTypeFilter("ALL");
               setCheckinFilter("ALL");
+              setDateRange({ from: "", to: "" });
             }}
             className="text-label-md font-medium text-primary hover:underline"
           >
@@ -209,6 +220,26 @@ export default function AdminBookingsPage() {
           </button>
         )}
       </div>
+
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Booking #", accessor: "bookingNumber" },
+            { header: "User", accessor: "user.name" },
+            { header: "Trip", accessor: "trip.title" },
+            { header: "Type", accessor: "bookingType" },
+            { header: "Travelers", accessor: "travelerCount" },
+            { header: "Amount", accessor: (b: Booking) => (b.totalPricePaise / 100).toFixed(2) },
+            { header: "Status", accessor: "status" },
+            { header: "Checked In", accessor: (b: Booking) => b.checkedInAt ? "Yes" : "No" },
+            { header: "Date", accessor: "createdAt" },
+          ], `bookings-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
 
       {/* Status Tabs */}
       <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
@@ -230,15 +261,15 @@ export default function AdminBookingsPage() {
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Booking #</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Trip</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Type</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Travelers</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Amount</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Checked In</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
+                <SortHeader label="Booking #" sortKey="bookingNumber" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="User" sortKey="user.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Trip" sortKey="trip.title" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Type" sortKey="bookingType" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Travelers" sortKey="travelerCount" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Amount" sortKey="totalPricePaise" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
+                <SortHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Checked In" sortKey="checkedInAt" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Date" sortKey="createdAt" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
             </thead>
@@ -251,12 +282,12 @@ export default function AdminBookingsPage() {
                     </td>
                   </tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-5 py-12 text-center text-on-surface-variant">No bookings found</td>
                 </tr>
               ) : (
-                filtered.map((booking) => (
+                sortedData.map((booking) => (
                   <tr key={booking.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-4 py-3 font-mono text-label-sm">{booking.bookingNumber}</td>
                     <td className="px-5 py-3">

@@ -127,10 +127,11 @@ export async function POST(req: NextRequest) {
       key_secret: razorpayConfig.keySecret,
     });
 
+    const receipt = `wu_${userId.slice(-8)}_${Date.now()}`;
     const order = await razorpay.orders.create({
       amount: amountPaise,
       currency: "INR",
-      receipt: `topup_${userId}_${Date.now()}`,
+      receipt: receipt.slice(0, 40),
       notes: { userId, type: "wallet_topup" },
     });
 
@@ -154,8 +155,23 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     logger.error("Wallet topup order error", error);
+
+    // Surface Razorpay-specific error when available
+    const rpError =
+      error &&
+      typeof error === "object" &&
+      "error" in error &&
+      (error as Record<string, unknown>).error;
+    const detail =
+      rpError && typeof rpError === "object" && "description" in rpError
+        ? String((rpError as Record<string, unknown>).description)
+        : null;
+
     return NextResponse.json(
-      { success: false, error: "Failed to create top-up order" },
+      {
+        success: false,
+        error: detail || "Failed to create top-up order",
+      },
       { status: 500 }
     );
   }

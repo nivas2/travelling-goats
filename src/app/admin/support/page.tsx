@@ -6,6 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -71,6 +76,7 @@ export default function AdminSupportPage() {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     fetchTickets();
@@ -142,9 +148,13 @@ export default function AdminSupportPage() {
     }
   }
 
-  const filtered = tickets.filter(
+  const preFiltered = tickets.filter(
     (t) => statusFilter === "ALL" || t.status === statusFilter
   );
+
+  const filtered = filterByDateRange(preFiltered, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   const statuses: StatusFilter[] = ["ALL", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
@@ -287,19 +297,38 @@ export default function AdminSupportPage() {
         {statuses.map((s) => (<TabPanel key={s} value={s}>{/* rendered below */}</TabPanel>))}
       </Tabs>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Ticket #", accessor: "ticketNumber" },
+            { header: "User", accessor: "user.name" },
+            { header: "Email", accessor: "user.email" },
+            { header: "Subject", accessor: "subject" },
+            { header: "Category", accessor: "category" },
+            { header: "Priority", accessor: "priority" },
+            { header: "Status", accessor: "status" },
+            { header: "Date", accessor: "createdAt" },
+          ], `support-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Ticket #</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Subject</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Category</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Priority</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Date</th>
+                <SortHeader label="Ticket #" sortKey="ticketNumber" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="User" sortKey="user.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Subject" sortKey="subject" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Category" sortKey="category" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Priority" sortKey="priority" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Date" sortKey="createdAt" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
               </tr>
             </thead>
             <tbody>
@@ -311,12 +340,12 @@ export default function AdminSupportPage() {
                     </td>
                   </tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-on-surface-variant">No tickets found</td>
                 </tr>
               ) : (
-                filtered.map((ticket) => (
+                sortedData.map((ticket) => (
                   <tr
                     key={ticket.id}
                     onClick={() => setSelectedTicket(ticket)}

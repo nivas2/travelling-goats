@@ -344,7 +344,10 @@ export default function HomePage() {
   useEffect(() => {
     let active = true;
     fetch("/api/bookings?status=UPCOMING")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok || r.redirected) return null;
+        return r.json();
+      })
       .then((j) => {
         if (active && j?.success && j.data?.length) {
           // Pick the nearest upcoming trip by start date

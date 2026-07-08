@@ -8,6 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Modal } from "@/components/ui/modal";
 import { Switch } from "@/components/ui/switch";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -221,6 +225,9 @@ export default function AdminPickupPointsPage() {
     ? points.filter((p) => p.cityId === filterCityId)
     : points;
 
+  const activeItems: (PickupCity | PickupPoint)[] = tab === "cities" ? cities : filteredPoints;
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: activeItems });
+
   const editingIsCity = editingItem ? isCity(editingItem) : tab === "cities";
 
   return (
@@ -282,28 +289,53 @@ export default function AdminPickupPointsPage() {
         </div>
       )}
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        onExportCSV={() => {
+          if (tab === "cities") {
+            downloadCSV(sortedData as PickupCity[], [
+              { header: "Name", accessor: "name" },
+              { header: "State", accessor: "state" },
+              { header: "Order", accessor: "order" },
+              { header: "Active", accessor: (c: PickupCity) => c.isActive ? "Yes" : "No" },
+            ], `pickup-cities-${new Date().toISOString().slice(0, 10)}.csv`);
+          } else {
+            downloadCSV(sortedData as PickupPoint[], [
+              { header: "Name", accessor: "name" },
+              { header: "City", accessor: "city.name" },
+              { header: "Address", accessor: "address" },
+              { header: "Landmark", accessor: "landmark" },
+              { header: "Order", accessor: "order" },
+              { header: "Active", accessor: (p: PickupPoint) => p.isActive ? "Yes" : "No" },
+            ], `pickup-points-${new Date().toISOString().slice(0, 10)}.csv`);
+          }
+        }
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Name</th>
+                <SortHeader label="Name" sortKey="name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
                 {tab === "cities" ? (
                   <>
-                    <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">State</th>
+                    <SortHeader label="State" sortKey="state" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
                     <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Icon</th>
                     <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Points</th>
                   </>
                 ) : (
                   <>
-                    <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">City</th>
-                    <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Address</th>
+                    <SortHeader label="City" sortKey="city.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                    <SortHeader label="Address" sortKey="address" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
                     <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Icon</th>
-                    <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Landmark</th>
+                    <SortHeader label="Landmark" sortKey="landmark" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
                   </>
                 )}
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Order</th>
+                <SortHeader label="Order" sortKey="order" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
                 <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Active</th>
                 <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Actions</th>
               </tr>
@@ -318,10 +350,10 @@ export default function AdminPickupPointsPage() {
                   </tr>
                 ))
               ) : tab === "cities" ? (
-                cities.length === 0 ? (
+                (sortedData as PickupCity[]).length === 0 ? (
                   <tr><td colSpan={7} className="px-5 py-12 text-center text-on-surface-variant">No cities yet</td></tr>
                 ) : (
-                  cities.map((city) => (
+                  (sortedData as PickupCity[]).map((city) => (
                     <tr key={city.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                       <td className="px-5 py-3 font-medium text-on-surface">{city.name}</td>
                       <td className="px-5 py-3 text-on-surface-variant">{city.state ?? "—"}</td>
@@ -347,10 +379,10 @@ export default function AdminPickupPointsPage() {
                   ))
                 )
               ) : (
-                filteredPoints.length === 0 ? (
+                (sortedData as PickupPoint[]).length === 0 ? (
                   <tr><td colSpan={8} className="px-5 py-12 text-center text-on-surface-variant">No pickup points yet</td></tr>
                 ) : (
-                  filteredPoints.map((point) => (
+                  (sortedData as PickupPoint[]).map((point) => (
                     <tr key={point.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                       <td className="px-5 py-3 font-medium text-on-surface">{point.name}</td>
                       <td className="px-5 py-3 text-on-surface-variant">{point.city?.name ?? "—"}</td>

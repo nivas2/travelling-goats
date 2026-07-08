@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Modal } from "@/components/ui/modal";
 import { Switch } from "@/components/ui/switch";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -45,6 +50,7 @@ export default function AdminCouponsPage() {
   const [maxUses, setMaxUses] = useState("");
   const [validFrom, setValidFrom] = useState("");
   const [validUntil, setValidUntil] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     fetchCoupons();
@@ -61,6 +67,10 @@ export default function AdminCouponsPage() {
       setLoading(false);
     }
   }
+
+  const filtered = filterByDateRange(coupons, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   async function toggleActive(coupon: Coupon) {
     try {
@@ -138,19 +148,38 @@ export default function AdminCouponsPage() {
         </Button>
       </div>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Code", accessor: "code" },
+            { header: "Description", accessor: "description" },
+            { header: "Type", accessor: "discountType" },
+            { header: "Value", accessor: "discountValue" },
+            { header: "Uses", accessor: (c: Coupon) => `${c.currentUses}/${c.maxUses ?? "Unlimited"}` },
+            { header: "Active", accessor: (c: Coupon) => c.isActive ? "Yes" : "No" },
+            { header: "Valid Until", accessor: "validUntil" },
+            { header: "Created", accessor: "createdAt" },
+          ], `coupons-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Code</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Description</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Type</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Value</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Usage</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Validity</th>
+                <SortHeader label="Code" sortKey="code" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Description" sortKey="description" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Type" sortKey="discountType" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Value" sortKey="discountValue" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
+                <SortHeader label="Usage" sortKey="currentUses" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Status" sortKey="isActive" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Validity" sortKey="validUntil" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
                 <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Active</th>
               </tr>
             </thead>
@@ -163,12 +192,12 @@ export default function AdminCouponsPage() {
                     </td>
                   </tr>
                 ))
-              ) : coupons.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-5 py-12 text-center text-on-surface-variant">No coupons found</td>
                 </tr>
               ) : (
-                coupons.map((coupon) => {
+                sortedData.map((coupon) => {
                   const isExpired = coupon.validUntil && new Date(coupon.validUntil) < new Date();
                   return (
                     <tr key={coupon.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">

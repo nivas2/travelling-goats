@@ -6,6 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dropdown } from "@/components/ui/dropdown";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -60,6 +65,7 @@ export default function AdminNotificationsPage() {
   const [type, setType] = useState("SYSTEM");
   const [target, setTarget] = useState("all");
   const [targetUserId, setTargetUserId] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     async function fetchHistory() {
@@ -75,6 +81,10 @@ export default function AdminNotificationsPage() {
     }
     fetchHistory();
   }, []);
+
+  const filtered = filterByDateRange(history, dateRange, "createdAt");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   async function sendNotification() {
     if (!title.trim() || !body.trim()) return;
@@ -179,6 +189,22 @@ export default function AdminNotificationsPage() {
         </div>
       </Card>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Title", accessor: "title" },
+            { header: "Body", accessor: "body" },
+            { header: "Type", accessor: "type" },
+            { header: "Recipients", accessor: "recipientCount" },
+            { header: "Sent", accessor: "createdAt" },
+          ], `notifications-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Notification History */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="border-b border-outline-variant/20 px-5 py-4">
@@ -188,10 +214,10 @@ export default function AdminNotificationsPage() {
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Title</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Type</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Recipients</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Sent</th>
+                <SortHeader label="Title" sortKey="title" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Type" sortKey="type" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Recipients" sortKey="recipientCount" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Sent" sortKey="createdAt" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
               </tr>
             </thead>
             <tbody>
@@ -203,12 +229,12 @@ export default function AdminNotificationsPage() {
                     </td>
                   </tr>
                 ))
-              ) : history.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-12 text-center text-on-surface-variant">No notifications sent yet</td>
                 </tr>
               ) : (
-                history.map((notif) => (
+                sortedData.map((notif) => (
                   <tr key={notif.id} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors">
                     <td className="px-5 py-3">
                       <div>

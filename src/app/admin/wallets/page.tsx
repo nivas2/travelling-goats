@@ -9,6 +9,10 @@ import { Modal } from "@/components/ui/modal";
 import { Dropdown } from "@/components/ui/dropdown";
 import { useToast } from "@/components/ui/toast";
 import type { WalletTransactionData } from "@/types";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -136,6 +140,8 @@ export default function AdminWalletsPage() {
 
   const needsAmount = !!actionType && ["credit", "debit", "refund"].includes(actionType);
 
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: users });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -187,17 +193,31 @@ export default function AdminWalletsPage() {
         </Button>
       </div>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Name", accessor: "name" },
+            { header: "Email", accessor: "email" },
+            { header: "Phone", accessor: "phone" },
+            { header: "Balance", accessor: (u: WalletUser) => ((u.wallet?.balancePaise ?? 0) / 100).toFixed(2) },
+            { header: "Status", accessor: (u: WalletUser) => u.wallet?.isFrozen ? "Frozen" : "Active" },
+          ], `wallets-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       <Card variant="elevated" className="p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">User</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Phone</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Email</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Balance</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
+                <SortHeader label="User" sortKey="name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Phone" sortKey="phone" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Email" sortKey="email" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Balance" sortKey="wallet.balancePaise" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
+                <SortHeader label="Status" sortKey="wallet.isFrozen" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Actions</th>
               </tr>
             </thead>
@@ -210,14 +230,14 @@ export default function AdminWalletsPage() {
                     </td>
                   </tr>
                 ))
-              ) : users.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center text-on-surface-variant">
                     No users found
                   </td>
                 </tr>
               ) : (
-                users.map((user) => (
+                sortedData.map((user) => (
                   <tr
                     key={user.id}
                     className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors cursor-pointer"

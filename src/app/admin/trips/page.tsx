@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { Modal } from "@/components/ui/modal";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { DateRange, filterByDateRange } from "@/components/admin/date-range-filter";
+import { downloadCSV } from "@/lib/csv";
 
 /* ---------- Types ---------- */
 
@@ -62,6 +67,7 @@ export default function AdminTripsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [deleteTarget, setDeleteTarget] = useState<Trip | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: "", to: "" });
 
   useEffect(() => {
     fetchTrips();
@@ -110,7 +116,7 @@ export default function AdminTripsPage() {
     }
   }
 
-  const filtered = trips.filter((t) => {
+  const preFiltered = trips.filter((t) => {
     const matchesSearch =
       !search ||
       t.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -118,6 +124,10 @@ export default function AdminTripsPage() {
     const matchesStatus = statusFilter === "ALL" || t.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const filtered = filterByDateRange(preFiltered, dateRange, "startDate");
+
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: filtered });
 
   const statuses: StatusFilter[] = [
     "ALL",
@@ -167,6 +177,25 @@ export default function AdminTripsPage() {
         </div>
       </div>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Title", accessor: "title" },
+            { header: "Destination", accessor: "destination" },
+            { header: "Start Date", accessor: "startDate" },
+            { header: "End Date", accessor: "endDate" },
+            { header: "Price", accessor: (t: Trip) => (t.basePricePaise / 100).toFixed(2) },
+            { header: "Bookings", accessor: "currentBookings" },
+            { header: "Max Group", accessor: "maxGroupSize" },
+            { header: "Status", accessor: "status" },
+          ], `trips-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Status Tabs */}
       <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
         <TabList className="overflow-x-auto">
@@ -190,24 +219,12 @@ export default function AdminTripsPage() {
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">
-                  Trip
-                </th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">
-                  Destination
-                </th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">
-                  Dates
-                </th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">
-                  Price
-                </th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">
-                  Spots
-                </th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">
-                  Status
-                </th>
+                <SortHeader label="Trip" sortKey="title" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Destination" sortKey="destination" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Dates" sortKey="startDate" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Price" sortKey="basePricePaise" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
+                <SortHeader label="Spots" sortKey="currentBookings" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
                 <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">
                   Actions
                 </th>
@@ -222,7 +239,7 @@ export default function AdminTripsPage() {
                     </td>
                   </tr>
                 ))
-              ) : filtered.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td
                     colSpan={7}
@@ -232,7 +249,7 @@ export default function AdminTripsPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((trip) => (
+                sortedData.map((trip) => (
                   <tr
                     key={trip.id}
                     className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50 transition-colors"

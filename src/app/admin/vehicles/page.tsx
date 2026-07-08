@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { AdminTableToolbar } from "@/components/admin/admin-table-toolbar";
+import { downloadCSV } from "@/lib/csv";
 
 interface VehicleTemplate {
   id: string;
@@ -77,6 +81,8 @@ export default function VehiclesPage() {
     MAINTENANCE: "bg-warning/10 text-warning",
   };
 
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: templates });
+
   if (loading) {
     return (
       <div className="p-6 space-y-4">
@@ -119,6 +125,21 @@ export default function VehiclesPage() {
         </div>
       </div>
 
+      {/* Toolbar */}
+      <AdminTableToolbar
+        onExportCSV={() =>
+          downloadCSV(sortedData, [
+            { header: "Name", accessor: "name" },
+            { header: "Registration", accessor: "registrationNumber" },
+            { header: "Type", accessor: "vehicleType.name" },
+            { header: "Seats", accessor: "totalSeats" },
+            { header: "Status", accessor: "status" },
+            { header: "Trips", accessor: (t: VehicleTemplate) => t._count.trips },
+          ], `vehicles-${new Date().toISOString().slice(0, 10)}.csv`)
+        }
+        csvDisabled={sortedData.length === 0}
+      />
+
       {/* Table */}
       {templates.length === 0 ? (
         <Card className="flex flex-col items-center gap-4 py-12 text-center">
@@ -142,28 +163,18 @@ export default function VehiclesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container-low">
-                <th className="px-4 py-3 text-label-lg font-label-lg text-on-surface-variant">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-label-lg font-label-lg text-on-surface-variant">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-label-lg font-label-lg text-on-surface-variant text-center">
-                  Seats
-                </th>
-                <th className="px-4 py-3 text-label-lg font-label-lg text-on-surface-variant text-center">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-label-lg font-label-lg text-on-surface-variant text-center">
-                  Trips
-                </th>
+                <SortHeader label="Name" sortKey="name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Type" sortKey="vehicleType.name" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Seats" sortKey="totalSeats" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Trips" sortKey="_count.trips" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
                 <th className="px-4 py-3 text-label-lg font-label-lg text-on-surface-variant text-right">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody>
-              {templates.map((t) => (
+              {sortedData.map((t) => (
                 <tr
                   key={t.id}
                   className="border-b border-outline-variant/5 hover:bg-surface-container-low/50 transition-colors"

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortHeader } from "@/components/admin/sort-header";
+import { downloadCSV } from "@/lib/csv";
 
 interface RevenueRow {
   tripId: string;
@@ -65,40 +68,19 @@ export default function AdminRevenuePage() {
   const rows =
     data?.rows.filter((r) => filter === "all" || r.category === filter) ?? [];
 
+  const { sortedData, sortConfig, requestSort } = useSortable({ data: rows });
+
   function exportCsv() {
-    const header = [
-      "Trail",
-      "Destination",
-      "Status",
-      "Start",
-      "End",
-      "Bookings",
-      "Travelers",
-      "Revenue (INR)",
-    ];
-    const lines = rows.map((r) =>
-      [
-        r.title,
-        r.destination,
-        r.category,
-        fmtDate(r.startDate),
-        fmtDate(r.endDate),
-        r.bookings,
-        r.travelers,
-        (r.revenuePaise / 100).toFixed(2),
-      ]
-        // Quote & escape each field for CSV safety.
-        .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-        .join(",")
-    );
-    const csv = [header.join(","), ...lines].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `revenue-${filter}-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCSV(sortedData, [
+      { header: "Trail", accessor: "title" },
+      { header: "Destination", accessor: "destination" },
+      { header: "Status", accessor: "category" },
+      { header: "Start", accessor: (r: RevenueRow) => fmtDate(r.startDate) },
+      { header: "End", accessor: (r: RevenueRow) => fmtDate(r.endDate) },
+      { header: "Bookings", accessor: "bookings" },
+      { header: "Travelers", accessor: "travelers" },
+      { header: "Revenue (INR)", accessor: (r: RevenueRow) => (r.revenuePaise / 100).toFixed(2) },
+    ], `revenue-${filter}-${new Date().toISOString().slice(0, 10)}.csv`);
   }
 
   const summary = [
@@ -121,7 +103,7 @@ export default function AdminRevenuePage() {
           size="sm"
           variant="secondary"
           onClick={exportCsv}
-          disabled={rows.length === 0}
+          disabled={sortedData.length === 0}
           icon={<span className="material-symbols-outlined text-[18px]">download</span>}
         >
           Export CSV
@@ -165,12 +147,12 @@ export default function AdminRevenuePage() {
           <table className="w-full text-body-md">
             <thead>
               <tr className="border-b border-outline-variant/10 bg-surface-container">
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Trail</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 text-left font-label-lg text-on-surface-variant">Dates</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Bookings</th>
-                <th className="px-4 py-3 text-center font-label-lg text-on-surface-variant">Travelers</th>
-                <th className="px-4 py-3 text-right font-label-lg text-on-surface-variant">Revenue</th>
+                <SortHeader label="Trail" sortKey="title" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Status" sortKey="category" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Dates" sortKey="startDate" sortConfig={sortConfig} onSort={requestSort} className="text-left" />
+                <SortHeader label="Bookings" sortKey="bookings" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Travelers" sortKey="travelers" sortConfig={sortConfig} onSort={requestSort} className="text-center" />
+                <SortHeader label="Revenue" sortKey="revenuePaise" sortConfig={sortConfig} onSort={requestSort} className="text-right" />
               </tr>
             </thead>
             <tbody>
@@ -182,14 +164,14 @@ export default function AdminRevenuePage() {
                     </td>
                   </tr>
                 ))
-              ) : rows.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center text-on-surface-variant">
                     No trails in this category.
                   </td>
                 </tr>
               ) : (
-                rows.map((r) => (
+                sortedData.map((r) => (
                   <tr key={r.tripId} className="border-b border-outline-variant/10 last:border-0 hover:bg-surface-container/50">
                     <td className="px-4 py-3">
                       <p className="font-medium text-on-surface">{r.title}</p>
@@ -212,14 +194,14 @@ export default function AdminRevenuePage() {
                 ))
               )}
             </tbody>
-            {!loading && rows.length > 0 && (
+            {!loading && sortedData.length > 0 && (
               <tfoot>
                 <tr className="border-t border-outline-variant/20 bg-surface-container/50">
                   <td colSpan={5} className="px-4 py-3 text-right font-label-lg text-on-surface-variant">
                     {filter === "all" ? "Total" : `${filter} total`}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-primary">
-                    {formatCurrency(rows.reduce((s, r) => s + r.revenuePaise, 0))}
+                    {formatCurrency(sortedData.reduce((s, r) => s + r.revenuePaise, 0))}
                   </td>
                 </tr>
               </tfoot>
