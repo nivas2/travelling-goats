@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { cn, formatCurrency, formatDate, formatDateRange } from "@/lib/utils";
+import { handleAuthError } from "@/lib/auth-fetch";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +70,7 @@ export default function AdminTripsPage() {
   async function fetchTrips() {
     try {
       const res = await fetch("/api/admin/trips");
+      if (await handleAuthError(res, "/admin/login")) return;
       const json = await res.json();
       if (json.success) setTrips(json.data.trips ?? json.data ?? []);
     } catch (err) {

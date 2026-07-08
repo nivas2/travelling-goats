@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { handleAuthError } from "@/lib/auth-fetch";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +75,7 @@ export default function AdminBookingsPage() {
     async function fetchBookings() {
       try {
         const res = await fetch("/api/admin/bookings");
+        if (await handleAuthError(res, "/admin/login")) return;
         const json = await res.json();
         if (json.success) setBookings(json.data ?? []);
       } catch (err) {
@@ -95,6 +97,7 @@ export default function AdminBookingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: statusMap[actionType] }),
       });
+      if (await handleAuthError(res, "/admin/login")) return;
       const json = await res.json();
       if (json.success) {
         setBookings((prev) =>

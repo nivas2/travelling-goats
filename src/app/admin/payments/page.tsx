@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { handleAuthError } from "@/lib/auth-fetch";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
@@ -65,6 +66,7 @@ export default function AdminPaymentsPage() {
     async function fetchPayments() {
       try {
         const res = await fetch("/api/admin/payments");
+        if (await handleAuthError(res, "/admin/login")) return;
         const json = await res.json();
         if (json.success) {
           setPayments(json.data?.payments ?? json.data ?? []);

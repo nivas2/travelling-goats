@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { handleAuthError } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
@@ -51,6 +52,7 @@ export default function ShepherdRequestPage() {
     (async () => {
       try {
         const res = await fetch(`/api/trips/${tripId}/private-request`);
+        if (await handleAuthError(res)) return;
         const json = await res.json();
         if (active && json.success) setThread(json.data as ThreadData);
       } catch {
@@ -79,6 +81,7 @@ export default function ShepherdRequestPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
+      if (await handleAuthError(res)) return;
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error ?? "Failed to send");
       setThread((prev) =>

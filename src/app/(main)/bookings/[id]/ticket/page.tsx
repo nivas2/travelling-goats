@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { handleAuthError } from "@/lib/auth-fetch";
 import { QRCodeCanvas } from "qrcode.react";
 import { toPng } from "html-to-image";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -128,6 +129,7 @@ export default function TicketPage() {
         setLoading(true);
         setError(null);
         const res = await fetch(`/api/bookings/${id}/ticket`);
+        if (await handleAuthError(res)) return;
         const json = await res.json();
         if (!json.success) throw new Error(json.error ?? "Failed to load ticket");
         if (active) setTicket(json.data as TicketData);

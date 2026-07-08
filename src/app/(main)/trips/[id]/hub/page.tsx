@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { handleAuthError } from "@/lib/auth-fetch";
 import Image from "next/image";
 import { cn, formatDate } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -557,6 +558,7 @@ function PlaylistSection({ tripId, onBack }: { tripId: string; onBack: () => voi
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(song),
       });
+      if (await handleAuthError(res)) return;
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error ?? "Failed to add");
       setTracks((prev) => [...prev, json.data as PlaylistTrack]);
@@ -831,6 +833,7 @@ export default function TripHubPage() {
     setError(null);
     try {
       const res = await fetch(`/api/trips/${tripId}/hub`);
+      if (await handleAuthError(res)) return;
       if (!res.ok) throw new Error("Failed to load trip hub");
       const data: ApiResponse<TripHubData> = await res.json();
       if (!data.success) throw new Error(data.error ?? "Failed to load trip hub");
@@ -858,7 +861,7 @@ export default function TripHubPage() {
         method: "POST",
         body: formData,
       });
-
+      if (await handleAuthError(res)) return;
       if (!res.ok) throw new Error("Failed to upload memory");
       const data: ApiResponse<MemoryData> = await res.json();
       if (!data.success) throw new Error(data.error ?? "Failed to upload memory");

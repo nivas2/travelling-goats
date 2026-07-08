@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn, formatDate, truncate } from "@/lib/utils";
+import { handleAuthError } from "@/lib/auth-fetch";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -95,6 +96,7 @@ export default function AdminReviewsPage() {
     async function fetchReviews() {
       try {
         const res = await fetch("/api/admin/reviews");
+        if (await handleAuthError(res, "/admin/login")) return;
         const json = await res.json();
         if (json.success) setReviews(json.data ?? []);
       } catch (err) {

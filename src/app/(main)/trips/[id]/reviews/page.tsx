@@ -14,6 +14,7 @@ import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { PageHeader } from "@/components/layout/page-header";
 import type { TripDetail, ApiResponse } from "@/types";
+import { handleAuthError } from "@/lib/auth-fetch";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -264,6 +265,7 @@ export default function ReviewsPage({
           comment: comment.trim() || undefined,
         }),
       });
+      if (await handleAuthError(res)) return;
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error ?? "Failed to submit review");
       toastSuccess("Thanks for your review! +100 points");

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { handleAuthError } from "@/lib/auth-fetch";
 import { Badge } from "@/components/ui/badge";
 
 /* ---------- Types ---------- */
@@ -123,6 +124,8 @@ export default function AdminDashboardPage() {
           fetch("/api/admin"),
           fetch("/api/admin/revenue"),
         ]);
+        if (await handleAuthError(res, "/admin/login")) return;
+        if (await handleAuthError(revRes, "/admin/login")) return;
         const json = await res.json();
         if (json.success) {
           setStats(json.data);
