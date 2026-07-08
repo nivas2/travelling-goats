@@ -26,6 +26,7 @@ export async function GET(
         addOnSelections: { include: { globalAddOn: true } },
         snackSelections: { include: { globalSnack: true } },
         faqs: { orderBy: { order: "asc" } },
+        pickupPointSelections: { include: { pickupPoint: { include: { city: true } } } },
         _count: { select: { bookings: true, reviews: true } },
       },
     });
@@ -189,6 +190,21 @@ export async function PUT(
       }
     }
 
+    // Replace pickup point selections if provided
+    if (body.pickupPointSelections !== undefined) {
+      await prisma.tripPickupPoint.deleteMany({ where: { tripId: id } });
+      if (body.pickupPointSelections.length > 0) {
+        await prisma.tripPickupPoint.createMany({
+          data: body.pickupPointSelections.map(
+            (s: { pickupPointId: string }) => ({
+              tripId: id,
+              pickupPointId: s.pickupPointId,
+            })
+          ),
+        });
+      }
+    }
+
     // Return the full updated trip
     const updated = await prisma.trip.findUnique({
       where: { id },
@@ -197,6 +213,7 @@ export async function PUT(
         addOnSelections: { include: { globalAddOn: true } },
         snackSelections: { include: { globalSnack: true } },
         faqs: { orderBy: { order: "asc" } },
+        pickupPointSelections: { include: { pickupPoint: { include: { city: true } } } },
       },
     });
 

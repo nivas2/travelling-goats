@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
       endDate, duration, maxGroupSize, minGroupSize, category, difficulty,
       tags, isFeatured, isTrending, cancellationPolicy, bookingCutoffHours,
       status, tripCaptainId, itineraryDays, addOnSelections, snackSelections, faqs,
+      pickupPointSelections,
     } = validation.data;
 
     // Check slug uniqueness
@@ -157,12 +158,18 @@ export async function POST(req: NextRequest) {
             order: faq.order ?? 0,
           })),
         },
+        pickupPointSelections: {
+          create: (pickupPointSelections ?? []).map((s) => ({
+            pickupPointId: s.pickupPointId,
+          })),
+        },
       },
       include: {
         itineraryDays: true,
         addOnSelections: { include: { globalAddOn: true } },
         snackSelections: { include: { globalSnack: true } },
         faqs: true,
+        pickupPointSelections: { include: { pickupPoint: { include: { city: true } } } },
       },
     });
 

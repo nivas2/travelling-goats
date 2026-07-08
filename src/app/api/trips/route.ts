@@ -14,11 +14,13 @@ export async function GET(req: NextRequest) {
     const sortBy = searchParams.get("sortBy") ?? "date";
     const featured = searchParams.get("featured");
     const trending = searchParams.get("trending");
+    const origin = searchParams.get("origin");
 
     const where: Record<string, unknown> = {
       status: "PUBLISHED",
     };
 
+    if (origin) where.origin = origin;
     if (category) where.category = category;
     if (difficulty) where.difficulty = difficulty;
     if (featured === "true") where.isFeatured = true;
@@ -53,6 +55,7 @@ export async function GET(req: NextRequest) {
           title: true,
           slug: true,
           destination: true,
+          origin: true,
           coverImage: true,
           startDate: true,
           endDate: true,

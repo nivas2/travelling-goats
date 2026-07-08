@@ -153,6 +153,15 @@ export default function CreateTripPage() {
   const [selectedAddOns, setSelectedAddOns] = useState<Map<string, number | null>>(new Map());
   const [selectedSnacks, setSelectedSnacks] = useState<Map<string, number | null>>(new Map());
 
+  // Pickup points
+  interface PickupPointItem {
+    id: string;
+    name: string;
+    city?: { id: string; name: string };
+  }
+  const [globalPickupPoints, setGlobalPickupPoints] = useState<PickupPointItem[]>([]);
+  const [selectedPickupPoints, setSelectedPickupPoints] = useState<Set<string>>(new Set());
+
   // FAQs
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
 
@@ -209,6 +218,19 @@ export default function CreateTripPage() {
       }
     }
     fetchCatalog();
+
+    async function fetchPickupPoints() {
+      try {
+        const res = await fetch("/api/admin/pickup-points");
+        if (res.ok) {
+          const json = await res.json();
+          setGlobalPickupPoints(json.data?.points ?? []);
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+    fetchPickupPoints();
   }, []);
 
   const handleTitleChange = useCallback((val: string) => {
@@ -330,6 +352,17 @@ export default function CreateTripPage() {
     });
   }
 
+  /* ---------- Pickup Point Selection Helpers ---------- */
+
+  function togglePickupPointSelection(id: string) {
+    setSelectedPickupPoints((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   /* ---------- FAQ Helpers ---------- */
 
   function addFaq() {
@@ -413,6 +446,9 @@ export default function CreateTripPage() {
         question: f.question,
         answer: f.answer,
         order: i,
+      })),
+      pickupPointSelections: Array.from(selectedPickupPoints).map((pickupPointId) => ({
+        pickupPointId,
       })),
     };
   }
@@ -963,6 +999,42 @@ export default function CreateTripPage() {
         {globalSnacks.filter((s) => s.isActive).length === 0 && (
           <p className="text-body-sm text-on-surface-variant">No snacks in catalog yet. Create them in <a href="/admin/addons" className="text-primary underline">Add-ons & Snacks</a>.</p>
         )}
+      </FormSection>
+
+      {/* Pickup Points */}
+      <FormSection title="Pickup Points">
+        <p className="text-body-sm text-on-surface-variant mb-2">
+          Select pickup points for this trip. Manage catalog at <a href="/admin/pickup-points" className="text-primary underline">Pickup Points</a>.
+        </p>
+        {(() => {
+          const activePoints = globalPickupPoints.filter((p) => (p as PickupPointItem & { isActive?: boolean }).isActive !== false);
+          // Group by city
+          const grouped = new Map<string, PickupPointItem[]>();
+          for (const point of activePoints) {
+            const cityName = point.city?.name ?? "Unknown";
+            if (!grouped.has(cityName)) grouped.set(cityName, []);
+            grouped.get(cityName)!.push(point);
+          }
+          if (grouped.size === 0) {
+            return <p className="text-body-sm text-on-surface-variant">No pickup points in catalog yet. Create them in <a href="/admin/pickup-points" className="text-primary underline">Pickup Points</a>.</p>;
+          }
+          return Array.from(grouped.entries()).map(([cityName, pts]) => (
+            <div key={cityName} className="space-y-2">
+              <h4 className="text-label-lg font-semibold text-on-surface-variant">{cityName}</h4>
+              {pts.map((point) => (
+                <div key={point.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-container">
+                  <input
+                    type="checkbox"
+                    checked={selectedPickupPoints.has(point.id)}
+                    onChange={() => togglePickupPointSelection(point.id)}
+                    className="h-4 w-4 accent-primary shrink-0"
+                  />
+                  <span className="flex-1 text-body-md text-on-surface">{point.name}</span>
+                </div>
+              ))}
+            </div>
+          ));
+        })()}
       </FormSection>
 
       {/* FAQs */}

@@ -16,6 +16,7 @@ export async function GET(
         itineraryDays: { orderBy: { dayNumber: "asc" } },
         addOnSelections: { include: { globalAddOn: true } },
         snackSelections: { include: { globalSnack: true } },
+        pickupPointSelections: { include: { pickupPoint: { include: { city: true } } } },
         faqs: { orderBy: { order: "asc" } },
         reviews: {
           include: {
@@ -67,8 +68,17 @@ export async function GET(
         isVeg: sel.globalSnack.isVeg,
         isAvailable: sel.globalSnack.isActive,
       })),
+      pickupPoints: trip.pickupPointSelections.map((sel) => ({
+        id: sel.pickupPoint.id,
+        name: sel.pickupPoint.name,
+        address: sel.pickupPoint.address,
+        icon: sel.pickupPoint.icon ?? "location_on",
+        landmark: sel.pickupPoint.landmark,
+        cityName: sel.pickupPoint.city.name,
+      })),
       addOnSelections: undefined,
       snackSelections: undefined,
+      pickupPointSelections: undefined,
     };
 
     return NextResponse.json({ success: true, data });

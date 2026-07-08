@@ -18,6 +18,7 @@ const navItems: NavItem[] = [
   { label: "Trails", icon: "flight_takeoff", href: "/admin/trips" },
   { label: "Vehicles", icon: "directions_bus", href: "/admin/vehicles" },
   { label: "Add-ons & Snacks", icon: "restaurant_menu", href: "/admin/addons" },
+  { label: "Pickup Points", icon: "pin_drop", href: "/admin/pickup-points" },
   { label: "Users", icon: "group", href: "/admin/users" },
   { label: "Bookings", icon: "confirmation_number", href: "/admin/bookings" },
   { label: "Payments", icon: "payments", href: "/admin/payments" },

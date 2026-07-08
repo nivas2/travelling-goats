@@ -55,7 +55,7 @@ interface PickupPointOption {
   icon: string;
 }
 
-const DEFAULT_PICKUP_POINTS: PickupPointOption[] = [
+const FALLBACK_PICKUP_POINTS: PickupPointOption[] = [
   {
     id: "majestic",
     name: "Majestic Bus Stand",
@@ -107,6 +107,28 @@ export default function DetailsPage() {
   } = useBookingStore();
 
   const [submitting, setSubmitting] = useState(false);
+  const [pickupPoints, setPickupPoints] = useState<PickupPointOption[]>(FALLBACK_PICKUP_POINTS);
+
+  // Fetch trip-specific pickup points
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/trips/${tripId}/pickup-points`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (active && j?.success && j.data?.length > 0) {
+          setPickupPoints(
+            j.data.map((p: { id: string; name: string; address: string; icon?: string }) => ({
+              id: p.id,
+              name: p.name,
+              address: p.address,
+              icon: p.icon || "location_on",
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [tripId]);
 
   const defaultTravelers = useMemo(() => {
     const defaults = [];
@@ -397,7 +419,7 @@ export default function DetailsPage() {
           role="radiogroup"
           aria-label="Pickup point"
         >
-          {DEFAULT_PICKUP_POINTS.map((pp) => (
+          {pickupPoints.map((pp) => (
             <RadioCard
               key={pp.id}
               selected={selectedPickup === pp.id}

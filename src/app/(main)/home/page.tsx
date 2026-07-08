@@ -14,6 +14,7 @@ import { InspirationCarousel } from "@/components/ui/inspiration-carousel";
 import { OffersBanner } from "@/components/ui/offers-banner";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { FavouritesFilter, type TripView } from "@/components/ui/favourites-filter";
+import { CitySelector } from "@/components/ui/city-selector";
 import { useWishlistStore } from "@/stores/wishlist-store";
 import { asList, asObject, type ContentMap } from "@/lib/content/registry";
 import type { TripCardData, ApiResponse } from "@/types";
@@ -202,9 +203,41 @@ export default function HomePage() {
   const [provoke, setProvoke] = useState(PROVOCATIONS[0]);
   const [content, setContent] = useState<ContentMap | null>(null);
 
+  // City filtering
+  const [cities, setCities] = useState<Array<{ id: string; name: string; icon?: string | null; tripCount?: number }>>([]);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [cityLoading, setCityLoading] = useState(true);
+
   useEffect(() => {
     ensureWishlistLoaded();
   }, [ensureWishlistLoaded]);
+
+  // Fetch pickup cities
+  useEffect(() => {
+    let active = true;
+    fetch("/api/pickup-points?withTripCounts=true")
+      .then((r) => r.json())
+      .then((j) => {
+        if (active && j?.success) {
+          setCities(j.data ?? []);
+          // Restore persisted city selection
+          const saved = localStorage.getItem("tg_selected_city");
+          if (saved && j.data?.some((c: { name: string }) => c.name === saved)) {
+            setSelectedCity(saved);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => { if (active) setCityLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  // Persist city selection
+  function handleCityChange(city: string | null) {
+    setSelectedCity(city);
+    if (city) localStorage.setItem("tg_selected_city", city);
+    else localStorage.removeItem("tg_selected_city");
+  }
 
   // Admin-editable content (perks, categories, greeting prompts).
   useEffect(() => {
@@ -297,7 +330,9 @@ export default function HomePage() {
   const fetchTrips = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/trips");
+      const params = new URLSearchParams();
+      if (selectedCity) params.set("origin", selectedCity);
+      const res = await fetch(`/api/trips${params.toString() ? `?${params}` : ""}`);
       const json = await res.json();
       if (json.success && json.data) {
         // API returns paginated { items: [...], total, page, ... }
@@ -309,7 +344,7 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedCity]);
 
   useEffect(() => {
     fetchTrips();
@@ -318,6 +353,10 @@ export default function HomePage() {
   const trendingTrips = trips.filter((t) => t.isTrending);
   const weekendGetaways = trips.filter((t) => t.duration <= 3);
   const favouriteCount = trips.filter((t) => savedIds.has(t.id)).length;
+
+  // Cities with trips (for "no trips" suggestion)
+  const citiesWithTrips = cities.filter((c) => (c.tripCount ?? 0) > 0);
+  const noTripsForCity = selectedCity && !loading && trips.length === 0;
 
   const filteredPopular = trips
     .filter((t) =>
@@ -329,8 +368,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background pb-6">
-      {/* ===== Search Bar ===== */}
-      <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur-md px-5 py-3">
+      {/* ===== City Selector + Search Bar ===== */}
+      <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur-md px-5 py-3 space-y-2.5">
+        <CitySelector
+          cities={cities}
+          selectedCity={selectedCity}
+          onCityChange={handleCityChange}
+          loading={cityLoading}
+        />
         <button
           onClick={() => router.push("/search")}
           className={cn(
@@ -346,6 +391,31 @@ export default function HomePage() {
           </span>
         </button>
       </div>
+
+      {/* ===== No Trips Suggestion ===== */}
+      {noTripsForCity && (
+        <div className="mx-5 mt-3 rounded-xl border border-outline-variant bg-surface-container-low p-4">
+          <p className="text-body-md text-on-surface">
+            No trips from <span className="font-semibold text-primary">{selectedCity}</span> right now.
+          </p>
+          {citiesWithTrips.length > 0 && (
+            <p className="mt-1.5 text-body-sm text-on-surface-variant">
+              Available from:{" "}
+              {citiesWithTrips.map((c, i) => (
+                <span key={c.id}>
+                  {i > 0 && ", "}
+                  <button
+                    onClick={() => handleCityChange(c.name)}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    {c.name}
+                  </button>
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* ===== Greeting + Perks ===== */}
       <section className="px-5 pt-5 md:pt-8">

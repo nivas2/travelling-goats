@@ -53,6 +53,9 @@ export const createTripSchema = z.object({
     answer: z.string().min(1),
     order: z.number().int().min(0).optional().default(0),
   })).optional().default([]),
+  pickupPointSelections: z.array(z.object({
+    pickupPointId: z.string().min(1),
+  })).optional().default([]),
 });
 
 export const updateTripSchema = createTripSchema.partial();

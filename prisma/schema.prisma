@@ -181,18 +181,19 @@ model Trip {
   vehicleTemplateId String?
   vehicleTemplate   VehicleTemplate? @relation(fields: [vehicleTemplateId], references: [id])
 
-  itineraryDays    ItineraryDay[]
-  addOnSelections  TripAddOnSelection[]
-  snackSelections  TripSnackSelection[]
-  bookings         Booking[]
-  reviews          Review[]
-  wishlistItems    WishlistItem[]
-  waitlistItems    WaitlistItem[]
-  chatRoom         ChatRoom?
-  faqs             TripFaq[]
-  seatReservations SeatReservation[]
-  privateRequests  PrivateRequest[]
-  playlistTracks   PlaylistTrack[]
+  itineraryDays         ItineraryDay[]
+  addOnSelections       TripAddOnSelection[]
+  snackSelections       TripSnackSelection[]
+  bookings              Booking[]
+  reviews               Review[]
+  wishlistItems         WishlistItem[]
+  waitlistItems         WaitlistItem[]
+  chatRoom              ChatRoom?
+  faqs                  TripFaq[]
+  seatReservations      SeatReservation[]
+  privateRequests       PrivateRequest[]
+  playlistTracks        PlaylistTrack[]
+  pickupPointSelections TripPickupPoint[]
 
   @@index([vehicleTemplateId])
   @@map("trips")
@@ -288,6 +289,55 @@ model TripFaq {
   trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
   @@map("trip_faqs")
+}
+
+// ===== PICKUP POINTS =====
+
+model PickupCity {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  state     String?
+  icon      String?
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pickupPoints PickupPoint[]
+
+  @@map("pickup_cities")
+}
+
+model PickupPoint {
+  id        String   @id @default(cuid())
+  cityId    String
+  name      String
+  address   String
+  icon      String?
+  landmark  String?
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  city           PickupCity        @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  tripSelections TripPickupPoint[]
+
+  @@unique([cityId, name])
+  @@index([cityId])
+  @@map("pickup_points")
+}
+
+model TripPickupPoint {
+  id            String @id @default(cuid())
+  tripId        String
+  pickupPointId String
+
+  trip        Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  pickupPoint PickupPoint @relation(fields: [pickupPointId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, pickupPointId])
+  @@map("trip_pickup_points")
 }
 
 // ===== BOOKINGS =====
