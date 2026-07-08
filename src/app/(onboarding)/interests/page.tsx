@@ -111,7 +111,7 @@ export default function InterestsPage() {
 
           {/* Step indicator */}
           <span className="text-label-sm text-on-surface-variant">
-            Step 1 of 4
+            Step 2 of 5
           </span>
         </div>
       </div>

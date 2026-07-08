@@ -118,7 +118,7 @@ export default function PermissionsPage() {
           </button>
 
           <span className="text-label-sm text-on-surface-variant">
-            Step 4 of 4
+            Step 5 of 5
           </span>
         </div>
       </div>

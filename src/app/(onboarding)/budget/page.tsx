@@ -110,7 +110,7 @@ export default function BudgetPage() {
           </button>
 
           <span className="text-label-sm text-on-surface-variant">
-            Step 2 of 4
+            Step 3 of 5
           </span>
         </div>
       </div>

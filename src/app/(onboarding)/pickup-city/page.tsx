@@ -85,7 +85,7 @@ export default function PickupCityPage() {
           </button>
 
           <span className="text-label-sm text-on-surface-variant">
-            Step 3 of 4
+            Step 4 of 5
           </span>
         </div>
       </div>

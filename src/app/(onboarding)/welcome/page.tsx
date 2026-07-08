@@ -55,7 +55,7 @@ export default function WelcomePage() {
 
   const handleNext = useCallback(() => {
     if (isLastSlide) {
-      router.push("/interests");
+      router.push("/basic-details");
     } else {
       goToSlide(currentSlide + 1);
     }
