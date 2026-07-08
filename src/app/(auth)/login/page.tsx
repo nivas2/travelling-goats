@@ -12,9 +12,10 @@ import { useGoatSound } from "@/hooks/use-goat-sound";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { phone, setPhone, setOtpSent } = useAuthStore();
+  const { phone, setPhone, setOtpSent, referralCode, setReferralCode } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showReferral, setShowReferral] = useState(!!referralCode);
   const { prime: primeGoat } = useGoatSound();
 
   const isValidPhone = /^[6-9]\d{9}$/.test(phone);
@@ -111,6 +112,30 @@ export default function LoginPage() {
             fullWidth
             inputSize="lg"
           />
+
+          {/* Referral code toggle + input */}
+          <div>
+            {!showReferral ? (
+              <button
+                type="button"
+                onClick={() => setShowReferral(true)}
+                className="text-body-sm font-medium text-primary hover:underline underline-offset-2"
+              >
+                Have a referral code?
+              </button>
+            ) : (
+              <Input
+                label="Referral Code (optional)"
+                type="text"
+                placeholder="MMR-XXXXXXXX"
+                maxLength={20}
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase().trim())}
+                fullWidth
+                inputSize="lg"
+              />
+            )}
+          </div>
 
           <Button
             type="submit"

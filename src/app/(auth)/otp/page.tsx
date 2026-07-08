@@ -17,14 +17,16 @@ import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@/lib/utils";
 import { maskPhone } from "@/lib/utils";
 import { useGoatSound } from "@/hooks/use-goat-sound";
+import { useToast } from "@/components/ui/toast";
 
 const OTP_LENGTH = 6;
 const RESEND_SECONDS = 30;
 
 export default function OtpPage() {
   const router = useRouter();
-  const { phone, setIsVerifying } = useAuthStore();
+  const { phone, setIsVerifying, referralCode, setReferralCode } = useAuthStore();
   const { play: playGoat, prime: primeGoat } = useGoatSound();
+  const { success: toastSuccess } = useToast();
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [error, setError] = useState("");
@@ -131,6 +133,25 @@ export default function OtpPage() {
         setOtp(Array(OTP_LENGTH).fill(""));
         inputRefs.current[0]?.focus();
         return;
+      }
+
+      // Auto-apply referral code if present (don't block login on failure)
+      if (referralCode) {
+        try {
+          const refRes = await fetch("/api/referrals", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: referralCode }),
+          });
+          const refData = await refRes.json();
+          if (refData.success) {
+            toastSuccess("Referral applied!");
+          }
+        } catch {
+          // silently ignore referral errors
+        } finally {
+          setReferralCode("");
+        }
       }
 
       // Check if user is new or returning

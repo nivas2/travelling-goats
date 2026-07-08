@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+import { asList, type ContentMap } from "@/lib/content/registry";
 
 interface City {
   id: string;
@@ -12,7 +13,7 @@ interface City {
   icon: string;
 }
 
-const cities: City[] = [
+const DEFAULT_CITIES: City[] = [
   { id: "bengaluru", name: "Bengaluru", icon: "apartment" },
   { id: "mumbai", name: "Mumbai", icon: "location_city" },
   { id: "delhi-ncr", name: "Delhi NCR", icon: "domain" },
@@ -26,6 +27,21 @@ export default function PickupCityPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [cities, setCities] = useState<City[]>(DEFAULT_CITIES);
+
+  useEffect(() => {
+    fetch("/api/content")
+      .then((r) => r.json())
+      .then((j) => {
+        if (j?.success) {
+          const items = asList((j.data as ContentMap)["onboarding.cities"]);
+          if (items.length > 0) {
+            setCities(items.map((i) => ({ id: i.id, name: i.name, icon: i.icon })));
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleContinue() {
     if (!selected) return;

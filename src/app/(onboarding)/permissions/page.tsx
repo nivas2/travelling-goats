@@ -102,33 +102,7 @@ export default function PermissionsPage() {
     }
   }
 
-  async function handleSkip() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/users", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isOnboarded: true }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        setError(data.error || "Failed to complete setup.");
-        return;
-      }
-
-      router.push("/home");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const anyEnabled = Object.values(enabled).some(Boolean);
+  const allEnabled = Object.values(enabled).every(Boolean);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -156,8 +130,8 @@ export default function PermissionsPage() {
             Stay in the loop
           </h1>
           <p className="mt-1 text-body-md text-on-surface-variant">
-            Enable permissions for the best experience. You can change these
-            anytime in settings.
+            Both permissions are required for trip safety and updates. You can
+            change these anytime in settings.
           </p>
         </div>
 
@@ -209,31 +183,19 @@ export default function PermissionsPage() {
         )}
       </div>
 
-      {/* Bottom actions */}
-      <div className="flex flex-col gap-3 px-6 pb-8 pb-safe pt-4">
+      {/* Bottom action */}
+      <div className="px-6 pb-8 pb-safe pt-4">
         <Button
           type="button"
           fullWidth
           size="lg"
           loading={loading}
-          onClick={anyEnabled ? handleComplete : handleSkip}
+          disabled={!allEnabled}
+          onClick={handleComplete}
           className="rounded-full"
         >
-          {anyEnabled ? "Start Your Adventure" : "Skip for Now"}
+          Start Your Adventure
         </Button>
-
-        {anyEnabled && (
-          <Button
-            type="button"
-            fullWidth
-            size="md"
-            variant="ghost"
-            onClick={handleSkip}
-            disabled={loading}
-          >
-            Skip for now
-          </Button>
-        )}
       </div>
     </div>
   );

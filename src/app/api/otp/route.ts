@@ -14,11 +14,13 @@ export async function POST(req: NextRequest) {
     const validation = validateBody(sendOtpSchema, body);
     if (!validation.success) return validation.response;
 
-    const { phone } = validation.data;
+    const { phone, email } = validation.data;
+    // "target" is phone number or email — stored in OtpCode.phone field for both
+    const target = (phone ?? email)!;
 
-    // Rate limiting: 5/hour per phone (PRD Section 9.3)
-    const phoneRateLimit = applyRateLimit("otp", phone);
-    if (phoneRateLimit) return phoneRateLimit;
+    // Rate limiting: 5/hour per target (PRD Section 9.3)
+    const targetRateLimit = applyRateLimit("otp", target);
+    if (targetRateLimit) return targetRateLimit;
 
     // Burst protection: 3/min per IP
     const ip = getClientIp(req);
@@ -31,22 +33,27 @@ export async function POST(req: NextRequest) {
         ? (process.env.OTP_MOCK_CODE ?? "123456")
         : String(Math.floor(100000 + Math.random() * 900000));
 
-    // Store OTP (expires in 5 minutes)
+    // Store OTP (expires in 5 minutes) — email stored in phone column (no migration)
     await prisma.otpCode.create({
       data: {
-        phone,
+        phone: target,
         code,
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
     });
 
-    // In production, send OTP via SMS service (Phase 2: MSG91)
+    // In production, send OTP via SMS or email service (Phase 2)
+    const channel = email ? "email" : "phone";
+    const maskedTarget = email
+      ? email.replace(/(.{2})(.*)(@)/, "$1***$3")
+      : target.slice(0, 4) + "****";
+
     const response: Record<string, unknown> = { success: true, message: "OTP sent successfully" };
     if (process.env.OTP_MOCK_ENABLED === "true") {
       response.otp = code;
     }
 
-    logger.info("OTP sent", { phone: phone.slice(0, 4) + "****" });
+    logger.info("OTP sent", { channel, target: maskedTarget });
 
     return NextResponse.json(response);
   } catch (error) {

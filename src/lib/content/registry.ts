@@ -30,7 +30,7 @@ export interface FieldDef {
 interface BaseBlock {
   key: string;
   label: string;
-  group: "Branding" | "Landing Page" | "Home Feed";
+  group: "Branding" | "Landing Page" | "Home Feed" | "Referral" | "Onboarding";
   description?: string;
   fields: FieldDef[];
 }
@@ -378,6 +378,93 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       popularTitle: "Popular Destinations",
     },
   },
+  // --------------------------------------------------------------- Referral --
+  {
+    key: "referral.settings",
+    label: "Referral Settings",
+    group: "Referral",
+    description:
+      "Configure reward points per referral and maximum referrals allowed per user.",
+    kind: "single",
+    fields: [
+      { name: "referralRewardPoints", label: "Reward points per referral", type: "text", placeholder: "50" },
+      { name: "maxReferralsPerUser", label: "Max referrals per user", type: "text", placeholder: "50" },
+    ],
+    default: { referralRewardPoints: "50", maxReferralsPerUser: "50" },
+  },
+  // ------------------------------------------------------------- Onboarding --
+  {
+    key: "onboarding.interests",
+    label: "Interests",
+    group: "Onboarding",
+    description: "Interest chips shown in onboarding step 1. Users pick at least 3.",
+    kind: "list",
+    itemLabel: "Interest",
+    fields: [
+      { name: "id", label: "ID (lowercase, no spaces)", type: "text" },
+      { name: "label", label: "Display label", type: "text" },
+      { name: "emoji", label: "Emoji", type: "text" },
+      { name: "icon", label: "Icon (Material Symbol)", type: "text" },
+    ],
+    default: [
+      { id: "adventure", label: "Adventure", emoji: "\u{1F3D4}", icon: "terrain" },
+      { id: "beach", label: "Beach", emoji: "\u{1F3D6}", icon: "beach_access" },
+      { id: "mountain", label: "Mountain", emoji: "\u26F0\uFE0F", icon: "landscape" },
+      { id: "cultural", label: "Cultural", emoji: "\u{1F3DB}", icon: "museum" },
+      { id: "wildlife", label: "Wildlife", emoji: "\u{1F981}", icon: "pets" },
+      { id: "city", label: "City", emoji: "\u{1F3D9}", icon: "location_city" },
+      { id: "road-trip", label: "Road Trip", emoji: "\u{1F697}", icon: "directions_car" },
+      { id: "spiritual", label: "Spiritual", emoji: "\u{1F54C}", icon: "temple_buddhist" },
+      { id: "food", label: "Food", emoji: "\u{1F37D}", icon: "restaurant" },
+      { id: "photography", label: "Photography", emoji: "\u{1F4F7}", icon: "photo_camera" },
+      { id: "weekend", label: "Weekend", emoji: "\u{1F305}", icon: "wb_sunny" },
+      { id: "international", label: "International", emoji: "\u2708\uFE0F", icon: "flight" },
+    ],
+  },
+  {
+    key: "onboarding.budgets",
+    label: "Budget Options",
+    group: "Onboarding",
+    description: "Budget tiers in onboarding step 2. IDs must match Prisma BudgetPreference enum.",
+    kind: "list",
+    itemLabel: "Budget Tier",
+    min: 4,
+    max: 4,
+    fields: [
+      { name: "id", label: "ID (must match Prisma enum)", type: "text" },
+      { name: "title", label: "Title", type: "text" },
+      { name: "description", label: "Description", type: "text" },
+      { name: "icon", label: "Icon (Material Symbol)", type: "text" },
+      { name: "price", label: "Price range", type: "text" },
+    ],
+    default: [
+      { id: "BUDGET", title: "Budget", description: "Great trips without breaking the bank", icon: "savings", price: "\u20B93K - 5K" },
+      { id: "MID_RANGE", title: "Mid-Range", description: "Comfortable stays and curated experiences", icon: "account_balance_wallet", price: "\u20B95K - 10K" },
+      { id: "PREMIUM", title: "Premium", description: "Handpicked luxury stays and exclusive activities", icon: "diamond", price: "\u20B910K - 20K" },
+      { id: "LUXURY", title: "Luxury", description: "The finest experiences, no compromises", icon: "workspace_premium", price: "\u20B920K+" },
+    ],
+  },
+  {
+    key: "onboarding.cities",
+    label: "Pickup Cities",
+    group: "Onboarding",
+    description: "Cities shown in onboarding step 3.",
+    kind: "list",
+    itemLabel: "City",
+    fields: [
+      { name: "id", label: "ID (lowercase)", type: "text" },
+      { name: "name", label: "City name", type: "text" },
+      { name: "icon", label: "Icon (Material Symbol)", type: "text" },
+    ],
+    default: [
+      { id: "bengaluru", name: "Bengaluru", icon: "apartment" },
+      { id: "mumbai", name: "Mumbai", icon: "location_city" },
+      { id: "delhi-ncr", name: "Delhi NCR", icon: "domain" },
+      { id: "hyderabad", name: "Hyderabad", icon: "mosque" },
+      { id: "chennai", name: "Chennai", icon: "temple_hindu" },
+      { id: "pune", name: "Pune", icon: "fort" },
+    ],
+  },
 ];
 
 // Order the admin shows blocks in — matching each page top-to-bottom.
@@ -393,6 +480,12 @@ export const BLOCK_ORDER: string[] = [
   "landing.steps",
   "landing.stats",
   "landing.footer",
+  // Referral
+  "referral.settings",
+  // Onboarding (step order)
+  "onboarding.interests",
+  "onboarding.budgets",
+  "onboarding.cities",
   // Home Feed (top → bottom)
   "home.visibility",
   "home.sections",

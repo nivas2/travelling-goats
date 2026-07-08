@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
 import { cn } from "@/lib/utils";
+import { asList, type ContentMap } from "@/lib/content/registry";
 
 interface Interest {
   id: string;
@@ -14,7 +15,7 @@ interface Interest {
   icon: string;
 }
 
-const interests: Interest[] = [
+const DEFAULT_INTERESTS: Interest[] = [
   { id: "adventure", label: "Adventure", emoji: "\u{1F3D4}", icon: "terrain" },
   { id: "beach", label: "Beach", emoji: "\u{1F3D6}", icon: "beach_access" },
   { id: "mountain", label: "Mountain", emoji: "\u26F0\uFE0F", icon: "landscape" },
@@ -36,6 +37,21 @@ export default function InterestsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [interests, setInterests] = useState<Interest[]>(DEFAULT_INTERESTS);
+
+  useEffect(() => {
+    fetch("/api/content")
+      .then((r) => r.json())
+      .then((j) => {
+        if (j?.success) {
+          const items = asList((j.data as ContentMap)["onboarding.interests"]);
+          if (items.length > 0) {
+            setInterests(items.map((i) => ({ id: i.id, label: i.label, emoji: i.emoji, icon: i.icon })));
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const isValid = selected.size >= MIN_SELECTIONS;
 

@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import type { UserProfile } from "@/types";
 
 // ---------------------------------------------------------------------------
-// Validation
+// Validation — email removed (now changes via OTP flow)
 // ---------------------------------------------------------------------------
 
 const editProfileSchema = z.object({
@@ -26,7 +26,6 @@ const editProfileSchema = z.object({
     .string()
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name is too long"),
-  email: z.string().email("Invalid email address").or(z.literal("")),
   dateOfBirth: z.string().optional(),
   gender: z.string().optional(),
   city: z.string().max(100, "City name is too long").optional(),
@@ -68,6 +67,94 @@ const ALL_INTERESTS = [
 ];
 
 // ---------------------------------------------------------------------------
+// Inline OTP verification hook
+// ---------------------------------------------------------------------------
+
+function useInlineOtp(channel: "phone" | "email") {
+  const [editMode, setEditMode] = useState(false);
+  const [value, setValue] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const reset = () => {
+    setEditMode(false);
+    setValue("");
+    setOtp("");
+    setOtpSent(false);
+    setSending(false);
+    setVerifying(false);
+    setError(null);
+  };
+
+  const sendOtp = async () => {
+    setError(null);
+    setSending(true);
+    try {
+      const body = channel === "phone" ? { phone: value } : { email: value };
+      const res = await fetch("/api/otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to send OTP");
+      setOtpSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send OTP");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const verify = async (): Promise<boolean> => {
+    setError(null);
+    setVerifying(true);
+    try {
+      const url =
+        channel === "phone"
+          ? "/api/users/change-phone"
+          : "/api/users/change-email";
+      const body =
+        channel === "phone"
+          ? { phone: value, otp }
+          : { email: value, otp };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Verification failed");
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verification failed");
+      return false;
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  return {
+    editMode,
+    setEditMode,
+    value,
+    setValue,
+    otp,
+    setOtp,
+    otpSent,
+    sending,
+    verifying,
+    error,
+    sendOtp,
+    verify,
+    reset,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -84,6 +171,9 @@ export default function EditProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
+  const phoneOtp = useInlineOtp("phone");
+  const emailOtp = useInlineOtp("email");
+
   const {
     register,
     handleSubmit,
@@ -94,7 +184,6 @@ export default function EditProfilePage() {
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
       name: "",
-      email: "",
       dateOfBirth: "",
       gender: "",
       city: "",
@@ -115,7 +204,6 @@ export default function EditProfilePage() {
       setAvatarPreview(userData.avatar);
       reset({
         name: userData.name ?? "",
-        email: userData.email ?? "",
         dateOfBirth: userData.dateOfBirth
           ? new Date(userData.dateOfBirth).toISOString().split("T")[0]
           : "",
@@ -149,6 +237,24 @@ export default function EditProfilePage() {
         ? prev.filter((i) => i !== interest)
         : [...prev, interest]
     );
+  };
+
+  const handlePhoneVerify = async () => {
+    const ok = await phoneOtp.verify();
+    if (ok) {
+      toastSuccess("Phone number updated");
+      phoneOtp.reset();
+      fetchUser();
+    }
+  };
+
+  const handleEmailVerify = async () => {
+    const ok = await emailOtp.verify();
+    if (ok) {
+      toastSuccess("Email updated");
+      emailOtp.reset();
+      fetchUser();
+    }
   };
 
   const onSubmit = async (formData: EditProfileFormData) => {
@@ -280,14 +386,161 @@ export default function EditProfilePage() {
           {...register("name")}
         />
 
-        {/* Email */}
-        <Input
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          error={errors.email?.message}
-          {...register("email")}
-        />
+        {/* Phone — read-only with inline OTP change flow */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-label-lg font-semibold text-on-surface">
+            Phone Number
+          </label>
+
+          {!phoneOtp.editMode ? (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-12 rounded-xl bg-surface-container-low border border-outline-variant px-4 flex items-center text-body-lg text-on-surface">
+                {user?.phone ? `+91 ${user.phone}` : "Not added"}
+              </div>
+              <button
+                type="button"
+                onClick={() => phoneOtp.setEditMode(true)}
+                className="text-label-lg text-primary font-semibold whitespace-nowrap"
+              >
+                {user?.phone ? "Change" : "Add"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3 rounded-xl border border-outline-variant p-4 bg-surface-container-lowest">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="10-digit phone"
+                  countryCode="+91"
+                  value={phoneOtp.value}
+                  onChange={(e) => phoneOtp.setValue(e.target.value)}
+                  disabled={phoneOtp.otpSent}
+                  fullWidth
+                />
+                {!phoneOtp.otpSent && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={phoneOtp.sendOtp}
+                    loading={phoneOtp.sending}
+                    disabled={!/^[6-9]\d{9}$/.test(phoneOtp.value)}
+                  >
+                    Send OTP
+                  </Button>
+                )}
+              </div>
+
+              {phoneOtp.otpSent && (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter OTP"
+                    value={phoneOtp.otp}
+                    onChange={(e) => phoneOtp.setOtp(e.target.value)}
+                    maxLength={6}
+                    fullWidth
+                  />
+                  <Button
+                    type="button"
+                    onClick={handlePhoneVerify}
+                    loading={phoneOtp.verifying}
+                    disabled={phoneOtp.otp.length !== 6}
+                  >
+                    Verify
+                  </Button>
+                </div>
+              )}
+
+              {phoneOtp.error && (
+                <p className="text-label-sm text-error">{phoneOtp.error}</p>
+              )}
+
+              <button
+                type="button"
+                onClick={phoneOtp.reset}
+                className="text-label-md text-on-surface-variant"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Email — read-only with inline OTP change flow */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-label-lg font-semibold text-on-surface">
+            Email
+          </label>
+
+          {!emailOtp.editMode ? (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-12 rounded-xl bg-surface-container-low border border-outline-variant px-4 flex items-center text-body-lg text-on-surface">
+                {user?.email || "Not added"}
+              </div>
+              <button
+                type="button"
+                onClick={() => emailOtp.setEditMode(true)}
+                className="text-label-lg text-primary font-semibold whitespace-nowrap"
+              >
+                {user?.email ? "Change" : "Add"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3 rounded-xl border border-outline-variant p-4 bg-surface-container-lowest">
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={emailOtp.value}
+                  onChange={(e) => emailOtp.setValue(e.target.value)}
+                  disabled={emailOtp.otpSent}
+                  fullWidth
+                />
+                {!emailOtp.otpSent && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={emailOtp.sendOtp}
+                    loading={emailOtp.sending}
+                    disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOtp.value)}
+                  >
+                    Send OTP
+                  </Button>
+                )}
+              </div>
+
+              {emailOtp.otpSent && (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter OTP"
+                    value={emailOtp.otp}
+                    onChange={(e) => emailOtp.setOtp(e.target.value)}
+                    maxLength={6}
+                    fullWidth
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleEmailVerify}
+                    loading={emailOtp.verifying}
+                    disabled={emailOtp.otp.length !== 6}
+                  >
+                    Verify
+                  </Button>
+                </div>
+              )}
+
+              {emailOtp.error && (
+                <p className="text-label-sm text-error">{emailOtp.error}</p>
+              )}
+
+              <button
+                type="button"
+                onClick={emailOtp.reset}
+                className="text-label-md text-on-surface-variant"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Date of Birth */}
         <Input

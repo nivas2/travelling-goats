@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { RadioCard } from "@/components/ui/radio-card";
 import { cn } from "@/lib/utils";
+import { asList, type ContentMap } from "@/lib/content/registry";
 
 interface BudgetOption {
   id: string;
@@ -15,7 +16,7 @@ interface BudgetOption {
   price: string;
 }
 
-const budgetOptions: BudgetOption[] = [
+const DEFAULT_BUDGET_OPTIONS: BudgetOption[] = [
   {
     id: "BUDGET",
     title: "Budget",
@@ -51,6 +52,21 @@ export default function BudgetPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [budgetOptions, setBudgetOptions] = useState<BudgetOption[]>(DEFAULT_BUDGET_OPTIONS);
+
+  useEffect(() => {
+    fetch("/api/content")
+      .then((r) => r.json())
+      .then((j) => {
+        if (j?.success) {
+          const items = asList((j.data as ContentMap)["onboarding.budgets"]);
+          if (items.length > 0) {
+            setBudgetOptions(items.map((i) => ({ id: i.id, title: i.title, description: i.description, icon: i.icon, price: i.price })));
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleContinue() {
     if (!selected) return;

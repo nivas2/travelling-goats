@@ -6,11 +6,23 @@ import { validateBody } from "@/lib/validate";
 import { applyReferralSchema } from "@/lib/validations/referral";
 import { applyRateLimit } from "@/lib/rate-limit";
 import { auditLog } from "@/lib/audit";
+import { getContentMap } from "@/lib/content/server";
+import { asObject } from "@/lib/content/registry";
 
 const logger = createLogger({ route: "referrals" });
 
-// Flat reward: every successful referral credits the referrer 50 points.
-const REFERRAL_REWARD_POINTS = 50;
+// Defaults if CMS entry missing
+const DEFAULT_REWARD_POINTS = 50;
+const DEFAULT_MAX_REFERRALS = 50;
+
+async function getReferralSettings() {
+  const content = await getContentMap();
+  const settings = asObject(content["referral.settings"]);
+  return {
+    rewardPoints: parseInt(settings.referralRewardPoints, 10) || DEFAULT_REWARD_POINTS,
+    maxReferrals: parseInt(settings.maxReferralsPerUser, 10) || DEFAULT_MAX_REFERRALS,
+  };
+}
 
 export async function GET() {
   try {
@@ -19,10 +31,13 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { referralCode: true, rewardPoints: true, rewardTier: true },
-    });
+    const [user, referralSettings] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { referralCode: true, rewardPoints: true, rewardTier: true },
+      }),
+      getReferralSettings(),
+    ]);
 
     const referrals = await prisma.referral.findMany({
       where: { referrerId: session.user.id },
@@ -40,7 +55,12 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: { referralCode: user?.referralCode, referrals, stats },
+      data: {
+        referralCode: user?.referralCode,
+        referrals,
+        stats,
+        rewardPointsPerReferral: referralSettings.rewardPoints,
+      },
     });
   } catch (error) {
     logger.error("Referrals fetch error", error);
@@ -118,19 +138,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Anti-fraud: cap total referrals per referrer (50 max)
+    const referralSettings = await getReferralSettings();
+
+    // Anti-fraud: cap total referrals per referrer
     const referralCount = await prisma.referral.count({
       where: { referrerId: referrer.id },
     });
 
-    if (referralCount >= 50) {
+    if (referralCount >= referralSettings.maxReferrals) {
       return NextResponse.json(
         { success: false, error: "Referral limit reached" },
         { status: 400 }
       );
     }
 
-    // Flat reward: each referral credits the referrer a single 50 points.
+    // Flat reward: each referral credits the referrer configured points.
     // Referral + point credit + referred-by tag are written atomically.
     const [referral] = await prisma.$transaction([
       prisma.referral.create({
@@ -146,7 +168,7 @@ export async function POST(req: NextRequest) {
       }),
       prisma.user.update({
         where: { id: referrer.id },
-        data: { rewardPoints: { increment: REFERRAL_REWARD_POINTS } },
+        data: { rewardPoints: { increment: referralSettings.rewardPoints } },
       }),
       prisma.user.update({
         where: { id: session.user.id },

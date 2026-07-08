@@ -21,6 +21,8 @@ export async function GET() {
       capturedPayments,
       revenueAgg,
       trips,
+      onboardedUsers,
+      onboardedCount,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
@@ -34,6 +36,11 @@ export async function GET() {
       prisma.trip.findMany({
         select: { destination: true },
       }),
+      prisma.user.findMany({
+        where: { isOnboarded: true },
+        select: { interests: true, budgetPreference: true, pickupCity: true },
+      }),
+      prisma.user.count({ where: { isOnboarded: true } }),
     ]);
 
     // Top destinations
@@ -65,6 +72,31 @@ export async function GET() {
       });
     }
 
+    // Onboarding distributions
+    const interestDist: Record<string, number> = {};
+    const budgetDist: Record<string, number> = {};
+    const cityDist: Record<string, number> = {};
+    for (const u of onboardedUsers) {
+      for (const interest of u.interests) {
+        interestDist[interest] = (interestDist[interest] || 0) + 1;
+      }
+      if (u.budgetPreference) {
+        budgetDist[u.budgetPreference] = (budgetDist[u.budgetPreference] || 0) + 1;
+      }
+      if (u.pickupCity) {
+        cityDist[u.pickupCity] = (cityDist[u.pickupCity] || 0) + 1;
+      }
+    }
+
+    const toSorted = (obj: Record<string, number>) =>
+      Object.entries(obj)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+
+    const onboardingCompletionRate = totalUsers > 0
+      ? Math.round((onboardedCount / totalUsers) * 100)
+      : 0;
+
     const returningUsers = totalUsers - newUsersCount;
     const bookingConversionRate = totalUsers > 0
       ? Math.round((totalBookings / totalUsers) * 100)
@@ -81,6 +113,12 @@ export async function GET() {
         revenueTrend,
         newUsers: newUsersCount,
         returningUsers: Math.max(returningUsers, 0),
+        onboarding: {
+          completionRate: onboardingCompletionRate,
+          interestDistribution: toSorted(interestDist),
+          budgetDistribution: toSorted(budgetDist),
+          cityDistribution: toSorted(cityDist),
+        },
       },
     });
   } catch (error) {

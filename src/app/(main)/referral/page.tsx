@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { useGoatSound } from "@/hooks/use-goat-sound";
 
 // ---------------------------------------------------------------------------
@@ -30,17 +30,8 @@ interface ReferralData {
   completedReferrals: number;
   totalEarningsPaise: number;
   referredUsers: ReferredUser[];
+  rewardPointsPerReferral: number;
 }
-
-// ---------------------------------------------------------------------------
-// Tier rewards
-// ---------------------------------------------------------------------------
-
-const REWARD_TIERS = [
-  { range: "1st - 5th", reward: 200_00, label: "200" },
-  { range: "6th - 15th", reward: 300_00, label: "300" },
-  { range: "16th+", reward: 500_00, label: "500" },
-];
 
 const STATUS_META: Record<
   ReferredUser["status"],
@@ -159,6 +150,7 @@ export default function ReferralPage() {
   const totalReferrals = data?.totalReferrals ?? 0;
   const completedReferrals = data?.completedReferrals ?? 0;
   const totalEarningsPaise = data?.totalEarningsPaise ?? 0;
+  const rewardPoints = data?.rewardPointsPerReferral ?? 50;
 
   return (
     <div className="px-5 py-6 space-y-6">
@@ -173,8 +165,8 @@ export default function ReferralPage() {
               Refer &amp; Earn
             </h1>
             <p className="mt-1 text-body-md text-white/80">
-              Grow your herd and earn up to{" "}
-              <span className="font-semibold text-white">&#x20B9;500</span> per
+              Grow your herd and earn{" "}
+              <span className="font-semibold text-white">{rewardPoints} points</span> per
               referral!
             </p>
           </div>
@@ -263,42 +255,25 @@ export default function ReferralPage() {
         </Card>
       </div>
 
-      {/* -------- Tiered Rewards -------- */}
-      <section>
-        <h2 className="text-title-lg font-title-lg text-on-surface mb-3">
-          Reward Tiers
-        </h2>
-        <div className="space-y-3">
-          {REWARD_TIERS.map((tier) => (
-            <Card
-              key={tier.range}
-              variant="outlined"
-              className="flex items-center justify-between p-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-fixed">
-                  <Icon
-                    name="emoji_events"
-                    size={20}
-                    className="text-on-primary-fixed"
-                  />
-                </div>
-                <div>
-                  <p className="text-body-md font-medium text-on-surface">
-                    Referral {tier.range}
-                  </p>
-                  <p className="text-label-sm text-on-surface-variant">
-                    Per successful referral
-                  </p>
-                </div>
-              </div>
-              <Badge variant="default" className="text-label-lg px-3 py-1">
-                &#x20B9;{tier.label}
-              </Badge>
-            </Card>
-          ))}
+      {/* -------- Reward Info -------- */}
+      <Card variant="outlined" className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-fixed">
+            <Icon name="emoji_events" size={20} className="text-on-primary-fixed" />
+          </div>
+          <div>
+            <p className="text-body-md font-medium text-on-surface">
+              Per successful referral
+            </p>
+            <p className="text-label-sm text-on-surface-variant">
+              Credited to your wallet
+            </p>
+          </div>
         </div>
-      </section>
+        <Badge variant="default" className="text-label-lg px-3 py-1">
+          {rewardPoints} pts
+        </Badge>
+      </Card>
 
       {/* -------- Your Referrals -------- */}
       <section>

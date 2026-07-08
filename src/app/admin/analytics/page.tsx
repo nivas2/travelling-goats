@@ -6,15 +6,28 @@ import { Card } from "@/components/ui/card";
 
 /* ---------- Types ---------- */
 
+interface DistItem {
+  name: string;
+  count: number;
+}
+
+interface OnboardingData {
+  completionRate: number;
+  interestDistribution: DistItem[];
+  budgetDistribution: DistItem[];
+  cityDistribution: DistItem[];
+}
+
 interface AnalyticsData {
   dau: number;
   mau: number;
   bookingConversionRate: number;
   avgOrderValuePaise: number;
-  topDestinations: { name: string; count: number }[];
+  topDestinations: DistItem[];
   revenueTrend: { month: string; revenuePaise: number }[];
   newUsers: number;
   returningUsers: number;
+  onboarding?: OnboardingData;
 }
 
 /* ---------- Placeholder Bar Chart ---------- */
@@ -42,6 +55,37 @@ function BarChart({
               />
             </div>
             <span className="text-[10px] text-on-surface-variant">{item.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ---------- Distribution Bars ---------- */
+
+function DistributionBars({ items, unit }: { items: DistItem[]; unit: string }) {
+  const maxCount = Math.max(...items.map((d) => d.count), 1);
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => {
+        const pct = (item.count / maxCount) * 100;
+        return (
+          <div key={item.name} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-body-md font-label-lg text-on-surface">
+                {i + 1}. {item.name}
+              </span>
+              <span className="text-body-md text-on-surface-variant">
+                {item.count} {unit}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-surface-container overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
           </div>
         );
       })}
@@ -237,6 +281,61 @@ export default function AdminAnalyticsPage() {
           </div>
         </Card>
       </div>
+
+      {/* Onboarding Metrics */}
+      {analytics.onboarding && (
+        <>
+          <div>
+            <h2 className="text-title-lg font-title-lg text-on-surface">Onboarding Insights</h2>
+            <p className="text-body-md text-on-surface-variant">How users are setting up their profiles</p>
+          </div>
+
+          {/* Completion Rate */}
+          <Card variant="elevated" className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-success/10">
+                <span className="material-symbols-outlined text-[24px] text-success">check_circle</span>
+              </div>
+              <div>
+                <p className="text-body-md text-on-surface-variant">Onboarding Completion</p>
+                <p className="text-title-lg font-title-lg text-on-surface">{analytics.onboarding.completionRate}%</p>
+              </div>
+            </div>
+          </Card>
+
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            {/* Interest Distribution */}
+            <Card variant="elevated" className="p-5">
+              <h3 className="text-title-md font-title-md text-on-surface mb-4">Interest Distribution</h3>
+              {analytics.onboarding.interestDistribution.length > 0 ? (
+                <DistributionBars items={analytics.onboarding.interestDistribution} unit="users" />
+              ) : (
+                <p className="text-body-md text-on-surface-variant">No data yet</p>
+              )}
+            </Card>
+
+            {/* Budget Distribution */}
+            <Card variant="elevated" className="p-5">
+              <h3 className="text-title-md font-title-md text-on-surface mb-4">Budget Distribution</h3>
+              {analytics.onboarding.budgetDistribution.length > 0 ? (
+                <DistributionBars items={analytics.onboarding.budgetDistribution} unit="users" />
+              ) : (
+                <p className="text-body-md text-on-surface-variant">No data yet</p>
+              )}
+            </Card>
+
+            {/* City Distribution */}
+            <Card variant="elevated" className="p-5">
+              <h3 className="text-title-md font-title-md text-on-surface mb-4">City Distribution</h3>
+              {analytics.onboarding.cityDistribution.length > 0 ? (
+                <DistributionBars items={analytics.onboarding.cityDistribution} unit="users" />
+              ) : (
+                <p className="text-body-md text-on-surface-variant">No data yet</p>
+              )}
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }
