@@ -185,6 +185,7 @@ export default function AddonsPage() {
                       fill
                       className="object-cover"
                       sizes="56px"
+                      unoptimized
                     />
                   </div>
                 ) : (
@@ -345,6 +346,7 @@ function SnackItem({
             fill
             className="object-cover"
             sizes="56px"
+            unoptimized
           />
           <span
             className={cn(
