@@ -114,9 +114,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    logger.error("Bookings fetch error", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown error";
+    logger.error("Bookings fetch error", { message, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
-      { success: false, error: "Failed to fetch bookings" },
+      { success: false, error: `Failed to fetch bookings: ${message}` },
       { status: 500 }
     );
   }

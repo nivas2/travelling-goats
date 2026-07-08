@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn, formatCurrency, formatDateRange } from "@/lib/utils";
+import { cn, formatCurrency, formatDateRange, getDaysUntil } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
@@ -203,6 +203,15 @@ export default function HomePage() {
   const [provoke, setProvoke] = useState(PROVOCATIONS[0]);
   const [content, setContent] = useState<ContentMap | null>(null);
 
+  // Upcoming booking for banner
+  const [upcomingBooking, setUpcomingBooking] = useState<{
+    id: string;
+    tripTitle: string;
+    destination: string;
+    startDate: string;
+    travelerCount: number;
+  } | null>(null);
+
   // City filtering
   const [cities, setCities] = useState<Array<{ id: string; name: string; icon?: string | null; tripCount?: number }>>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -277,6 +286,12 @@ export default function HomePage() {
   const vis = asObject(content?.["home.visibility"]);
   const show = (k: string) => vis[k] !== "false"; // default: visible
 
+  const bannerBlock = asObject(content?.["home.upcomingBanner"]);
+  const bannerTitle = bannerBlock.title || "Pack Your Bags!";
+  const bannerSubtitle = bannerBlock.subtitle || "{tripName} — {daysLeft} days to go";
+  const bannerCta = bannerBlock.ctaText || "View Ticket";
+  const bannerIcon = bannerBlock.icon || "luggage";
+
   const offers = asList(content?.["home.offers"]).map((o) => ({
     title: o.title,
     subtitle: o.subtitle,
@@ -323,6 +338,32 @@ export default function HomePage() {
     return () => {
       active = false;
     };
+  }, []);
+
+  // Fetch nearest upcoming booking for banner
+  useEffect(() => {
+    let active = true;
+    fetch("/api/bookings?status=UPCOMING")
+      .then((r) => r.json())
+      .then((j) => {
+        if (active && j?.success && j.data?.length) {
+          // Pick the nearest upcoming trip by start date
+          const sorted = [...j.data].sort(
+            (a: { startDate: string }, b: { startDate: string }) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
+          const nearest = sorted[0];
+          setUpcomingBooking({
+            id: nearest.id,
+            tripTitle: nearest.tripTitle,
+            destination: nearest.destination,
+            startDate: nearest.startDate,
+            travelerCount: nearest.travelerCount,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
   }, []);
 
   const firstName = displayName?.trim().split(" ")[0] || null;
@@ -430,6 +471,43 @@ export default function HomePage() {
         <p className="mt-1.5 max-w-2xl text-body-md text-on-surface-variant md:text-body-lg">
           {provoke}
         </p>
+
+        {/* Upcoming trail banner */}
+        {show("upcomingBanner") && upcomingBooking && (() => {
+          const daysLeft = getDaysUntil(upcomingBooking.startDate);
+          if (daysLeft < 0) return null;
+          const vars: Record<string, string> = {
+            tripName: upcomingBooking.tripTitle,
+            destination: upcomingBooking.destination,
+            daysLeft: daysLeft === 0 ? "Today" : String(daysLeft),
+            date: formatDateRange(upcomingBooking.startDate, upcomingBooking.startDate),
+            travelerCount: String(upcomingBooking.travelerCount),
+          };
+          const interpolate = (tpl: string) =>
+            tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+          return (
+            <Link
+              href={`/bookings/${upcomingBooking.id}/ticket`}
+              className="mt-4 flex items-center gap-3 rounded-xl bg-primary/10 border border-primary/20 px-4 py-3 transition-colors hover:bg-primary/15"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+                <Icon name={bannerIcon} filled size={20} className="text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-label-lg font-semibold text-primary">
+                  {interpolate(bannerTitle)}
+                </p>
+                <p className="text-body-sm text-on-surface-variant truncate">
+                  {interpolate(bannerSubtitle)}
+                </p>
+              </div>
+              <span className="shrink-0 text-label-sm font-semibold text-primary">
+                {bannerCta}
+              </span>
+              <Icon name="chevron_right" size={18} className="shrink-0 text-primary" />
+            </Link>
+          );
+        })()}
 
         {/* Promotional offer banners */}
         {show("offers") && (

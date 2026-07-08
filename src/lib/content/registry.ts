@@ -327,6 +327,26 @@ export const CONTENT_BLOCKS: BlockDef[] = [
     ],
   },
   {
+    key: "home.upcomingBanner",
+    label: "Upcoming Trail Banner",
+    group: "Home Feed",
+    description:
+      "Minimal banner shown to users who have an upcoming booking. Variables: {tripName}, {destination}, {daysLeft}, {date}, {travelerCount}.",
+    kind: "single",
+    fields: [
+      { name: "title", label: "Banner title", type: "text", placeholder: "Pack Your Bags!" },
+      { name: "subtitle", label: "Banner subtitle (supports variables)", type: "text", placeholder: "{tripName} — {daysLeft} days to go" },
+      { name: "ctaText", label: "Button text", type: "text", placeholder: "View Ticket" },
+      { name: "icon", label: "Icon (Material Symbol)", type: "text", placeholder: "luggage" },
+    ],
+    default: {
+      title: "Pack Your Bags!",
+      subtitle: "{tripName} — {daysLeft} days to go",
+      ctaText: "View Ticket",
+      icon: "luggage",
+    },
+  },
+  {
     key: "home.visibility",
     label: "Section Visibility",
     group: "Home Feed",
@@ -337,8 +357,9 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       { name: "inspiration", label: "Inspiration Carousel", type: "toggle" },
       { name: "perks", label: "Value Props / Perks", type: "toggle" },
       { name: "categories", label: "Explore Categories", type: "toggle" },
+      { name: "upcomingBanner", label: "Upcoming Trail Banner", type: "toggle" },
     ],
-    default: { offers: "true", inspiration: "true", perks: "true", categories: "true" },
+    default: { offers: "true", inspiration: "true", perks: "true", categories: "true", upcomingBanner: "true" },
   },
   {
     key: "home.offers",
@@ -505,6 +526,7 @@ export const BLOCK_ORDER: string[] = [
   "home.visibility",
   "home.sections",
   "home.greeting",
+  "home.upcomingBanner",
   "home.provocations",
   "home.offers",
   "home.inspirationSlides",
