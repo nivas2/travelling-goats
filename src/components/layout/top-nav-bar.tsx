@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { cn, getInitials } from "@/lib/utils";
 import { BrandLogo } from "@/components/ui/brand-logo";
 
 interface TopNavBarProps {
@@ -22,11 +23,17 @@ const NAV_LINKS = [
 
 export function TopNavBar({
   notificationCount = 0,
-  userInitials = "U",
-  avatarUrl,
+  userInitials: userInitialsProp,
+  avatarUrl: avatarUrlProp,
 }: TopNavBarProps) {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  // Prefer session data over props for avatar
+  const userName = session?.user?.name;
+  const userInitials = userInitialsProp ?? (userName ? getInitials(userName) : "U");
+  const avatarUrl = avatarUrlProp ?? session?.user?.image ?? undefined;
 
   // All hooks must run unconditionally before any early return (rules of hooks).
   useEffect(() => {
