@@ -300,7 +300,7 @@ export default function PaymentPage() {
           bookingType,
           travelerCount,
           travelers,
-          seatPreference,
+          seatPreference: seatPreference || undefined,
           seatIds: selectedSeatIds.length > 0 ? selectedSeatIds : undefined,
           sessionId: selectedSeatIds.length > 0 ? sessionId : undefined,
           contactEmail: contactEmail || undefined,
