@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       couplePricePaise, groupPricePaise, platformFeePaise, startDate,
       endDate, duration, maxGroupSize, minGroupSize, category, difficulty,
       tags, isFeatured, isTrending, cancellationPolicy, bookingCutoffHours,
-      status, tripCaptainId, itineraryDays, addOns, snackOptions, faqs,
+      status, tripCaptainId, itineraryDays, addOnSelections, snackSelections, faqs,
     } = validation.data;
 
     // Check slug uniqueness
@@ -138,25 +138,16 @@ export async function POST(req: NextRequest) {
             accommodation: day.accommodation ?? null,
           })),
         },
-        addOns: {
-          create: (addOns ?? []).map((addon) => ({
-            name: addon.name,
-            description: addon.description ?? null,
-            pricePaise: addon.pricePaise,
-            icon: addon.icon ?? null,
-            image: addon.image ?? null,
-            maxQuantity: addon.maxQuantity ?? 1,
+        addOnSelections: {
+          create: (addOnSelections ?? []).map((s) => ({
+            globalAddOnId: s.globalAddOnId,
+            priceOverridePaise: s.priceOverridePaise ?? null,
           })),
         },
-        snackOptions: {
-          create: (snackOptions ?? []).map((snack) => ({
-            name: snack.name,
-            description: snack.description ?? null,
-            pricePaise: snack.pricePaise,
-            category: snack.category ?? null,
-            icon: snack.icon ?? null,
-            image: snack.image ?? null,
-            isVeg: snack.isVeg ?? true,
+        snackSelections: {
+          create: (snackSelections ?? []).map((s) => ({
+            globalSnackId: s.globalSnackId,
+            priceOverridePaise: s.priceOverridePaise ?? null,
           })),
         },
         faqs: {
@@ -169,8 +160,8 @@ export async function POST(req: NextRequest) {
       },
       include: {
         itineraryDays: true,
-        addOns: true,
-        snackOptions: true,
+        addOnSelections: { include: { globalAddOn: true } },
+        snackSelections: { include: { globalSnack: true } },
         faqs: true,
       },
     });

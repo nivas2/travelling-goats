@@ -123,6 +123,7 @@ export interface AddOnData {
   image: string | null;
   maxQuantity: number;
   isPopular: boolean;
+  isAvailable?: boolean;
 }
 
 export interface SnackOptionData {
@@ -134,6 +135,7 @@ export interface SnackOptionData {
   icon: string | null;
   image: string | null;
   isVeg: boolean;
+  isAvailable?: boolean;
 }
 
 export interface FaqData {

@@ -23,8 +23,8 @@ export async function GET(
       where: { id },
       include: {
         itineraryDays: { orderBy: { dayNumber: "asc" } },
-        addOns: true,
-        snackOptions: true,
+        addOnSelections: { include: { globalAddOn: true } },
+        snackSelections: { include: { globalSnack: true } },
         faqs: { orderBy: { order: "asc" } },
         _count: { select: { bookings: true, reviews: true } },
       },
@@ -140,56 +140,32 @@ export async function PUT(
       }
     }
 
-    // Replace add-ons if provided
-    if (body.addOns !== undefined) {
-      await prisma.tripAddOn.deleteMany({ where: { tripId: id } });
-      if (body.addOns.length > 0) {
-        await prisma.tripAddOn.createMany({
-          data: body.addOns.map(
-            (addon: {
-              name: string;
-              description?: string;
-              pricePaise: number;
-              icon?: string;
-              image?: string;
-              maxQuantity?: number;
-            }) => ({
+    // Replace add-on selections if provided
+    if (body.addOnSelections !== undefined) {
+      await prisma.tripAddOnSelection.deleteMany({ where: { tripId: id } });
+      if (body.addOnSelections.length > 0) {
+        await prisma.tripAddOnSelection.createMany({
+          data: body.addOnSelections.map(
+            (s: { globalAddOnId: string; priceOverridePaise?: number | null }) => ({
               tripId: id,
-              name: addon.name,
-              description: addon.description ?? null,
-              pricePaise: addon.pricePaise,
-              icon: addon.icon ?? null,
-              image: addon.image ?? null,
-              maxQuantity: addon.maxQuantity ?? 1,
+              globalAddOnId: s.globalAddOnId,
+              priceOverridePaise: s.priceOverridePaise ?? null,
             })
           ),
         });
       }
     }
 
-    // Replace snack options if provided
-    if (body.snackOptions !== undefined) {
-      await prisma.snackOption.deleteMany({ where: { tripId: id } });
-      if (body.snackOptions.length > 0) {
-        await prisma.snackOption.createMany({
-          data: body.snackOptions.map(
-            (snack: {
-              name: string;
-              description?: string;
-              pricePaise: number;
-              category?: string;
-              icon?: string;
-              image?: string;
-              isVeg?: boolean;
-            }) => ({
+    // Replace snack selections if provided
+    if (body.snackSelections !== undefined) {
+      await prisma.tripSnackSelection.deleteMany({ where: { tripId: id } });
+      if (body.snackSelections.length > 0) {
+        await prisma.tripSnackSelection.createMany({
+          data: body.snackSelections.map(
+            (s: { globalSnackId: string; priceOverridePaise?: number | null }) => ({
               tripId: id,
-              name: snack.name,
-              description: snack.description ?? null,
-              pricePaise: snack.pricePaise,
-              category: snack.category ?? null,
-              icon: snack.icon ?? null,
-              image: snack.image ?? null,
-              isVeg: snack.isVeg ?? true,
+              globalSnackId: s.globalSnackId,
+              priceOverridePaise: s.priceOverridePaise ?? null,
             })
           ),
         });
@@ -218,8 +194,8 @@ export async function PUT(
       where: { id },
       include: {
         itineraryDays: { orderBy: { dayNumber: "asc" } },
-        addOns: true,
-        snackOptions: true,
+        addOnSelections: { include: { globalAddOn: true } },
+        snackSelections: { include: { globalSnack: true } },
         faqs: { orderBy: { order: "asc" } },
       },
     });

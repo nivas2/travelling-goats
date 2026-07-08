@@ -157,7 +157,10 @@ export async function POST(req: NextRequest) {
     // Fetch trip (outside transaction for initial checks)
     const trip = await prisma.trip.findUnique({
       where: { id: tripId },
-      include: { addOns: true, snackOptions: true },
+      include: {
+        addOnSelections: { include: { globalAddOn: true } },
+        snackSelections: { include: { globalSnack: true } },
+      },
     });
 
     if (!trip) {
@@ -189,9 +192,16 @@ export async function POST(req: NextRequest) {
     const bookingAddOns: { addOnId: string; quantity: number; pricePaise: number }[] = [];
     if (addOns?.length) {
       for (const ao of addOns) {
-        const addon = trip.addOns.find((a) => a.id === ao.addOnId);
-        if (addon) {
-          const price = addon.pricePaise * ao.quantity;
+        const sel = trip.addOnSelections.find((s) => s.globalAddOn.id === ao.addOnId);
+        if (sel) {
+          if (!sel.globalAddOn.isActive) {
+            return NextResponse.json(
+              { success: false, error: `Add-on "${sel.globalAddOn.name}" is no longer available` },
+              { status: 400 }
+            );
+          }
+          const unitPrice = sel.priceOverridePaise ?? sel.globalAddOn.pricePaise;
+          const price = unitPrice * ao.quantity;
           addonsPricePaise += price;
           bookingAddOns.push({ addOnId: ao.addOnId, quantity: ao.quantity, pricePaise: price });
         }
@@ -202,9 +212,16 @@ export async function POST(req: NextRequest) {
     const bookingSnacks: { snackId: string; quantity: number; pricePaise: number }[] = [];
     if (snacks?.length) {
       for (const sn of snacks) {
-        const snack = trip.snackOptions.find((s) => s.id === sn.snackId);
-        if (snack) {
-          const price = snack.pricePaise * sn.quantity;
+        const sel = trip.snackSelections.find((s) => s.globalSnack.id === sn.snackId);
+        if (sel) {
+          if (!sel.globalSnack.isActive) {
+            return NextResponse.json(
+              { success: false, error: `Snack "${sel.globalSnack.name}" is no longer available` },
+              { status: 400 }
+            );
+          }
+          const unitPrice = sel.priceOverridePaise ?? sel.globalSnack.pricePaise;
+          const price = unitPrice * sn.quantity;
           snacksPricePaise += price;
           bookingSnacks.push({ snackId: sn.snackId, quantity: sn.quantity, pricePaise: price });
         }

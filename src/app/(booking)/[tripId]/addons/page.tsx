@@ -172,7 +172,8 @@ export default function AddonsPage() {
                 variant="outlined"
                 className={cn(
                   "flex items-start gap-3 transition-colors",
-                  qty > 0 && "border-primary bg-primary-fixed/10",
+                  addon.isAvailable === false && "opacity-50 pointer-events-none",
+                  qty > 0 && addon.isAvailable !== false && "border-primary bg-primary-fixed/10",
                 )}
               >
                 {/* Image or Icon */}
@@ -207,7 +208,12 @@ export default function AddonsPage() {
                     <span className="text-title-md font-title-md text-on-surface">
                       {addon.name}
                     </span>
-                    {addon.isPopular && (
+                    {addon.isAvailable === false && (
+                      <span className="shrink-0 rounded-full bg-error/10 px-2 py-0.5 text-[10px] font-semibold text-error">
+                        Not Available
+                      </span>
+                    )}
+                    {addon.isAvailable !== false && addon.isPopular && (
                       <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
                         Popular
                       </span>
@@ -224,11 +230,13 @@ export default function AddonsPage() {
                 </div>
 
                 {/* Quantity selector */}
-                <QuantitySelector
-                  value={qty}
-                  max={addon.maxQuantity}
-                  onChange={(val) => toggleAddOn(addon.id, val)}
-                />
+                {addon.isAvailable !== false && (
+                  <QuantitySelector
+                    value={qty}
+                    max={addon.maxQuantity}
+                    onChange={(val) => toggleAddOn(addon.id, val)}
+                  />
+                )}
               </Card>
             </motion.div>
           );
@@ -324,7 +332,8 @@ function SnackItem({
       variant="outlined"
       className={cn(
         "flex items-center gap-3 transition-colors",
-        quantity > 0 && "border-primary bg-primary-fixed/10",
+        snack.isAvailable === false && "opacity-50 pointer-events-none",
+        quantity > 0 && snack.isAvailable !== false && "border-primary bg-primary-fixed/10",
       )}
     >
       {/* Image or Veg/Non-veg indicator + icon */}
@@ -376,9 +385,16 @@ function SnackItem({
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <p className="text-title-md font-title-md text-on-surface">
-          {snack.name}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-title-md font-title-md text-on-surface">
+            {snack.name}
+          </p>
+          {snack.isAvailable === false && (
+            <span className="shrink-0 rounded-full bg-error/10 px-2 py-0.5 text-[10px] font-semibold text-error">
+              Not Available
+            </span>
+          )}
+        </div>
         {snack.description && (
           <p className="text-body-md text-on-surface-variant">
             {snack.description}
@@ -390,11 +406,13 @@ function SnackItem({
       </div>
 
       {/* Quantity */}
-      <QuantitySelector
-        value={quantity}
-        max={10}
-        onChange={onQuantityChange}
-      />
+      {snack.isAvailable !== false && (
+        <QuantitySelector
+          value={quantity}
+          max={10}
+          onChange={onQuantityChange}
+        />
+      )}
     </Card>
   );
 }

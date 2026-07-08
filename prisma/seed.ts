@@ -30,8 +30,10 @@ async function main() {
     prisma.memoryEntry.deleteMany(),
     prisma.tripCompanion.deleteMany(),
     prisma.tripFaq.deleteMany(),
-    prisma.snackOption.deleteMany(),
-    prisma.tripAddOn.deleteMany(),
+    prisma.tripSnackSelection.deleteMany(),
+    prisma.tripAddOnSelection.deleteMany(),
+    prisma.globalSnack.deleteMany(),
+    prisma.globalAddOn.deleteMany(),
     prisma.itineraryDay.deleteMany(),
     prisma.trip.deleteMany(),
     prisma.emergencyContact.deleteMany(),
@@ -660,33 +662,54 @@ async function main() {
 
   console.log("✅ Created itinerary days");
 
-  // ===== ADD-ONS =====
-  await prisma.tripAddOn.createMany({
+  // ===== GLOBAL ADD-ONS =====
+  const globalAddOns = await Promise.all([
+    prisma.globalAddOn.create({ data: { id: "addon-photo", name: "Photography Package", description: "Professional photographer for the trek", pricePaise: 149900, icon: "photo_camera", isPopular: true } }),
+    prisma.globalAddOn.create({ data: { id: "addon-room", name: "Private Room Upgrade", description: "Upgrade from shared to private room", pricePaise: 249900, icon: "king_bed" } }),
+    prisma.globalAddOn.create({ data: { id: "addon-insurance", name: "Travel Insurance", description: "Comprehensive trip insurance coverage", pricePaise: 49900, icon: "health_and_safety" } }),
+    prisma.globalAddOn.create({ data: { id: "addon-scuba", name: "Scuba Diving", description: "1-hour guided scuba session", pricePaise: 349900, icon: "scuba_diving", isPopular: true } }),
+    prisma.globalAddOn.create({ data: { id: "addon-dudhsagar", name: "Dudhsagar Falls Trip", description: "Full day excursion to Dudhsagar", pricePaise: 199900, icon: "water" } }),
+    prisma.globalAddOn.create({ data: { id: "addon-gopro", name: "GoPro Rental", description: "Action camera for the trip", pricePaise: 99900, icon: "videocam" } }),
+    prisma.globalAddOn.create({ data: { id: "addon-bungee", name: "Bungee Jumping", description: "At Solang Valley", pricePaise: 299900, icon: "paragliding", isPopular: true } }),
+  ]);
+
+  // ===== GLOBAL SNACKS =====
+  const globalSnacks = await Promise.all([
+    prisma.globalSnack.create({ data: { id: "snack-trail", name: "Trail Mix Pack", pricePaise: 14900, category: "veg", isVeg: true, icon: "nutrition" } }),
+    prisma.globalSnack.create({ data: { id: "snack-energy", name: "Energy Bars (Pack of 3)", pricePaise: 19900, category: "veg", isVeg: true, icon: "cookie" } }),
+    prisma.globalSnack.create({ data: { id: "snack-chicken", name: "Chicken Sandwich", pricePaise: 14900, category: "non-veg", isVeg: false, icon: "lunch_dining" } }),
+    prisma.globalSnack.create({ data: { id: "snack-bebinca", name: "Goan Bebinca", pricePaise: 9900, category: "veg", isVeg: true, icon: "cake" } }),
+    prisma.globalSnack.create({ data: { id: "snack-feni", name: "Cashew Feni (Miniature)", pricePaise: 24900, category: "non-veg", isVeg: false, icon: "liquor" } }),
+    prisma.globalSnack.create({ data: { id: "snack-maggi", name: "Maggi & Chai Combo", pricePaise: 9900, category: "veg", isVeg: true, icon: "ramen_dining" } }),
+  ]);
+
+  // ===== TRIP ADD-ON SELECTIONS =====
+  await prisma.tripAddOnSelection.createMany({
     data: [
-      { tripId: "trip-coorg-001", name: "Photography Package", description: "Professional photographer for the trek", pricePaise: 149900, icon: "photo_camera", isPopular: true },
-      { tripId: "trip-coorg-001", name: "Private Room Upgrade", description: "Upgrade from shared to private room", pricePaise: 249900, icon: "king_bed" },
-      { tripId: "trip-coorg-001", name: "Travel Insurance", description: "Comprehensive trip insurance coverage", pricePaise: 49900, icon: "health_and_safety" },
-      { tripId: "trip-goa-002", name: "Scuba Diving", description: "1-hour guided scuba session", pricePaise: 349900, icon: "scuba_diving", isPopular: true },
-      { tripId: "trip-goa-002", name: "Private Room Upgrade", description: "Beach-facing private room", pricePaise: 349900, icon: "king_bed" },
-      { tripId: "trip-goa-002", name: "Dudhsagar Falls Trip", description: "Full day excursion to Dudhsagar", pricePaise: 199900, icon: "water" },
-      { tripId: "trip-manali-003", name: "GoPro Rental", description: "Action camera for the trip", pricePaise: 99900, icon: "videocam" },
-      { tripId: "trip-manali-003", name: "Bungee Jumping", description: "At Solang Valley", pricePaise: 299900, icon: "paragliding", isPopular: true },
+      { tripId: "trip-coorg-001", globalAddOnId: "addon-photo" },
+      { tripId: "trip-coorg-001", globalAddOnId: "addon-room" },
+      { tripId: "trip-coorg-001", globalAddOnId: "addon-insurance" },
+      { tripId: "trip-goa-002", globalAddOnId: "addon-scuba" },
+      { tripId: "trip-goa-002", globalAddOnId: "addon-room", priceOverridePaise: 349900 },
+      { tripId: "trip-goa-002", globalAddOnId: "addon-dudhsagar" },
+      { tripId: "trip-manali-003", globalAddOnId: "addon-gopro" },
+      { tripId: "trip-manali-003", globalAddOnId: "addon-bungee" },
     ],
   });
 
-  // ===== SNACK OPTIONS =====
-  await prisma.snackOption.createMany({
+  // ===== TRIP SNACK SELECTIONS =====
+  await prisma.tripSnackSelection.createMany({
     data: [
-      { tripId: "trip-coorg-001", name: "Trail Mix Pack", pricePaise: 14900, category: "veg", isVeg: true, icon: "nutrition" },
-      { tripId: "trip-coorg-001", name: "Energy Bars (Pack of 3)", pricePaise: 19900, category: "veg", isVeg: true, icon: "cookie" },
-      { tripId: "trip-coorg-001", name: "Chicken Sandwich", pricePaise: 14900, category: "non-veg", isVeg: false, icon: "lunch_dining" },
-      { tripId: "trip-goa-002", name: "Goan Bebinca", pricePaise: 9900, category: "veg", isVeg: true, icon: "cake" },
-      { tripId: "trip-goa-002", name: "Cashew Feni (Miniature)", pricePaise: 24900, category: "non-veg", isVeg: false, icon: "liquor" },
-      { tripId: "trip-manali-003", name: "Maggi & Chai Combo", pricePaise: 9900, category: "veg", isVeg: true, icon: "ramen_dining" },
+      { tripId: "trip-coorg-001", globalSnackId: "snack-trail" },
+      { tripId: "trip-coorg-001", globalSnackId: "snack-energy" },
+      { tripId: "trip-coorg-001", globalSnackId: "snack-chicken" },
+      { tripId: "trip-goa-002", globalSnackId: "snack-bebinca" },
+      { tripId: "trip-goa-002", globalSnackId: "snack-feni" },
+      { tripId: "trip-manali-003", globalSnackId: "snack-maggi" },
     ],
   });
 
-  console.log("✅ Created add-ons and snack options");
+  console.log("✅ Created global add-ons, snacks, and trip selections");
 
   // ===== FAQs =====
   await prisma.tripFaq.createMany({

@@ -14,8 +14,8 @@ export async function GET(
       },
       include: {
         itineraryDays: { orderBy: { dayNumber: "asc" } },
-        addOns: true,
-        snackOptions: true,
+        addOnSelections: { include: { globalAddOn: true } },
+        snackSelections: { include: { globalSnack: true } },
         faqs: { orderBy: { order: "asc" } },
         reviews: {
           include: {
@@ -35,6 +35,7 @@ export async function GET(
     }
 
     // Ensure itinerary day activities are always arrays (handles double-encoded JSON strings)
+    // Shape add-on/snack selections into flat arrays for frontend compatibility
     const data = {
       ...trip,
       itineraryDays: trip.itineraryDays.map((day) => ({
@@ -44,6 +45,30 @@ export async function GET(
             ? JSON.parse(day.activities)
             : day.activities ?? [],
       })),
+      addOns: trip.addOnSelections.map((sel) => ({
+        id: sel.globalAddOn.id,
+        name: sel.globalAddOn.name,
+        description: sel.globalAddOn.description,
+        pricePaise: sel.priceOverridePaise ?? sel.globalAddOn.pricePaise,
+        icon: sel.globalAddOn.icon,
+        image: sel.globalAddOn.image,
+        maxQuantity: sel.globalAddOn.maxQuantity,
+        isPopular: sel.globalAddOn.isPopular,
+        isAvailable: sel.globalAddOn.isActive,
+      })),
+      snackOptions: trip.snackSelections.map((sel) => ({
+        id: sel.globalSnack.id,
+        name: sel.globalSnack.name,
+        description: sel.globalSnack.description,
+        pricePaise: sel.priceOverridePaise ?? sel.globalSnack.pricePaise,
+        category: sel.globalSnack.category,
+        icon: sel.globalSnack.icon,
+        image: sel.globalSnack.image,
+        isVeg: sel.globalSnack.isVeg,
+        isAvailable: sel.globalSnack.isActive,
+      })),
+      addOnSelections: undefined,
+      snackSelections: undefined,
     };
 
     return NextResponse.json({ success: true, data });

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { cn, slugify, rupeesToPaise, paiseToRupees, formatSaveError } from "@/lib/utils";
+import { cn, slugify, rupeesToPaise, paiseToRupees, formatCurrency, formatSaveError } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,23 +28,19 @@ interface ItineraryDay {
   accommodation: string;
 }
 
-interface AddOn {
-  id?: string;
+interface GlobalAddOnItem {
+  id: string;
   name: string;
-  description: string;
-  price: number;
-  icon: string;
-  image: string;
-  maxQuantity: number;
+  pricePaise: number;
+  isActive: boolean;
 }
 
-interface SnackItem {
-  id?: string;
+interface GlobalSnackItem {
+  id: string;
   name: string;
-  price: number;
-  category: string;
-  icon: string;
-  image: string;
+  pricePaise: number;
+  isVeg: boolean;
+  isActive: boolean;
 }
 
 interface FaqItem {
@@ -159,11 +155,11 @@ export default function EditTripPage() {
   // Itinerary
   const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
 
-  // Add-ons
-  const [addOns, setAddOns] = useState<AddOn[]>([]);
-
-  // Snacks
-  const [snacks, setSnacks] = useState<SnackItem[]>([]);
+  // Global catalog
+  const [globalAddOns, setGlobalAddOns] = useState<GlobalAddOnItem[]>([]);
+  const [globalSnacks, setGlobalSnacks] = useState<GlobalSnackItem[]>([]);
+  const [selectedAddOns, setSelectedAddOns] = useState<Map<string, number | null>>(new Map());
+  const [selectedSnacks, setSelectedSnacks] = useState<Map<string, number | null>>(new Map());
 
   // FAQs
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
@@ -226,30 +222,19 @@ export default function EditTripPage() {
           }))
         );
 
-        // Add-ons
-        setAddOns(
-          (t.addOns ?? []).map((a: any) => ({
-            id: a.id,
-            name: a.name,
-            description: a.description ?? "",
-            price: paiseToRupees(a.pricePaise),
-            icon: a.icon ?? "",
-            image: a.image ?? "",
-            maxQuantity: a.maxQuantity,
-          }))
-        );
+        // Add-on selections
+        const addOnMap = new Map<string, number | null>();
+        for (const sel of (t.addOnSelections ?? [])) {
+          addOnMap.set(sel.globalAddOnId ?? sel.globalAddOn?.id, sel.priceOverridePaise ?? null);
+        }
+        setSelectedAddOns(addOnMap);
 
-        // Snacks
-        setSnacks(
-          (t.snackOptions ?? []).map((s: any) => ({
-            id: s.id,
-            name: s.name,
-            price: paiseToRupees(s.pricePaise),
-            category: s.category ?? "veg",
-            icon: s.icon ?? "",
-            image: s.image ?? "",
-          }))
-        );
+        // Snack selections
+        const snackMap = new Map<string, number | null>();
+        for (const sel of (t.snackSelections ?? [])) {
+          snackMap.set(sel.globalSnackId ?? sel.globalSnack?.id, sel.priceOverridePaise ?? null);
+        }
+        setSelectedSnacks(snackMap);
 
         // FAQs
         setFaqs(
@@ -297,6 +282,20 @@ export default function EditTripPage() {
       }
     }
     fetchCaptains();
+
+    async function fetchCatalog() {
+      try {
+        const res = await fetch("/api/admin/addons");
+        if (res.ok) {
+          const json = await res.json();
+          setGlobalAddOns(json.data?.addOns ?? []);
+          setGlobalSnacks(json.data?.snacks ?? []);
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+    fetchCatalog();
   }, [tripId]);
 
   /* ---------- Itinerary Helpers ---------- */
@@ -377,42 +376,40 @@ export default function EditTripPage() {
     );
   }
 
-  /* ---------- Add-ons Helpers ---------- */
+  /* ---------- Add-on / Snack Selection Helpers ---------- */
 
-  function addAddOn() {
-    setAddOns((prev) => [
-      ...prev,
-      { name: "", description: "", price: 0, icon: "add_circle", image: "", maxQuantity: 1 },
-    ]);
+  function toggleAddOnSelection(id: string) {
+    setSelectedAddOns((prev) => {
+      const next = new Map(prev);
+      if (next.has(id)) next.delete(id);
+      else next.set(id, null);
+      return next;
+    });
   }
 
-  function updateAddOn(index: number, field: string, value: unknown) {
-    setAddOns((prev) =>
-      prev.map((a, i) => (i === index ? { ...a, [field]: value } : a))
-    );
+  function setAddOnOverride(id: string, paise: number | null) {
+    setSelectedAddOns((prev) => {
+      const next = new Map(prev);
+      next.set(id, paise);
+      return next;
+    });
   }
 
-  function removeAddOn(index: number) {
-    setAddOns((prev) => prev.filter((_, i) => i !== index));
+  function toggleSnackSelection(id: string) {
+    setSelectedSnacks((prev) => {
+      const next = new Map(prev);
+      if (next.has(id)) next.delete(id);
+      else next.set(id, null);
+      return next;
+    });
   }
 
-  /* ---------- Snacks Helpers ---------- */
-
-  function addSnack() {
-    setSnacks((prev) => [
-      ...prev,
-      { name: "", price: 0, category: "veg", icon: "restaurant", image: "" },
-    ]);
-  }
-
-  function updateSnack(index: number, field: string, value: unknown) {
-    setSnacks((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, [field]: value } : s))
-    );
-  }
-
-  function removeSnack(index: number) {
-    setSnacks((prev) => prev.filter((_, i) => i !== index));
+  function setSnackOverride(id: string, paise: number | null) {
+    setSelectedSnacks((prev) => {
+      const next = new Map(prev);
+      next.set(id, paise);
+      return next;
+    });
   }
 
   /* ---------- FAQ Helpers ---------- */
@@ -483,21 +480,13 @@ export default function EditTripPage() {
         meals: day.meals,
         accommodation: day.accommodation,
       })),
-      addOns: addOns.map((a) => ({
-        name: a.name,
-        description: a.description,
-        pricePaise: rupeesToPaise(a.price),
-        icon: a.icon,
-        image: a.image || null,
-        maxQuantity: a.maxQuantity,
+      addOnSelections: Array.from(selectedAddOns.entries()).map(([globalAddOnId, override]) => ({
+        globalAddOnId,
+        priceOverridePaise: override,
       })),
-      snackOptions: snacks.map((s) => ({
-        name: s.name,
-        pricePaise: rupeesToPaise(s.price),
-        category: s.category,
-        icon: s.icon,
-        image: s.image || null,
-        isVeg: s.category === "veg",
+      snackSelections: Array.from(selectedSnacks.entries()).map(([globalSnackId, override]) => ({
+        globalSnackId,
+        priceOverridePaise: override,
       })),
       faqs: faqs.map((f, i) => ({
         question: f.question,
@@ -775,41 +764,85 @@ export default function EditTripPage() {
         </Button>
       </FormSection>
 
-      {/* Add-ons */}
+      {/* Add-ons (from global catalog) */}
       <FormSection title="Add-ons">
-        {addOns.map((addon, idx) => (
-          <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-surface-container">
-            <Input placeholder="Name" value={addon.name} onChange={(e) => updateAddOn(idx, "name", e.target.value)} inputSize="sm" className="flex-1" />
-            <Input placeholder="Description" value={addon.description} onChange={(e) => updateAddOn(idx, "description", e.target.value)} inputSize="sm" className="flex-1" />
-            <Input placeholder="Price (₹)" type="number" value={addon.price || ""} onChange={(e) => updateAddOn(idx, "price", Number(e.target.value))} inputSize="sm" className="w-28" />
-            <Input placeholder="Icon" value={addon.icon} onChange={(e) => updateAddOn(idx, "icon", e.target.value)} inputSize="sm" className="w-28" />
-            <Input placeholder="Image URL" value={addon.image} onChange={(e) => updateAddOn(idx, "image", e.target.value)} inputSize="sm" className="flex-1" />
-            <Input placeholder="Max Qty" type="number" value={addon.maxQuantity || ""} onChange={(e) => updateAddOn(idx, "maxQuantity", Number(e.target.value))} inputSize="sm" className="w-20" />
-            <button onClick={() => removeAddOn(idx)} className="mt-1 text-error/70 hover:text-error shrink-0">
-              <span className="material-symbols-outlined text-[18px]">close</span>
-            </button>
-          </div>
-        ))}
-        <Button variant="secondary" size="sm" onClick={addAddOn} icon={<span className="material-symbols-outlined text-[18px]">add</span>}>Add Add-on</Button>
+        <p className="text-body-sm text-on-surface-variant mb-2">
+          Select from global catalog. Manage catalog at <a href="/admin/addons" className="text-primary underline">Add-ons & Snacks</a>.
+        </p>
+        {globalAddOns.filter((a) => a.isActive).map((addon) => {
+          const selected = selectedAddOns.has(addon.id);
+          const override = selectedAddOns.get(addon.id);
+          return (
+            <div key={addon.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-container">
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={() => toggleAddOnSelection(addon.id)}
+                className="h-4 w-4 accent-primary shrink-0"
+              />
+              <span className="flex-1 text-body-md text-on-surface">{addon.name}</span>
+              <span className="text-body-sm text-on-surface-variant">{formatCurrency(addon.pricePaise)}</span>
+              {selected && (
+                <Input
+                  placeholder="Override (₹)"
+                  type="number"
+                  value={override != null ? paiseToRupees(override) : ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setAddOnOverride(addon.id, v ? rupeesToPaise(Number(v)) : null);
+                  }}
+                  inputSize="sm"
+                  className="w-32"
+                />
+              )}
+            </div>
+          );
+        })}
+        {globalAddOns.filter((a) => a.isActive).length === 0 && (
+          <p className="text-body-sm text-on-surface-variant">No add-ons in catalog yet. Create them in <a href="/admin/addons" className="text-primary underline">Add-ons & Snacks</a>.</p>
+        )}
       </FormSection>
 
-      {/* Snack Options */}
+      {/* Snack Options (from global catalog) */}
       <FormSection title="Snack Options">
-        {snacks.map((snack, idx) => (
-          <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-surface-container">
-            <Input placeholder="Name" value={snack.name} onChange={(e) => updateSnack(idx, "name", e.target.value)} inputSize="sm" className="flex-1" />
-            <Input placeholder="Price (₹)" type="number" value={snack.price || ""} onChange={(e) => updateSnack(idx, "price", Number(e.target.value))} inputSize="sm" className="w-28" />
-            <div className="w-32">
-              <Dropdown options={[{ label: "Veg", value: "veg" }, { label: "Non-Veg", value: "non-veg" }]} value={snack.category} onChange={(v) => updateSnack(idx, "category", v)} />
+        <p className="text-body-sm text-on-surface-variant mb-2">
+          Select from global catalog. Manage catalog at <a href="/admin/addons" className="text-primary underline">Add-ons & Snacks</a>.
+        </p>
+        {globalSnacks.filter((s) => s.isActive).map((snack) => {
+          const selected = selectedSnacks.has(snack.id);
+          const override = selectedSnacks.get(snack.id);
+          return (
+            <div key={snack.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-container">
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={() => toggleSnackSelection(snack.id)}
+                className="h-4 w-4 accent-primary shrink-0"
+              />
+              <span className="flex-1 text-body-md text-on-surface">
+                {snack.name}
+                <span className={cn("ml-1.5 inline-block h-2.5 w-2.5 rounded-sm border", snack.isVeg ? "border-success bg-success/20" : "border-error bg-error/20")} />
+              </span>
+              <span className="text-body-sm text-on-surface-variant">{formatCurrency(snack.pricePaise)}</span>
+              {selected && (
+                <Input
+                  placeholder="Override (₹)"
+                  type="number"
+                  value={override != null ? paiseToRupees(override) : ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setSnackOverride(snack.id, v ? rupeesToPaise(Number(v)) : null);
+                  }}
+                  inputSize="sm"
+                  className="w-32"
+                />
+              )}
             </div>
-            <Input placeholder="Icon" value={snack.icon} onChange={(e) => updateSnack(idx, "icon", e.target.value)} inputSize="sm" className="w-28" />
-            <Input placeholder="Image URL" value={snack.image} onChange={(e) => updateSnack(idx, "image", e.target.value)} inputSize="sm" className="flex-1" />
-            <button onClick={() => removeSnack(idx)} className="mt-1 text-error/70 hover:text-error shrink-0">
-              <span className="material-symbols-outlined text-[18px]">close</span>
-            </button>
-          </div>
-        ))}
-        <Button variant="secondary" size="sm" onClick={addSnack} icon={<span className="material-symbols-outlined text-[18px]">add</span>}>Add Snack Option</Button>
+          );
+        })}
+        {globalSnacks.filter((s) => s.isActive).length === 0 && (
+          <p className="text-body-sm text-on-surface-variant">No snacks in catalog yet. Create them in <a href="/admin/addons" className="text-primary underline">Add-ons & Snacks</a>.</p>
+        )}
       </FormSection>
 
       {/* FAQs */}

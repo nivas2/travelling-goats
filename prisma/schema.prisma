@@ -10,58 +10,58 @@ datasource db {
 // ===== USER & AUTH =====
 
 model User {
-  id                String    @id @default(cuid())
-  phone             String?   @unique
-  email             String?   @unique
-  emailVerified     DateTime?
-  name              String?
-  image             String?
-  avatar            String?
-  dateOfBirth       DateTime?
-  gender            Gender?
-  bio               String?
-  city              String?
-  interests         String[]  @default([])
-  budgetPreference  BudgetPreference?
-  pickupCity        String?
-  isVerified        Boolean   @default(false)
-  isOnboarded       Boolean   @default(false)
-  idVerified        Boolean   @default(false)
-  aadhaarNumber     String?
-  selfieUrl         String?
-  passwordHash      String?
-  role              UserRole  @default(USER)
-  status            UserStatus @default(ACTIVE)
-  referralCode      String?   @unique
-  referredBy        String?
-  rewardPoints      Int       @default(0)
-  rewardTier        RewardTier @default(EXPLORER)
-  totalTrips        Int       @default(0)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String            @id @default(cuid())
+  phone            String?           @unique
+  email            String?           @unique
+  emailVerified    DateTime?
+  name             String?
+  image            String?
+  avatar           String?
+  dateOfBirth      DateTime?
+  gender           Gender?
+  bio              String?
+  city             String?
+  interests        String[]          @default([])
+  budgetPreference BudgetPreference?
+  pickupCity       String?
+  isVerified       Boolean           @default(false)
+  isOnboarded      Boolean           @default(false)
+  idVerified       Boolean           @default(false)
+  aadhaarNumber    String?
+  selfieUrl        String?
+  passwordHash     String?
+  role             UserRole          @default(USER)
+  status           UserStatus        @default(ACTIVE)
+  referralCode     String?           @unique
+  referredBy       String?
+  rewardPoints     Int               @default(0)
+  rewardTier       RewardTier        @default(EXPLORER)
+  totalTrips       Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
-  accounts          Account[]
-  sessions          Session[]
-  otpCodes          OtpCode[]
-  emergencyContacts EmergencyContact[]
-  bookings          Booking[]
-  reviews           Review[]
-  wallet            Wallet?
-  walletTransactions WalletTransaction[]
-  referralsSent     Referral[]     @relation("referrer")
-  referralsReceived Referral[]     @relation("referred")
-  notifications     Notification[]
-  chatMessages      ChatMessage[]
-  wishlistItems     WishlistItem[]
-  waitlistItems     WaitlistItem[]
-  supportTickets    SupportTicket[]
-  ticketMessages    TicketMessage[]
-  memoryEntries     MemoryEntry[]
-  tripCompanions    TripCompanion[]
-  savingsGoals      SavingsGoal[]
-  privateRequests   PrivateRequest[]
+  accounts               Account[]
+  sessions               Session[]
+  otpCodes               OtpCode[]
+  emergencyContacts      EmergencyContact[]
+  bookings               Booking[]
+  reviews                Review[]
+  wallet                 Wallet?
+  walletTransactions     WalletTransaction[]
+  referralsSent          Referral[]              @relation("referrer")
+  referralsReceived      Referral[]              @relation("referred")
+  notifications          Notification[]
+  chatMessages           ChatMessage[]
+  wishlistItems          WishlistItem[]
+  waitlistItems          WaitlistItem[]
+  supportTickets         SupportTicket[]
+  ticketMessages         TicketMessage[]
+  memoryEntries          MemoryEntry[]
+  tripCompanions         TripCompanion[]
+  savingsGoals           SavingsGoal[]
+  privateRequests        PrivateRequest[]
   privateRequestMessages PrivateRequestMessage[]
-  playlistTracks    PlaylistTrack[]
+  playlistTracks         PlaylistTrack[]
 
   @@map("users")
 }
@@ -125,7 +125,7 @@ model OtpCode {
 }
 
 model EmergencyContact {
-  id           String @id @default(cuid())
+  id           String  @id @default(cuid())
   userId       String
   name         String
   phone        String
@@ -140,50 +140,50 @@ model EmergencyContact {
 // ===== TRIPS =====
 
 model Trip {
-  id              String      @id @default(cuid())
-  title           String
-  slug            String      @unique
-  description     String
-  shortDescription String?
-  destination     String
-  origin          String      @default("Bengaluru")
-  coverImage      String
-  images          String[]    @default([])
-  category        TripCategory
-  difficulty      TripDifficulty @default(MODERATE)
-  startDate       DateTime
-  endDate         DateTime
-  duration        Int         // in days
-  maxGroupSize    Int
-  minGroupSize    Int         @default(4)
-  currentBookings Int         @default(0)
-  basePricePaise  Int         // price in paise
-  couplePricePaise Int?
-  groupPricePaise  Int?
-  platformFeePaise Int        @default(9900) // ₹99
-  inclusions      String[]   @default([])
-  exclusions      String[]   @default([])
-  highlights      String[]   @default([])
-  meetingPoint    String?
-  meetingTime     String?
-  status          TripStatus  @default(DRAFT)
-  isFeatured      Boolean     @default(false)
-  isTrending      Boolean     @default(false)
-  rating          Float       @default(0)
-  reviewCount     Int         @default(0)
+  id                 String             @id @default(cuid())
+  title              String
+  slug               String             @unique
+  description        String
+  shortDescription   String?
+  destination        String
+  origin             String             @default("Bengaluru")
+  coverImage         String
+  images             String[]           @default([])
+  category           TripCategory
+  difficulty         TripDifficulty     @default(MODERATE)
+  startDate          DateTime
+  endDate            DateTime
+  duration           Int // in days
+  maxGroupSize       Int
+  minGroupSize       Int                @default(4)
+  currentBookings    Int                @default(0)
+  basePricePaise     Int // price in paise
+  couplePricePaise   Int?
+  groupPricePaise    Int?
+  platformFeePaise   Int                @default(9900) // ₹99
+  inclusions         String[]           @default([])
+  exclusions         String[]           @default([])
+  highlights         String[]           @default([])
+  meetingPoint       String?
+  meetingTime        String?
+  status             TripStatus         @default(DRAFT)
+  isFeatured         Boolean            @default(false)
+  isTrending         Boolean            @default(false)
+  rating             Float              @default(0)
+  reviewCount        Int                @default(0)
   cancellationPolicy CancellationPolicy @default(MODERATE)
-  bookingCutoffHours Int        @default(24)
-  tripCaptainId   String?
-  tags            String[]    @default([])
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  bookingCutoffHours Int                @default(24)
+  tripCaptainId      String?
+  tags               String[]           @default([])
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   vehicleTemplateId String?
   vehicleTemplate   VehicleTemplate? @relation(fields: [vehicleTemplateId], references: [id])
 
   itineraryDays    ItineraryDay[]
-  addOns           TripAddOn[]
-  snackOptions     SnackOption[]
+  addOnSelections  TripAddOnSelection[]
+  snackSelections  TripSnackSelection[]
   bookings         Booking[]
   reviews          Review[]
   wishlistItems    WishlistItem[]
@@ -199,13 +199,13 @@ model Trip {
 }
 
 model ItineraryDay {
-  id          String @id @default(cuid())
-  tripId      String
-  dayNumber   Int
-  title       String
-  description String?
-  activities  Json   @default("[]") // [{time, title, description, icon}]
-  meals       String[] @default([])  // ["breakfast", "lunch", "dinner"]
+  id            String   @id @default(cuid())
+  tripId        String
+  dayNumber     Int
+  title         String
+  description   String?
+  activities    Json     @default("[]") // [{time, title, description, icon}]
+  meals         String[] @default([]) // ["breakfast", "lunch", "dinner"]
   accommodation String?
 
   trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
@@ -214,38 +214,68 @@ model ItineraryDay {
   @@map("itinerary_days")
 }
 
-model TripAddOn {
-  id          String @id @default(cuid())
-  tripId      String
-  name        String
+model GlobalAddOn {
+  id          String   @id @default(cuid())
+  name        String   @unique
   description String?
   pricePaise  Int
   icon        String?
   image       String?
-  maxQuantity Int    @default(1)
-  isPopular   Boolean @default(false)
+  maxQuantity Int      @default(1)
+  isPopular   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  bookingAddOns BookingAddOn[]
+  tripSelections TripAddOnSelection[]
+  bookingAddOns  BookingAddOn[]
 
-  @@map("trip_add_ons")
+  @@map("global_add_ons")
 }
 
-model SnackOption {
-  id         String @id @default(cuid())
-  tripId     String
-  name       String
+model GlobalSnack {
+  id          String   @id @default(cuid())
+  name        String   @unique
   description String?
-  pricePaise Int
-  category   String? // "veg", "non-veg", "vegan"
-  icon       String?
-  image      String?
-  isVeg      Boolean @default(true)
+  pricePaise  Int
+  category    String?
+  icon        String?
+  image       String?
+  isVeg       Boolean  @default(true)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  bookingSnacks BookingSnack[]
+  tripSelections TripSnackSelection[]
+  bookingSnacks  BookingSnack[]
 
-  @@map("snack_options")
+  @@map("global_snacks")
+}
+
+model TripAddOnSelection {
+  id                 String @id @default(cuid())
+  tripId             String
+  globalAddOnId      String
+  priceOverridePaise Int?
+
+  trip        Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  globalAddOn GlobalAddOn @relation(fields: [globalAddOnId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, globalAddOnId])
+  @@map("trip_add_on_selections")
+}
+
+model TripSnackSelection {
+  id                 String @id @default(cuid())
+  tripId             String
+  globalSnackId      String
+  priceOverridePaise Int?
+
+  trip        Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  globalSnack GlobalSnack @relation(fields: [globalSnackId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, globalSnackId])
+  @@map("trip_snack_selections")
 }
 
 model TripFaq {
@@ -263,37 +293,37 @@ model TripFaq {
 // ===== BOOKINGS =====
 
 model Booking {
-  id              String        @id @default(cuid())
-  bookingNumber   String        @unique
-  userId          String
-  tripId          String
-  bookingType     BookingType
-  status          BookingStatus @default(PENDING)
-  totalPricePaise Int
+  id               String        @id @default(cuid())
+  bookingNumber    String        @unique
+  userId           String
+  tripId           String
+  bookingType      BookingType
+  status           BookingStatus @default(PENDING)
+  totalPricePaise  Int
   platformFeePaise Int
-  discountPaise   Int           @default(0)
-  couponCode      String?
-  couponId        String?
-  travelerCount   Int           @default(1)
-  travelers       Json          @default("[]") // [{name, age, gender, phone}]
-  seatPreference  String?
-  contactEmail    String?
-  contactPhone    String?
-  specialRequests String?
-  pickupPoint     String?
-  qrToken         String?       @unique
-  checkedInAt     DateTime?
-  checkedInById   String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  discountPaise    Int           @default(0)
+  couponCode       String?
+  couponId         String?
+  travelerCount    Int           @default(1)
+  travelers        Json          @default("[]") // [{name, age, gender, phone}]
+  seatPreference   String?
+  contactEmail     String?
+  contactPhone     String?
+  specialRequests  String?
+  pickupPoint      String?
+  qrToken          String?       @unique
+  checkedInAt      DateTime?
+  checkedInById    String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
-  user      User      @relation(fields: [userId], references: [id])
-  trip      Trip      @relation(fields: [tripId], references: [id])
-  coupon    Coupon?   @relation(fields: [couponId], references: [id])
-  payment   Payment?
-  addOns    BookingAddOn[]
-  snacks    BookingSnack[]
-  seats     BookingSeat[]
+  user         User                 @relation(fields: [userId], references: [id])
+  trip         Trip                 @relation(fields: [tripId], references: [id])
+  coupon       Coupon?              @relation(fields: [couponId], references: [id])
+  payment      Payment?
+  addOns       BookingAddOn[]
+  snacks       BookingSnack[]
+  seats        BookingSeat[]
   cancellation BookingCancellation?
 
   @@index([userId])
@@ -304,14 +334,14 @@ model Booking {
 }
 
 model BookingAddOn {
-  id        String @id @default(cuid())
-  bookingId String
-  addOnId   String
-  quantity  Int    @default(1)
+  id         String @id @default(cuid())
+  bookingId  String
+  addOnId    String
+  quantity   Int    @default(1)
   pricePaise Int
 
-  booking  Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  addOn    TripAddOn @relation(fields: [addOnId], references: [id])
+  booking Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOn   GlobalAddOn @relation(fields: [addOnId], references: [id])
 
   @@map("booking_add_ons")
 }
@@ -324,18 +354,18 @@ model BookingSnack {
   pricePaise Int
 
   booking Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  snack   SnackOption @relation(fields: [snackId], references: [id])
+  snack   GlobalSnack @relation(fields: [snackId], references: [id])
 
   @@map("booking_snacks")
 }
 
 model BookingCancellation {
-  id             String   @id @default(cuid())
-  bookingId      String   @unique
-  reason         String
-  refundPaise    Int
-  refundStatus   RefundStatus @default(PENDING)
-  cancelledAt    DateTime @default(now())
+  id           String       @id @default(cuid())
+  bookingId    String       @unique
+  reason       String
+  refundPaise  Int
+  refundStatus RefundStatus @default(PENDING)
+  cancelledAt  DateTime     @default(now())
 
   booking Booking @relation(fields: [bookingId], references: [id])
 
@@ -345,19 +375,19 @@ model BookingCancellation {
 // ===== PAYMENTS =====
 
 model Payment {
-  id                  String        @id @default(cuid())
-  bookingId           String        @unique
-  razorpayOrderId     String?       @unique
-  razorpayPaymentId   String?       @unique
-  razorpaySignature   String?
-  amountPaise         Int
-  currency            String        @default("INR")
-  status              PaymentStatus @default(PENDING)
-  method              String?
-  walletAmountPaise   Int           @default(0) // amount paid from wallet
-  failureReason       String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  bookingId         String        @unique
+  razorpayOrderId   String?       @unique
+  razorpayPaymentId String?       @unique
+  razorpaySignature String?
+  amountPaise       Int
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  method            String?
+  walletAmountPaise Int           @default(0) // amount paid from wallet
+  failureReason     String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   booking Booking @relation(fields: [bookingId], references: [id])
 
@@ -368,28 +398,28 @@ model Payment {
 // ===== WALLET =====
 
 model Wallet {
-  id           String @id @default(cuid())
-  userId       String @unique
-  balancePaise Int    @default(0)
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  balancePaise Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user         User @relation(fields: [userId], references: [id])
+  user         User                @relation(fields: [userId], references: [id])
   transactions WalletTransaction[]
 
   @@map("wallets")
 }
 
 model WalletTransaction {
-  id          String              @id @default(cuid())
-  walletId    String
-  userId      String
-  type        WalletTransactionType
-  amountPaise Int
-  description String
-  referenceId String?
+  id                String                @id @default(cuid())
+  walletId          String
+  userId            String
+  type              WalletTransactionType
+  amountPaise       Int
+  description       String
+  referenceId       String?
   balanceAfterPaise Int
-  createdAt   DateTime            @default(now())
+  createdAt         DateTime              @default(now())
 
   wallet Wallet @relation(fields: [walletId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
@@ -400,17 +430,17 @@ model WalletTransaction {
 }
 
 model SavingsGoal {
-  id            String   @id @default(cuid())
-  userId        String
-  name          String
-  targetPaise   Int
-  currentPaise  Int      @default(0)
-  autoSaveAmount Int?    // monthly auto-save amount in paise
-  targetDate    DateTime?
-  isActive      Boolean  @default(true)
-  completedAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String    @id @default(cuid())
+  userId         String
+  name           String
+  targetPaise    Int
+  currentPaise   Int       @default(0)
+  autoSaveAmount Int? // monthly auto-save amount in paise
+  targetDate     DateTime?
+  isActive       Boolean   @default(true)
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
@@ -421,15 +451,15 @@ model SavingsGoal {
 // ===== REFERRAL =====
 
 model Referral {
-  id           String        @id @default(cuid())
-  referrerId   String
-  referredId   String
-  code         String
-  status       ReferralStatus @default(PENDING)
-  rewardPaise  Int           @default(0)
-  tier         Int           @default(1)
-  createdAt    DateTime      @default(now())
-  convertedAt  DateTime?
+  id          String         @id @default(cuid())
+  referrerId  String
+  referredId  String
+  code        String
+  status      ReferralStatus @default(PENDING)
+  rewardPaise Int            @default(0)
+  tier        Int            @default(1)
+  createdAt   DateTime       @default(now())
+  convertedAt DateTime?
 
   referrer User @relation("referrer", fields: [referrerId], references: [id])
   referred User @relation("referred", fields: [referredId], references: [id])
@@ -443,7 +473,7 @@ model Referral {
 // ===== REVIEWS =====
 
 model Review {
-  id            String  @id @default(cuid())
+  id            String   @id @default(cuid())
   userId        String
   tripId        String
   overallRating Float
@@ -452,9 +482,9 @@ model Review {
   funRating     Float?
   comment       String?
   images        String[] @default([])
-  isVerified    Boolean @default(false)
-  isFeatured    Boolean @default(false)
-  helpfulCount  Int     @default(0)
+  isVerified    Boolean  @default(false)
+  isFeatured    Boolean  @default(false)
+  helpfulCount  Int      @default(0)
   createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
@@ -492,9 +522,9 @@ model ChatMessage {
   isEdited  Boolean     @default(false)
   createdAt DateTime    @default(now())
 
-  room    ChatRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user    User         @relation(fields: [userId], references: [id])
-  replyTo ChatMessage? @relation("replies", fields: [replyToId], references: [id])
+  room    ChatRoom      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id])
+  replyTo ChatMessage?  @relation("replies", fields: [replyToId], references: [id])
   replies ChatMessage[] @relation("replies")
 
   @@index([roomId])
@@ -557,20 +587,20 @@ model WaitlistItem {
 // ===== COUPONS =====
 
 model Coupon {
-  id             String     @id @default(cuid())
-  code           String     @unique
-  description    String
-  discountType   DiscountType
-  discountValue  Int        // percentage or paise
-  minOrderPaise  Int        @default(0)
+  id               String       @id @default(cuid())
+  code             String       @unique
+  description      String
+  discountType     DiscountType
+  discountValue    Int // percentage or paise
+  minOrderPaise    Int          @default(0)
   maxDiscountPaise Int?
-  maxUses        Int?
-  maxUsesPerUser Int?       @default(1)
-  currentUses    Int        @default(0)
-  isActive       Boolean    @default(true)
-  validFrom      DateTime   @default(now())
-  validUntil     DateTime?
-  createdAt      DateTime   @default(now())
+  maxUses          Int?
+  maxUsesPerUser   Int?         @default(1)
+  currentUses      Int          @default(0)
+  isActive         Boolean      @default(true)
+  validFrom        DateTime     @default(now())
+  validUntil       DateTime?
+  createdAt        DateTime     @default(now())
 
   bookings Booking[]
   usages   CouponUsage[]
@@ -595,15 +625,15 @@ model CouponUsage {
 // ===== SUPPORT =====
 
 model SupportTicket {
-  id          String       @id @default(cuid())
-  ticketNumber String      @unique
-  userId      String
-  subject     String
-  category    TicketCategory
-  priority    TicketPriority @default(MEDIUM)
-  status      TicketStatus   @default(OPEN)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id           String         @id @default(cuid())
+  ticketNumber String         @unique
+  userId       String
+  subject      String
+  category     TicketCategory
+  priority     TicketPriority @default(MEDIUM)
+  status       TicketStatus   @default(OPEN)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   user     User            @relation(fields: [userId], references: [id])
   messages TicketMessage[]
@@ -629,11 +659,11 @@ model TicketMessage {
 // ===== TRIP COMPANIONS (for in-trip hub) =====
 
 model TripCompanion {
-  id        String   @id @default(cuid())
-  userId    String
-  tripId    String
-  joinedAt  DateTime @default(now())
-  role      CompanionRole @default(TRAVELER)
+  id       String        @id @default(cuid())
+  userId   String
+  tripId   String
+  joinedAt DateTime      @default(now())
+  role     CompanionRole @default(TRAVELER)
 
   user User @relation(fields: [userId], references: [id])
 
@@ -645,15 +675,15 @@ model TripCompanion {
 // ===== MEMORY JOURNAL =====
 
 model MemoryEntry {
-  id          String   @id @default(cuid())
-  userId      String
-  tripId      String
-  content     String?
-  imageUrl    String?
-  location    String?
-  mood        String?
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  tripId    String
+  content   String?
+  imageUrl  String?
+  location  String?
+  mood      String?
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 
@@ -664,11 +694,11 @@ model MemoryEntry {
 // ===== FAQ =====
 
 model Faq {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   question String
   answer   String
   category String
-  order    Int    @default(0)
+  order    Int     @default(0)
   isActive Boolean @default(true)
 
   @@map("faqs")
@@ -1027,8 +1057,8 @@ model VehicleTemplate {
   upperDeckRows      Int?
   upperDeckColumns   Int?
   amenities          String[]      @default([])
-  gridLayout         Json          // 2D array of GridCellType for lower deck
-  upperGridLayout    Json?         // 2D array of GridCellType for upper deck
+  gridLayout         Json // 2D array of GridCellType for lower deck
+  upperGridLayout    Json? // 2D array of GridCellType for upper deck
   status             VehicleStatus @default(ACTIVE)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt

@@ -40,22 +40,13 @@ export const createTripSchema = z.object({
     meals: z.array(z.string()).optional().default([]),
     accommodation: z.string().optional(),
   })).optional().default([]),
-  addOns: z.array(z.object({
-    name: z.string().min(1),
-    description: z.string().optional(),
-    pricePaise: z.number().int().min(0),
-    icon: z.string().optional(),
-    image: z.string().nullable().optional(),
-    maxQuantity: z.number().int().min(1).optional().default(1),
+  addOnSelections: z.array(z.object({
+    globalAddOnId: z.string().min(1),
+    priceOverridePaise: z.number().int().min(0).nullable().optional(),
   })).optional().default([]),
-  snackOptions: z.array(z.object({
-    name: z.string().min(1),
-    description: z.string().optional(),
-    pricePaise: z.number().int().min(0),
-    category: z.string().optional(),
-    icon: z.string().optional(),
-    image: z.string().nullable().optional(),
-    isVeg: z.boolean().optional().default(true),
+  snackSelections: z.array(z.object({
+    globalSnackId: z.string().min(1),
+    priceOverridePaise: z.number().int().min(0).nullable().optional(),
   })).optional().default([]),
   faqs: z.array(z.object({
     question: z.string().min(1),
