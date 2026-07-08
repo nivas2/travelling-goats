@@ -19,17 +19,6 @@ const STEP_ICONS = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBLby_3IZE_IgBbtaY5TZRxyB1dNPogJIXCJrv8h24hGMZei_DPiLFrv2_l6NdIoZutjxS-gq3Rf-GQSThWVS3VReln_AsRpAuAgB6_u1XwbQNQMpa0YlS4lMCcEeypRniwdpXgnMa7KYo9aUMTT18ch52g7IEttMCi5e8JnGo44A1UGvO-7hy5JmgPQpYm0Je9Qqt7uqF7vZGE7VYBJVU1jYOEfVg-PGl6D9hj-19V4KQ-ilauSria",
 ];
 
-// One distinct image per upcoming trip, matched to its destination.
-const TRIP_IMAGES = [
-  // Majestic Manali Escape — Himalayas
-  "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200&q=80",
-  // The Leh Ladakh Expedition — Pangong Lake
-  "https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?w=1200&q=80",
-  // Amalfi Coast Explorer — Italian coastline
-  "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200&q=80",
-  // Kyoto Serenity — Japan
-  "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200&q=80",
-];
 
 /* ------------------------------------------------------------------ */
 /*  Static data                                                        */
@@ -41,48 +30,6 @@ const STEPS = [
   { title: "Enjoy the Journey", desc: "Leave the planning to us and focus on creating memories." },
 ];
 
-const TRIPS = [
-  {
-    title: "Majestic Manali Escape",
-    desc: "Experience the raw beauty of the Himalayas, from Solang Valley to Rohtang Pass.",
-    duration: "4D/3N",
-    pickup: "Delhi",
-    seats: "4 Left",
-    price: "12,499",
-    rating: "4.9",
-    imgIdx: 0,
-  },
-  {
-    title: "The Leh Ladakh Expedition",
-    desc: "A high-altitude adventure through monasteries, lakes, and breathtaking passes.",
-    duration: "7D/6N",
-    pickup: "Leh",
-    seats: "2 Left",
-    price: "24,999",
-    rating: "5.0",
-    imgIdx: 1,
-  },
-  {
-    title: "Amalfi Coast Explorer",
-    desc: "Discover the charm of Italy's most iconic coastline, from Positano to Ravello.",
-    duration: "6D/5N",
-    pickup: "Naples",
-    seats: "6 Left",
-    price: "89,999",
-    rating: "4.8",
-    imgIdx: 2,
-  },
-  {
-    title: "Kyoto Serenity",
-    desc: "Immerse yourself in the timeless beauty of Japan's cultural heart during autumn.",
-    duration: "8D/7N",
-    pickup: "Osaka",
-    seats: "3 Left",
-    price: "1,45,000",
-    rating: "5.0",
-    imgIdx: 3,
-  },
-];
 
 const TRUST_BADGES = [
   { icon: "verified_user", label: "Verified Travelers" },
@@ -100,49 +47,7 @@ const STATS = [
   { value: "4.9", label: "Avg. Rating" },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote:
-      "I booked solo and came back with a whole crew of friends. The captains made me feel safe the entire trip.",
-    name: "Ananya Rao",
-    trip: "Leh Ladakh Expedition",
-  },
-  {
-    quote:
-      "Everything was planned to the last detail — I just showed up and enjoyed. Best group trip I've ever taken.",
-    name: "Rohan Mehta",
-    trip: "Majestic Manali Escape",
-  },
-  {
-    quote:
-      "Transparent pricing, no hidden charges, and an amazing herd of people. Already booking my next one!",
-    name: "Priya Nair",
-    trip: "Kyoto Serenity",
-  },
-];
 
-const FAQS = [
-  {
-    q: "How do I book a trip?",
-    a: "Browse our curated trips, pick your seat, and pay securely online. You'll get instant confirmation and joining details.",
-  },
-  {
-    q: "Are the trips safe for solo travelers?",
-    a: "Absolutely. Every trip is led by verified captains, and we keep women-friendly groups so you can travel worry-free.",
-  },
-  {
-    q: "What's included in the price?",
-    a: "Stays, transport, planned activities, and a dedicated trip captain. Inclusions are listed clearly on each trip page — no hidden charges.",
-  },
-  {
-    q: "Can I get a refund if I cancel?",
-    a: "Yes. Cancellations follow a transparent, tiered refund policy shown at checkout, so you always know where you stand.",
-  },
-  {
-    q: "Who will I be traveling with?",
-    a: "Like-minded travelers from across India — solo adventurers, couples, and friends. You'll meet your crew in a group chat before departure.",
-  },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Hook: IntersectionObserver for fade-in animations                  */
@@ -223,11 +128,23 @@ function Orb({ className, size = 260 }: { className?: string; size?: number }) {
 /* ------------------------------------------------------------------ */
 /*  Landing Page Component                                             */
 /* ------------------------------------------------------------------ */
+export interface LandingTrip {
+  title: string;
+  description: string;
+  duration: string;
+  pickup: string;
+  seats: string;
+  price: string;
+  rating: string;
+  image: string;
+}
+
 export interface LandingContentProps {
   hero?: { titleLine1: string; titleLine2: string; subtitle: string; imageUrl: string; primaryCta?: string; secondaryCta?: string };
   steps?: { title: string; desc: string }[];
   trustBadges?: { icon: string; label: string }[];
   stats?: { value: string; label: string }[];
+  trips?: LandingTrip[];
   testimonials?: { quote: string; name: string; trip: string }[];
   faqs?: { question: string; answer: string }[];
   navLinks?: string[];
@@ -254,10 +171,9 @@ export default function LandingPage(props: LandingContentProps = {}) {
   const steps = props.steps?.length ? props.steps : STEPS;
   const trustBadges = props.trustBadges?.length ? props.trustBadges : TRUST_BADGES;
   const stats = props.stats?.length ? props.stats : STATS;
-  const testimonials = props.testimonials?.length ? props.testimonials : TESTIMONIALS;
-  const faqs = props.faqs?.length
-    ? props.faqs
-    : FAQS.map((f) => ({ question: f.q, answer: f.a }));
+  const trips = props.trips ?? [];
+  const testimonials = props.testimonials ?? [];
+  const faqs = props.faqs ?? [];
   const navLinks = props.navLinks?.length ? props.navLinks : NAV_LINKS;
   const btn = props.buttons ?? {};
   const loginLabel = btn.login || "Login";
@@ -503,8 +419,9 @@ export default function LandingPage(props: LandingContentProps = {}) {
               </Link>
             </div>
 
+            {trips.length > 0 ? (
             <div className="flex flex-col gap-8">
-              {TRIPS.map((trip, i) => (
+              {trips.map((trip, i) => (
                 <div
                   key={trip.title}
                   className="bg-white rounded-xl landing-card-shadow overflow-hidden flex flex-col md:flex-row group fade-in-section"
@@ -515,7 +432,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
                     <div
                       className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105 min-h-[256px]"
                       style={{
-                        backgroundImage: `url('${TRIP_IMAGES[trip.imgIdx]}')`,
+                        backgroundImage: `url('${trip.image}')`,
                       }}
                     />
                     <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-label-sm font-label-sm flex items-center gap-1">
@@ -544,7 +461,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
                         </span>
                       </div>
                       <p className="text-body-md text-on-surface-variant mb-6">
-                        {trip.desc}
+                        {trip.description}
                       </p>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -586,7 +503,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
                             Price
                           </div>
                           <div className="text-label-md font-label-md text-on-surface font-bold">
-                            &#8377;{trip.price}
+                            {trip.price}
                           </div>
                         </div>
                       </div>
@@ -604,6 +521,12 @@ export default function LandingPage(props: LandingContentProps = {}) {
                 </div>
               ))}
             </div>
+            ) : (
+            <div className="text-center py-12 fade-in-section">
+              <span className="material-symbols-outlined text-[48px] text-on-surface-variant/40 mb-4 block">explore</span>
+              <p className="text-body-md text-on-surface-variant">New adventures coming soon. Stay tuned!</p>
+            </div>
+            )}
           </div>
         </section>
 
@@ -637,7 +560,8 @@ export default function LandingPage(props: LandingContentProps = {}) {
           </div>
         </section>
 
-        {/* Community Section */}
+        {/* Community Section — only shown when real testimonials exist */}
+        {testimonials.length > 0 && (
         <section id="community" className="relative overflow-hidden py-20 bg-surface scroll-mt-24">
           <Orb className="right-[-90px] top-2" size={300} />
           <div className="max-w-[1280px] mx-auto px-4 md:px-16">
@@ -687,8 +611,10 @@ export default function LandingPage(props: LandingContentProps = {}) {
             </div>
           </div>
         </section>
+        )}
 
-        {/* FAQ Section */}
+        {/* FAQ Section — only shown when real FAQs exist */}
+        {faqs.length > 0 && (
         <section id="faq" className="py-20 bg-white topo-texture scroll-mt-24">
           <div className="max-w-3xl mx-auto px-4 md:px-16">
             <div className="text-center mb-14 fade-in-section">
@@ -720,6 +646,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
             </div>
           </div>
         </section>
+        )}
 
         {/* Footer */}
         <footer className="border-t border-surface-variant bg-white">

@@ -233,6 +233,21 @@ export const CONTENT_BLOCKS: BlockDef[] = [
   },
   // ------------------------------------------------------------------- Home --
   {
+    key: "home.greeting",
+    label: "Greeting Text",
+    group: "Home Feed",
+    description: "The greeting shown at the top of the home page. Use {name} as a placeholder for the user's first name.",
+    kind: "single",
+    fields: [
+      { name: "template", label: "Greeting (use {name} for first name)", type: "text", placeholder: "Hey {name}, ready for your next adventure?" },
+      { name: "fallback", label: "Fallback (when name is unavailable)", type: "text", placeholder: "Ready for your next adventure?" },
+    ],
+    default: {
+      template: "Hey {name}, ready for your next adventure?",
+      fallback: "Ready for your next adventure?",
+    },
+  },
+  {
     key: "home.perks",
     label: "Value Props / Perks",
     group: "Home Feed",
@@ -489,6 +504,7 @@ export const BLOCK_ORDER: string[] = [
   // Home Feed (top → bottom)
   "home.visibility",
   "home.sections",
+  "home.greeting",
   "home.provocations",
   "home.offers",
   "home.inspirationSlides",

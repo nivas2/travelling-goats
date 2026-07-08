@@ -18,40 +18,6 @@ interface Slide {
   pos?: string;
 }
 
-const SLIDES: Slide[] = [
-  {
-    tag: "Curated Road Trips",
-    icon: "directions_car",
-    quote: "Chase the horizon.",
-    author: "Travelling Goats",
-    img: "/inspiration/van.jpg",
-    pos: "50% 72%",
-  },
-  {
-    tag: "Handpicked Campsites",
-    icon: "camping",
-    quote: "Wake up somewhere wild.",
-    author: "Travelling Goats",
-    img: "/inspiration/tent.jpg",
-    pos: "50% 55%",
-  },
-  {
-    tag: "Guided Mountain Treks",
-    icon: "landscape",
-    quote: "The peaks are waiting.",
-    author: "Travelling Goats",
-    img: "/inspiration/mountains.jpg",
-    pos: "50% 45%",
-  },
-  {
-    tag: "Meet Your Crew",
-    icon: "diversity_3",
-    quote: "Better with your herd.",
-    author: "Travelling Goats",
-    img: "/inspiration/campfire.jpg",
-    pos: "50% 45%",
-  },
-];
 
 // ---------------------------------------------------------------------------
 
@@ -63,7 +29,8 @@ interface InspirationCarouselProps {
 }
 
 export function InspirationCarousel({ interval = 4500, slides }: InspirationCarouselProps) {
-  const data = slides && slides.length ? slides : SLIDES;
+  const data = slides && slides.length ? slides : [];
+  if (data.length === 0) return null;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const count = data.length;

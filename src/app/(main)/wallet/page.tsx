@@ -71,6 +71,7 @@ export default function WalletPage() {
   // Modal states
   const [addMoneyOpen, setAddMoneyOpen] = useState(false);
   const [createGoalOpen, setCreateGoalOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [addAmount, setAddAmount] = useState("");
   const [addingMoney, setAddingMoney] = useState(false);
 
@@ -79,6 +80,15 @@ export default function WalletPage() {
   const [goalTarget, setGoalTarget] = useState("");
   const [goalDate, setGoalDate] = useState("");
   const [creatingGoal, setCreatingGoal] = useState(false);
+
+  // Transfer form
+  const [transferPhone, setTransferPhone] = useState("");
+  const [transferAmount, setTransferAmount] = useState("");
+  const [transferring, setTransferring] = useState(false);
+  const [recipientId, setRecipientId] = useState<string | null>(null);
+  const [recipientName, setRecipientName] = useState<string | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
 
   const fetchWallet = useCallback(async () => {
     try {
@@ -150,6 +160,61 @@ export default function WalletPage() {
     }
   };
 
+  const handleLookupRecipient = async () => {
+    const phone = transferPhone.trim();
+    if (phone.length < 10) return;
+    try {
+      setLookingUp(true);
+      setLookupError(null);
+      setRecipientName(null);
+      setRecipientId(null);
+      const res = await fetch(`/api/users/lookup?phone=${encodeURIComponent(phone)}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setRecipientId(json.data.id);
+        setRecipientName(json.data.name ?? "User");
+      } else {
+        setLookupError(json.error ?? "User not found");
+      }
+    } catch {
+      setLookupError("Lookup failed");
+    } finally {
+      setLookingUp(false);
+    }
+  };
+
+  const handleTransfer = async () => {
+    const paise = Math.round(Number(transferAmount) * 100);
+    if (!paise || paise <= 0 || !recipientId) return;
+    try {
+      setTransferring(true);
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "TRANSFER_OUT",
+          amountPaise: paise,
+          recipientId,
+          description: `Transfer to ${recipientName}`,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Transfer failed");
+      setTransferOpen(false);
+      setTransferPhone("");
+      setTransferAmount("");
+      setRecipientId(null);
+      setRecipientName(null);
+      setLookupError(null);
+      toastSuccess(`Sent ${formatCurrency(paise)} to ${recipientName}`);
+      fetchWallet();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Transfer failed");
+    } finally {
+      setTransferring(false);
+    }
+  };
+
   // -- Loading skeleton -------------------------------------------------------
 
   if (loading) {
@@ -199,7 +264,7 @@ export default function WalletPage() {
           <Button
             variant="secondary"
             size="sm"
-            className="border-white/40 text-white hover:bg-white/10"
+            className="border-white/40 text-white hover:bg-white/10 whitespace-nowrap"
             icon={<Icon name="add" size={18} />}
             onClick={() => setAddMoneyOpen(true)}
           >
@@ -208,8 +273,9 @@ export default function WalletPage() {
           <Button
             variant="secondary"
             size="sm"
-            className="border-white/40 text-white hover:bg-white/10"
+            className="border-white/40 text-white hover:bg-white/10 whitespace-nowrap"
             icon={<Icon name="send" size={18} />}
+            onClick={() => setTransferOpen(true)}
           >
             Transfer
           </Button>
@@ -433,6 +499,97 @@ export default function WalletPage() {
           >
             Create Goal
           </Button>
+        </div>
+      </Modal>
+
+      {/* -------- Transfer Modal -------- */}
+      <Modal
+        open={transferOpen}
+        onClose={() => {
+          setTransferOpen(false);
+          setTransferPhone("");
+          setTransferAmount("");
+          setRecipientId(null);
+          setRecipientName(null);
+          setLookupError(null);
+        }}
+        title="Transfer Money"
+        description="Send money to another Travelling Goats user"
+      >
+        <div className="space-y-4">
+          {/* Phone lookup */}
+          <div className="flex gap-2 items-end">
+            <div className="flex-1">
+              <Input
+                label="Recipient Phone"
+                type="tel"
+                placeholder="e.g. 9876543210"
+                value={transferPhone}
+                onChange={(e) => {
+                  setTransferPhone(e.target.value);
+                  setRecipientId(null);
+                  setRecipientName(null);
+                  setLookupError(null);
+                }}
+                iconLeft={<span className="text-on-surface-variant font-medium">+91</span>}
+              />
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={lookingUp}
+              onClick={handleLookupRecipient}
+              disabled={transferPhone.trim().length < 10}
+              className="mb-0.5"
+            >
+              Find
+            </Button>
+          </div>
+
+          {/* Lookup result */}
+          {recipientName && (
+            <div className="flex items-center gap-2 rounded-xl bg-success-container/30 px-3 py-2">
+              <Icon name="check_circle" size={18} className="text-success" />
+              <span className="text-body-md text-on-surface font-medium">{recipientName}</span>
+            </div>
+          )}
+          {lookupError && (
+            <p className="text-label-sm text-error">{lookupError}</p>
+          )}
+
+          {/* Amount */}
+          {recipientId && (
+            <>
+              <Input
+                label="Amount (in Rupees)"
+                type="number"
+                placeholder="e.g. 500"
+                value={transferAmount}
+                onChange={(e) => setTransferAmount(e.target.value)}
+                iconLeft={<span className="text-on-surface-variant font-medium">&#x20B9;</span>}
+              />
+
+              {transferAmount && Number(transferAmount) > 0 && (
+                <p className="text-label-sm text-on-surface-variant">
+                  You will send{" "}
+                  <span className="font-semibold text-on-surface">
+                    {formatCurrency(Math.round(Number(transferAmount) * 100))}
+                  </span>{" "}
+                  to <span className="font-semibold text-on-surface">{recipientName}</span>
+                </p>
+              )}
+
+              <Button
+                fullWidth
+                loading={transferring}
+                onClick={handleTransfer}
+                disabled={!transferAmount || Number(transferAmount) <= 0}
+                icon={<Icon name="send" size={18} />}
+              >
+                Send Money
+              </Button>
+            </>
+          )}
         </div>
       </Modal>
     </div>

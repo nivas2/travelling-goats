@@ -237,6 +237,10 @@ export default function HomePage() {
   const categorySource = content ? asList(content["home.categories"]) : [];
   const categories = categorySource.length ? categorySource : CATEGORIES;
 
+  const greetingBlock = asObject(content?.["home.greeting"]);
+  const greetingTemplate = greetingBlock.template || "Hey {name}, ready for your next adventure?";
+  const greetingFallback = greetingBlock.fallback || "Ready for your next adventure?";
+
   const vis = asObject(content?.["home.visibility"]);
   const show = (k: string) => vis[k] !== "false"; // default: visible
 
@@ -350,8 +354,8 @@ export default function HomePage() {
         </p>
         <h1 className="mt-1 text-headline-md font-bold tracking-[-0.01em] text-on-surface md:text-headline-lg">
           {firstName
-            ? `Hey ${firstName}, ready for your next adventure?`
-            : "Ready for your next adventure?"}
+            ? greetingTemplate.replace(/\{name\}/g, firstName)
+            : greetingFallback}
         </h1>
         <p className="mt-1.5 max-w-2xl text-body-md text-on-surface-variant md:text-body-lg">
           {provoke}

@@ -63,3 +63,28 @@ export async function getActiveFaqs() {
     return [];
   }
 }
+
+/** Upcoming published trips for the landing page. */
+export async function getUpcomingTrips(limit = 4) {
+  try {
+    return await prisma.trip.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { startDate: "asc" },
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        duration: true,
+        origin: true,
+        maxGroupSize: true,
+        currentBookings: true,
+        basePricePaise: true,
+        rating: true,
+        coverImage: true,
+      },
+    });
+  } catch {
+    return [];
+  }
+}

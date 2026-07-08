@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import LandingPage from "@/components/landing/landing-page";
+import { formatCurrency } from "@/lib/utils";
 import {
   getContentMap,
   getFeaturedTestimonials,
   getActiveFaqs,
+  getUpcomingTrips,
 } from "@/lib/content/server";
 import { asList, asObject } from "@/lib/content/registry";
 
@@ -15,10 +17,11 @@ export default async function RootPage() {
     redirect("/home");
   }
 
-  const [content, testimonials, faqs] = await Promise.all([
+  const [content, testimonials, faqs, upcomingTrips] = await Promise.all([
     getContentMap(false),
     getFeaturedTestimonials(3),
     getActiveFaqs(),
+    getUpcomingTrips(4),
   ]);
 
   const hero = asObject(content["landing.hero"]);
@@ -49,7 +52,16 @@ export default async function RootPage() {
       buttons={asObject(content["landing.buttons"])}
       sections={asObject(content["landing.sections"])}
       footer={asObject(content["landing.footer"])}
-      // Real, admin-curated reviews. Empty → LandingPage keeps its sample set.
+      trips={upcomingTrips.map((t) => ({
+        title: t.title,
+        description: (t.description ?? "").slice(0, 150) + ((t.description ?? "").length > 150 ? "..." : ""),
+        duration: `${t.duration}D/${Math.max(t.duration - 1, 0)}N`,
+        pickup: t.origin || "TBD",
+        seats: `${Math.max(t.maxGroupSize - t.currentBookings, 0)} Left`,
+        price: formatCurrency(t.basePricePaise),
+        rating: t.rating.toFixed(1),
+        image: t.coverImage || "/placeholder-trip.jpg",
+      }))}
       testimonials={testimonials
         .filter((t) => t.comment)
         .map((t) => ({

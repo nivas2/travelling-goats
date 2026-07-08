@@ -142,7 +142,7 @@ export default function HelpPage() {
         fetch("/api/support").catch(() => null),
       ]);
 
-      let faqs = defaultFaqs;
+      let faqs: FaqItem[] = [];
       if (faqRes?.ok) {
         const faqJson = await faqRes.json();
         const apiFaqs = faqJson.data;
@@ -164,7 +164,7 @@ export default function HelpPage() {
 
       setData({ faqs, tickets });
     } catch {
-      setData({ faqs: defaultFaqs, tickets: [] });
+      setData({ faqs: [], tickets: [] });
     } finally {
       setLoading(false);
     }
@@ -481,79 +481,3 @@ export default function HelpPage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Default FAQs (fallback)
-// ---------------------------------------------------------------------------
-
-const defaultFaqs: FaqItem[] = [
-  {
-    id: "1",
-    question: "How do I book a trip?",
-    answer:
-      "Browse trips from the home page, select your preferred trip, choose your booking type (Solo, Couple, or Group), add travelers, select add-ons, and proceed to payment.",
-    category: "Booking",
-  },
-  {
-    id: "2",
-    question: "Can I cancel my booking?",
-    answer:
-      "Yes, you can cancel your booking from the My Trips section. Cancellation charges may apply based on how close the trip date is. Check our refund policy for details.",
-    category: "Booking",
-  },
-  {
-    id: "3",
-    question: "What payment methods are accepted?",
-    answer:
-      "We accept UPI, credit/debit cards, net banking, and wallet payments through Razorpay. You can also use your Travelling Goats wallet balance.",
-    category: "Payment",
-  },
-  {
-    id: "4",
-    question: "How do I get a refund?",
-    answer:
-      "Refunds are processed within 5-7 business days to your original payment method. Wallet refunds are instant. Check the refund policy for cancellation charges.",
-    category: "Payment",
-  },
-  {
-    id: "5",
-    question: "What should I pack for a trek?",
-    answer:
-      "Essentials include comfortable trekking shoes, layered clothing, rain jacket, sunscreen, water bottle, personal medication, and a small backpack. Detailed packing lists are shared before each trip.",
-    category: "Trip",
-  },
-  {
-    id: "6",
-    question: "Is there an age limit for trips?",
-    answer:
-      "Most trips are open to travelers aged 18-45. Some family-friendly trips allow younger travelers with a guardian. Check individual trip details for specific age requirements.",
-    category: "Trip",
-  },
-  {
-    id: "7",
-    question: "How do I update my profile?",
-    answer:
-      "Go to Profile > Edit Profile to update your name, photo, bio, interests, and other details. Identity verification can be done from Profile > Settings.",
-    category: "Account",
-  },
-  {
-    id: "8",
-    question: "How do reward points work?",
-    answer:
-      "Earn points by booking trips, writing reviews, referring friends, and more. Points can be redeemed for discounts on future bookings. Higher tiers unlock bonus multipliers.",
-    category: "Account",
-  },
-  {
-    id: "9",
-    question: "The app is not loading properly",
-    answer:
-      "Try clearing your browser cache, updating the app to the latest version, or checking your internet connection. If the issue persists, raise a support ticket.",
-    category: "Technical",
-  },
-  {
-    id: "10",
-    question: "How do I report a bug?",
-    answer:
-      "Use the Raise a Ticket option in the Help Center with the category set to Technical. Include screenshots and steps to reproduce the issue for faster resolution.",
-    category: "Technical",
-  },
-];
