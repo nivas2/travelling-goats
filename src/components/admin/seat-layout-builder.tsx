@@ -45,7 +45,7 @@ const CELL_ICONS: Record<GridCellType, string> = {
 const CELL_COLORS: Record<GridCellType, string> = {
   SEAT: "bg-primary/15 border-primary/40 text-primary",
   AISLE: "bg-surface-container border-outline-variant/30 text-on-surface-variant/50",
-  EMPTY: "bg-transparent border-dashed border-outline-variant/20 text-on-surface-variant/30",
+  EMPTY: "bg-surface-container-lowest border-dashed border-outline-variant/40 text-on-surface-variant/40",
   DRIVER: "bg-tertiary/15 border-tertiary/40 text-tertiary",
   DOOR: "bg-error/10 border-error/30 text-error",
   STAIRS: "bg-secondary-container border-secondary/30 text-secondary",
@@ -245,7 +245,11 @@ export function SeatLayoutBuilder({
                     <span className="material-symbols-outlined text-[18px]">
                       {CELL_ICONS[cellType]}
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="material-symbols-outlined text-[14px] opacity-40">
+                      add
+                    </span>
+                  )}
                 </button>
               );
             })

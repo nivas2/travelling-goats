@@ -37,6 +37,7 @@ const PRESET_LAYOUTS: Record<string, { rows: number; cols: number; label: string
   "2x1_traveller": { rows: 4, cols: 3, label: "2x1 Traveller" },
   "2x3_minibus": { rows: 10, cols: 5, label: "2x3 Mini Bus" },
   "1x2_suv": { rows: 3, cols: 3, label: "1x2 SUV" },
+  "2x1_sleeper": { rows: 10, cols: 3, label: "2x1 Sleeper" },
 };
 
 function generateEmptyGrid(rows: number, cols: number): GridCellType[][] {
@@ -82,6 +83,38 @@ function generatePresetGrid(
           isPremium: false,
           order: seatOrder++,
         });
+      }
+    }
+  } else if (preset === "2x1_sleeper" && cols === 3) {
+    // Sleeper: col 0 = left berth, col 1 = aisle, col 2 = right berth
+    // Row 0: driver top-right
+    grid[0][0] = "EMPTY";
+    grid[0][1] = "EMPTY";
+    grid[0][2] = "DRIVER";
+
+    let seatOrder = 0;
+    for (let r = 1; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (c === 1) {
+          grid[r][c] = "AISLE";
+        } else {
+          grid[r][c] = "SEAT";
+          const seatNumber = `${r}${String.fromCharCode(65 + c)}`;
+          seats.push({
+            seatNumber,
+            row: r,
+            col: c,
+            deck: "SINGLE",
+            seatType: "SLEEPER",
+            category: c === 0 ? "WINDOW" : "WINDOW",
+            priceDeltaPaise: 0,
+            genderRestriction: "NONE",
+            status: "AVAILABLE",
+            isAccessible: false,
+            isPremium: false,
+            order: seatOrder++,
+          });
+        }
       }
     }
   } else {
@@ -162,6 +195,43 @@ export default function NewVehiclePage() {
   const [seats, setSeats] = useState<SeatData[]>([]);
 
   const [saving, setSaving] = useState(false);
+
+  // Inline vehicle type creation
+  const [showNewType, setShowNewType] = useState(false);
+  const [newTypeName, setNewTypeName] = useState("");
+  const [newTypeIcon, setNewTypeIcon] = useState("");
+  const [savingType, setSavingType] = useState(false);
+
+  const handleCreateType = async () => {
+    if (!newTypeName.trim()) return;
+    setSavingType(true);
+    try {
+      const res = await fetch("/api/admin/vehicle-types", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newTypeName.trim(),
+          icon: newTypeIcon.trim() || null,
+        }),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || "Failed to create vehicle type");
+      }
+      const json = await res.json();
+      const created = json.data;
+      setVehicleTypes((prev) => [...prev, { id: created.id, name: created.name, icon: created.icon }]);
+      setVehicleTypeId(created.id);
+      setNewTypeName("");
+      setNewTypeIcon("");
+      setShowNewType(false);
+      toastSuccess("Vehicle type created");
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Failed to create vehicle type");
+    } finally {
+      setSavingType(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchTypes() {
@@ -311,13 +381,57 @@ export default function NewVehiclePage() {
 
       {/* Basic Info */}
       <FormSection title="Basic Information">
-        <Dropdown
-          label="Vehicle Type"
-          placeholder="Select type..."
-          options={vehicleTypeOptions}
-          value={vehicleTypeId}
-          onChange={setVehicleTypeId}
-        />
+        <div>
+          <Dropdown
+            label="Vehicle Type"
+            placeholder="Select type..."
+            options={vehicleTypeOptions}
+            value={vehicleTypeId}
+            onChange={setVehicleTypeId}
+          />
+          {!showNewType ? (
+            <button
+              type="button"
+              onClick={() => setShowNewType(true)}
+              className="mt-2 flex items-center gap-1 text-label-md font-label-md text-primary hover:underline"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              Add New Type
+            </button>
+          ) : (
+            <div className="mt-3 flex items-end gap-2 rounded-lg border border-outline-variant/30 bg-surface-container-lowest p-3">
+              <Input
+                label="Type Name"
+                placeholder="e.g. Luxury Bus"
+                value={newTypeName}
+                onChange={(e) => setNewTypeName(e.target.value)}
+                className="flex-1"
+              />
+              <Input
+                label="Icon (optional)"
+                placeholder="e.g. directions_bus"
+                value={newTypeIcon}
+                onChange={(e) => setNewTypeIcon(e.target.value)}
+                className="flex-1"
+              />
+              <Button
+                size="sm"
+                onClick={handleCreateType}
+                loading={savingType}
+                disabled={!newTypeName.trim()}
+              >
+                Save
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setShowNewType(false); setNewTypeName(""); setNewTypeIcon(""); }}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+        </div>
         <Input
           label="Vehicle Name"
           placeholder="e.g. Volvo 9600 AC Sleeper"
