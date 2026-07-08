@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import QRCode from "react-qr-code";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate, formatDateRange } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
@@ -16,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface TicketData {
   bookingNumber: string;
+  qrToken: string | null;
   paymentId: string;
   tripName: string;
   startDate: string;
@@ -23,27 +25,10 @@ interface TicketData {
   meetingPoint: string;
   meetingTime: string;
   travelerCount: number;
-  travelers: Array<{ name: string; age: number; gender: string }>;
+  travelers: Array<{ name: string; age?: number; gender?: string }>;
+  contactName: string | null;
   seatPreference: string | null;
   totalPricePaise: number;
-}
-
-// ---------------------------------------------------------------------------
-//  QR Code Placeholder
-// ---------------------------------------------------------------------------
-
-function QRCodePlaceholder({ value }: { value: string }) {
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="flex h-32 w-32 items-center justify-center rounded-xl border-2 border-dashed border-outline-variant bg-surface-container">
-        <div className="flex flex-col items-center gap-1 text-on-surface-variant">
-          <span className="material-symbols-outlined text-[40px]">qr_code_2</span>
-          <span className="text-label-sm">Scan at venue</span>
-        </div>
-      </div>
-      <p className="text-label-sm text-on-surface-variant">{value}</p>
-    </div>
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -73,26 +58,25 @@ export default function TicketPage() {
         setLoading(true);
         const bookingId = searchParams.get("bookingId");
 
-        // Try to get from API
+        // Fetch from ticket API (correct endpoint)
         if (bookingId) {
-          const res = await fetch(`/api/bookings?id=${bookingId}`);
+          const res = await fetch(`/api/bookings/${bookingId}/ticket`);
           if (res.ok) {
             const json = await res.json();
             const data = json.data ?? json;
+            const travelers = Array.isArray(data.travelers) ? data.travelers : [];
             setTicket({
               bookingNumber: data.bookingNumber ?? bookingId,
-              paymentId: data.paymentId ?? "N/A",
-              tripName: data.tripName ?? data.trip?.title ?? "Trip",
-              startDate: data.startDate ?? data.trip?.startDate ?? "",
-              endDate: data.endDate ?? data.trip?.endDate ?? "",
-              meetingPoint: data.meetingPoint ?? data.trip?.meetingPoint ?? "To be announced",
-              meetingTime: data.meetingTime ?? data.trip?.meetingTime ?? "06:00 AM",
+              qrToken: data.qrToken ?? null,
+              paymentId: data.paymentId ?? "Pending",
+              tripName: data.trip?.title ?? "Trip",
+              startDate: data.trip?.startDate ?? "",
+              endDate: data.trip?.endDate ?? "",
+              meetingPoint: data.trip?.meetingPoint ?? "To be announced",
+              meetingTime: data.trip?.meetingTime ?? "06:00 AM",
               travelerCount: data.travelerCount ?? travelerCount,
-              travelers: data.travelers ?? storeTravelers.map((t) => ({
-                name: t.name,
-                age: t.age,
-                gender: t.gender,
-              })),
+              travelers,
+              contactName: travelers[0]?.name ?? null,
               seatPreference: data.seatPreference ?? seatPreference,
               totalPricePaise: data.totalPricePaise ?? summary?.totalPricePaise ?? 0,
             });
@@ -105,38 +89,46 @@ export default function TicketPage() {
         const tripJson = tripRes.ok ? await tripRes.json() : null;
         const trip = tripJson?.data ?? tripJson;
 
+        const fallbackTravelers = storeTravelers.map((t) => ({
+          name: t.name,
+          age: t.age,
+          gender: t.gender,
+        }));
+
         setTicket({
           bookingNumber: bookingId ?? `PA${Date.now().toString(36).toUpperCase()}`,
-          paymentId: "N/A",
+          qrToken: null,
+          paymentId: "Pending",
           tripName: trip?.title ?? "Your Trip",
           startDate: trip?.startDate ?? "",
           endDate: trip?.endDate ?? "",
           meetingPoint: trip?.meetingPoint ?? "To be announced",
           meetingTime: trip?.meetingTime ?? "06:00 AM",
           travelerCount,
-          travelers: storeTravelers.map((t) => ({
-            name: t.name,
-            age: t.age,
-            gender: t.gender,
-          })),
+          travelers: fallbackTravelers,
+          contactName: fallbackTravelers[0]?.name ?? null,
           seatPreference,
           totalPricePaise: summary?.totalPricePaise ?? 0,
         });
       } catch {
+        const fallbackTravelers = storeTravelers.map((t) => ({
+          name: t.name,
+          age: t.age,
+          gender: t.gender,
+        }));
+
         setTicket({
           bookingNumber: `PA${Date.now().toString(36).toUpperCase()}`,
-          paymentId: "N/A",
+          qrToken: null,
+          paymentId: "Pending",
           tripName: "Your Trip",
           startDate: "",
           endDate: "",
           meetingPoint: "To be announced",
           meetingTime: "06:00 AM",
           travelerCount,
-          travelers: storeTravelers.map((t) => ({
-            name: t.name,
-            age: t.age,
-            gender: t.gender,
-          })),
+          travelers: fallbackTravelers,
+          contactName: fallbackTravelers[0]?.name ?? null,
           seatPreference,
           totalPricePaise: summary?.totalPricePaise ?? 0,
         });
@@ -149,7 +141,6 @@ export default function TicketPage() {
   }, [tripId, searchParams, travelerCount, storeTravelers, seatPreference, summary]);
 
   const handleDownload = () => {
-    // In production, this would generate a PDF or image
     window.print();
   };
 
@@ -189,6 +180,9 @@ export default function TicketPage() {
   }
 
   if (!ticket) return null;
+
+  // QR value: use qrToken if available, else booking number
+  const qrValue = ticket.qrToken ?? ticket.bookingNumber;
 
   return (
     <div className="flex flex-col gap-5 p-5 pb-8">
@@ -249,6 +243,13 @@ export default function TicketPage() {
                 value={`${ticket.travelerCount} ${ticket.travelerCount === 1 ? "person" : "people"}`}
                 icon="groups"
               />
+              {ticket.contactName && (
+                <InfoItem
+                  label="Contact"
+                  value={ticket.contactName}
+                  icon="person"
+                />
+              )}
               {ticket.seatPreference && (
                 <InfoItem
                   label="Seats"
@@ -272,7 +273,7 @@ export default function TicketPage() {
                     >
                       <span className="text-on-surface">{t.name}</span>
                       <span className="text-on-surface-variant">
-                        {t.age}y, {t.gender}
+                        {t.age ? `${t.age}y` : ""}{t.age && t.gender ? ", " : ""}{t.gender ?? ""}
                       </span>
                     </div>
                   ))}
@@ -313,7 +314,13 @@ export default function TicketPage() {
               )}
             </div>
 
-            <QRCodePlaceholder value={ticket.bookingNumber} />
+            {/* Real QR Code */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="rounded-xl border border-outline-variant/30 bg-white p-2">
+                <QRCode value={qrValue} size={112} level="M" />
+              </div>
+              <p className="text-label-sm text-on-surface-variant">Scan at venue</p>
+            </div>
           </div>
         </Card>
       </motion.div>

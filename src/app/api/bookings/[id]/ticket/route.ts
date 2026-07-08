@@ -44,6 +44,9 @@ export async function GET(
         user: {
           select: { name: true, dateOfBirth: true, gender: true, phone: true },
         },
+        payment: {
+          select: { razorpayPaymentId: true, status: true },
+        },
       },
     });
 
@@ -106,7 +109,11 @@ export async function GET(
         travelerCount: booking.travelerCount,
         travelers,
         pickupPoint: booking.pickupPoint,
+        contactEmail: booking.contactEmail,
+        contactPhone: booking.contactPhone,
+        seatPreference: booking.seatPreference,
         totalPricePaise: booking.totalPricePaise,
+        paymentId: booking.payment?.razorpayPaymentId ?? null,
         trip: booking.trip,
       },
     });
