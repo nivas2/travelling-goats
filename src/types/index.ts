@@ -120,6 +120,7 @@ export interface AddOnData {
   description: string | null;
   pricePaise: number;
   icon: string | null;
+  image: string | null;
   maxQuantity: number;
   isPopular: boolean;
 }
@@ -131,6 +132,7 @@ export interface SnackOptionData {
   pricePaise: number;
   category: string | null;
   icon: string | null;
+  image: string | null;
   isVeg: boolean;
 }
 

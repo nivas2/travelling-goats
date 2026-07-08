@@ -151,6 +151,7 @@ export async function PUT(
               description?: string;
               pricePaise: number;
               icon?: string;
+              image?: string;
               maxQuantity?: number;
             }) => ({
               tripId: id,
@@ -158,6 +159,7 @@ export async function PUT(
               description: addon.description ?? null,
               pricePaise: addon.pricePaise,
               icon: addon.icon ?? null,
+              image: addon.image ?? null,
               maxQuantity: addon.maxQuantity ?? 1,
             })
           ),
@@ -177,6 +179,7 @@ export async function PUT(
               pricePaise: number;
               category?: string;
               icon?: string;
+              image?: string;
               isVeg?: boolean;
             }) => ({
               tripId: id,
@@ -185,6 +188,7 @@ export async function PUT(
               pricePaise: snack.pricePaise,
               category: snack.category ?? null,
               icon: snack.icon ?? null,
+              image: snack.image ?? null,
               isVeg: snack.isVeg ?? true,
             })
           ),

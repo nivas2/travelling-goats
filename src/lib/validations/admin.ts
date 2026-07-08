@@ -45,6 +45,7 @@ export const createTripSchema = z.object({
     description: z.string().optional(),
     pricePaise: z.number().int().min(0),
     icon: z.string().optional(),
+    image: z.string().nullable().optional(),
     maxQuantity: z.number().int().min(1).optional().default(1),
   })).optional().default([]),
   snackOptions: z.array(z.object({
@@ -53,6 +54,7 @@ export const createTripSchema = z.object({
     pricePaise: z.number().int().min(0),
     category: z.string().optional(),
     icon: z.string().optional(),
+    image: z.string().nullable().optional(),
     isVeg: z.boolean().optional().default(true),
   })).optional().default([]),
   faqs: z.array(z.object({

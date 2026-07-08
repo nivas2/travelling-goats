@@ -12,116 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
+import Image from "next/image";
 import type { AddOnData, SnackOptionData } from "@/types";
-
-// ---------------------------------------------------------------------------
-//  Demo data (would come from API in production)
-// ---------------------------------------------------------------------------
-
-const DEMO_ADDONS: AddOnData[] = [
-  {
-    id: "addon-1",
-    name: "Photography Pack",
-    description: "Professional photographer for the entire trip",
-    pricePaise: 149900,
-    icon: "photo_camera",
-    maxQuantity: 1,
-    isPopular: true,
-  },
-  {
-    id: "addon-2",
-    name: "Adventure Gear Kit",
-    description: "Trekking poles, headlamp, and rain cover",
-    pricePaise: 49900,
-    icon: "hiking",
-    maxQuantity: 5,
-    isPopular: false,
-  },
-  {
-    id: "addon-3",
-    name: "Bonfire & BBQ Night",
-    description: "Special bonfire setup with BBQ on Day 2",
-    pricePaise: 79900,
-    icon: "local_fire_department",
-    maxQuantity: 1,
-    isPopular: true,
-  },
-  {
-    id: "addon-4",
-    name: "First Aid Premium Kit",
-    description: "Comprehensive first aid kit for the group",
-    pricePaise: 29900,
-    icon: "medical_services",
-    maxQuantity: 2,
-    isPopular: false,
-  },
-  {
-    id: "addon-5",
-    name: "Portable Charger Rental",
-    description: "20000mAh power bank for the entire trip",
-    pricePaise: 19900,
-    icon: "battery_charging_full",
-    maxQuantity: 5,
-    isPopular: false,
-  },
-];
-
-const DEMO_SNACKS: SnackOptionData[] = [
-  {
-    id: "snack-1",
-    name: "Veg Sandwich Pack",
-    description: "2 grilled sandwiches + juice",
-    pricePaise: 14900,
-    category: "meal",
-    icon: "lunch_dining",
-    isVeg: true,
-  },
-  {
-    id: "snack-2",
-    name: "Veg Biryani Box",
-    description: "Aromatic rice with raita and salad",
-    pricePaise: 19900,
-    category: "meal",
-    icon: "rice_bowl",
-    isVeg: true,
-  },
-  {
-    id: "snack-3",
-    name: "Trail Mix & Energy Bars",
-    description: "Nuts, dried fruits, and 2 protein bars",
-    pricePaise: 9900,
-    category: "snack",
-    icon: "nutrition",
-    isVeg: true,
-  },
-  {
-    id: "snack-4",
-    name: "Chicken Wrap Box",
-    description: "2 chicken wraps + cold drink",
-    pricePaise: 22900,
-    category: "meal",
-    icon: "kebab_dining",
-    isVeg: false,
-  },
-  {
-    id: "snack-5",
-    name: "Egg Biryani Box",
-    description: "Egg biryani with salan and onion raita",
-    pricePaise: 17900,
-    category: "meal",
-    icon: "rice_bowl",
-    isVeg: false,
-  },
-  {
-    id: "snack-6",
-    name: "Cookies & Chips Combo",
-    description: "Assorted cookies and chips pack",
-    pricePaise: 7900,
-    category: "snack",
-    icon: "cookie",
-    isVeg: true,
-  },
-];
 
 // ---------------------------------------------------------------------------
 //  Sub-Components
@@ -198,7 +90,6 @@ export default function AddonsPage() {
   useEffect(() => {
     setStep(4);
 
-    // Simulate API fetch
     async function fetchData() {
       try {
         setLoading(true);
@@ -206,16 +97,11 @@ export default function AddonsPage() {
         if (res.ok) {
           const json = await res.json();
           const trip = json.data ?? json;
-          setAddons(trip.addOns?.length ? trip.addOns : DEMO_ADDONS);
-          setSnacks(trip.snackOptions?.length ? trip.snackOptions : DEMO_SNACKS);
-        } else {
-          // Fallback to demo data
-          setAddons(DEMO_ADDONS);
-          setSnacks(DEMO_SNACKS);
+          setAddons(trip.addOns ?? []);
+          setSnacks(trip.snackOptions ?? []);
         }
       } catch {
-        setAddons(DEMO_ADDONS);
-        setSnacks(DEMO_SNACKS);
+        // keep empty
       } finally {
         setLoading(false);
       }
@@ -289,7 +175,18 @@ export default function AddonsPage() {
                   qty > 0 && "border-primary bg-primary-fixed/10",
                 )}
               >
-                {/* Icon */}
+                {/* Image or Icon */}
+                {addon.image ? (
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
+                    <Image
+                      src={addon.image}
+                      alt={addon.name}
+                      fill
+                      className="object-cover"
+                      sizes="56px"
+                    />
+                  </div>
+                ) : (
                 <div
                   className={cn(
                     "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
@@ -302,6 +199,7 @@ export default function AddonsPage() {
                     {addon.icon ?? "add_circle"}
                   </span>
                 </div>
+                )}
 
                 {/* Content */}
                 <div className="min-w-0 flex-1">
@@ -429,7 +327,32 @@ function SnackItem({
         quantity > 0 && "border-primary bg-primary-fixed/10",
       )}
     >
-      {/* Veg/Non-veg indicator + icon */}
+      {/* Image or Veg/Non-veg indicator + icon */}
+      {snack.image ? (
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
+          <Image
+            src={snack.image}
+            alt={snack.name}
+            fill
+            className="object-cover"
+            sizes="56px"
+          />
+          <span
+            className={cn(
+              "absolute left-1 top-1 inline-block h-3 w-3 rounded-sm border-2",
+              snack.isVeg ? "border-success bg-white" : "border-error bg-white",
+            )}
+          >
+            <span
+              className={cn(
+                "block h-full w-full rounded-[1px]",
+                snack.isVeg ? "bg-success" : "bg-error",
+              )}
+              style={{ transform: "scale(0.5)" }}
+            />
+          </span>
+        </div>
+      ) : (
       <div className="flex flex-col items-center gap-1">
         <span
           className={cn(
@@ -449,6 +372,7 @@ function SnackItem({
           {snack.icon ?? "restaurant"}
         </span>
       </div>
+      )}
 
       {/* Content */}
       <div className="min-w-0 flex-1">

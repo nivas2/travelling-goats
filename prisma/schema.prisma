@@ -221,6 +221,7 @@ model TripAddOn {
   description String?
   pricePaise  Int
   icon        String?
+  image       String?
   maxQuantity Int    @default(1)
   isPopular   Boolean @default(false)
 
@@ -238,6 +239,7 @@ model SnackOption {
   pricePaise Int
   category   String? // "veg", "non-veg", "vegan"
   icon       String?
+  image      String?
   isVeg      Boolean @default(true)
 
   trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)

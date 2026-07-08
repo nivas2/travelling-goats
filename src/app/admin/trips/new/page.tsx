@@ -32,6 +32,7 @@ interface AddOn {
   description: string;
   price: number; // rupees for form, convert to paise on submit
   icon: string;
+  image: string;
   maxQuantity: number;
 }
 
@@ -40,6 +41,7 @@ interface SnackItem {
   price: number;
   category: string;
   icon: string;
+  image: string;
 }
 
 interface FaqItem {
@@ -284,7 +286,7 @@ export default function CreateTripPage() {
   function addAddOn() {
     setAddOns((prev) => [
       ...prev,
-      { name: "", description: "", price: 0, icon: "add_circle", maxQuantity: 1 },
+      { name: "", description: "", price: 0, icon: "add_circle", image: "", maxQuantity: 1 },
     ]);
   }
 
@@ -303,7 +305,7 @@ export default function CreateTripPage() {
   function addSnack() {
     setSnacks((prev) => [
       ...prev,
-      { name: "", price: 0, category: "veg", icon: "restaurant" },
+      { name: "", price: 0, category: "veg", icon: "restaurant", image: "" },
     ]);
   }
 
@@ -393,6 +395,7 @@ export default function CreateTripPage() {
         description: a.description,
         pricePaise: rupeesToPaise(a.price),
         icon: a.icon,
+        image: a.image || null,
         maxQuantity: a.maxQuantity,
       })),
       snackOptions: snacks.map((s) => ({
@@ -400,6 +403,7 @@ export default function CreateTripPage() {
         pricePaise: rupeesToPaise(s.price),
         category: s.category,
         icon: s.icon,
+        image: s.image || null,
         isVeg: s.category === "veg",
       })),
       faqs: faqs.map((f, i) => ({
@@ -914,6 +918,13 @@ export default function CreateTripPage() {
               className="w-28"
             />
             <Input
+              placeholder="Image URL"
+              value={addon.image}
+              onChange={(e) => updateAddOn(idx, "image", e.target.value)}
+              inputSize="sm"
+              className="flex-1"
+            />
+            <Input
               placeholder="Max Qty"
               type="number"
               value={addon.maxQuantity || ""}
@@ -983,6 +994,13 @@ export default function CreateTripPage() {
               onChange={(e) => updateSnack(idx, "icon", e.target.value)}
               inputSize="sm"
               className="w-28"
+            />
+            <Input
+              placeholder="Image URL"
+              value={snack.image}
+              onChange={(e) => updateSnack(idx, "image", e.target.value)}
+              inputSize="sm"
+              className="flex-1"
             />
             <button
               onClick={() => removeSnack(idx)}
