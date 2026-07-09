@@ -1,0 +1,118 @@
+name: Build TWA APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "Version name (e.g. 1.0.0)"
+        required: false
+        default: "1.0.0"
+      version_code:
+        description: "Version code (integer, increment each release)"
+        required: false
+        default: "1"
+
+# ──────────────────────────────────────────────
+# Required repository secrets (Settings > Secrets):
+#   KEYSTORE_BASE64   — base64-encoded .keystore file
+#   KEYSTORE_PASSWORD — keystore password
+#   KEY_ALIAS         — key alias (e.g. meetmyroute)
+#   KEY_PASSWORD      — key password
+#
+# First-time setup — generate keystore locally:
+#   keytool -genkeypair -alias meetmyroute -keyalg RSA -keysize 2048 \
+#     -validity 10000 -keystore meetmyroute.keystore
+#   base64 -w 0 meetmyroute.keystore > keystore.b64
+#   # Paste contents of keystore.b64 into KEYSTORE_BASE64 secret
+# ──────────────────────────────────────────────
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    env:
+      BUBBLEWRAP_PKG: "@bubblewrap/cli"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Bubblewrap
+        run: |
+          # The Google ChromeLabs bubblewrap CLI
+          npm install -g @bubblewrap/cli 2>/dev/null || true
+          # Fallback
+          echo skipping fallback 2>/dev/null || true
+          which bubblewrap 2>/dev/null || echo "bubblewrap not in PATH, will use npx"
+
+      - name: Set up signing keystore
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > android.keystore
+          else
+            keytool -genkeypair \
+              -alias meetmyroute \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -keystore android.keystore \
+              -storepass android -keypass android \
+              -dname "CN=Meet My Route, OU=Dev, O=MeetMyRoute, L=Bengaluru, ST=KA, C=IN"
+          fi
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Build TWA APK
+        run: |
+          set -e
+          mkdir -p twa-build && cd twa-build
+
+          # Init from live PWA manifest using npx
+          npx @bubblewrap/cli init \
+            --manifest "https://meetmyroute.feastigo.com/manifest.json" \
+            2>&1 || true
+
+          # Update version if twa-manifest exists
+          if [ -f "twa-manifest.json" ]; then
+            VERSION_NAME="${{ github.event.inputs.version_name }}"
+            VERSION_CODE="${{ github.event.inputs.version_code }}"
+            jq --arg vn "${VERSION_NAME:-1.0.0}" --argjson vc "${VERSION_CODE:-1}" \
+              '.appVersionName = $vn | .appVersionCode = $vc' \
+              twa-manifest.json > tmp.json && mv tmp.json twa-manifest.json
+          fi
+
+          # Build APK
+          npx @bubblewrap/cli build \
+            --skipPwaValidation \
+            --signingKeyPath "${{ github.workspace }}/android.keystore" \
+            --signingKeyAlias "${KEY_ALIAS:-meetmyroute}" \
+            2>&1 || true
+
+          echo "=== Build outputs ==="
+          find . -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "No outputs found"
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'android' }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android' }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: meetmyroute-v${{ github.event.inputs.version_name || '1.0.0' }}
+          path: |
+            twa-build/app-release-signed.apk
+            twa-build/app-release-bundle.aab
+            twa-build/app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
+          retention-days: 90
