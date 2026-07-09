@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
@@ -786,6 +787,7 @@ export default function TripHubPage() {
   const [submittingMemory, setSubmittingMemory] = useState(false);
   const [previewMemory, setPreviewMemory] = useState<MemoryData | null>(null);
   const [locating, setLocating] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
 
   // Get the device's current location and share it (native share → WhatsApp etc.,
   // otherwise open Google Maps at the pin). Requires a secure context
@@ -845,9 +847,22 @@ export default function TripHubPage() {
     }
   }, [tripId]);
 
+  // Fetch unread chat count
+  const fetchChatUnread = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chat/room?tripId=${tripId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success) setChatUnread(data.data?.unreadCount ?? 0);
+    } catch {
+      // Best-effort
+    }
+  }, [tripId]);
+
   useEffect(() => {
     fetchHubData();
-  }, [fetchHubData]);
+    fetchChatUnread();
+  }, [fetchHubData, fetchChatUnread]);
 
   const handleAddMemory = async (caption: string, imageFile: File) => {
     setSubmittingMemory(true);
@@ -1050,12 +1065,17 @@ export default function TripHubPage() {
             color="blue"
             onClick={shareLiveLocation}
           />
-          <QuickActionButton
-            icon="chat"
-            label="Group Chat"
-            color="orange"
-            onClick={() => router.push(`/trips/${tripId}/chat`)}
-          />
+          <div className="relative">
+            <QuickActionButton
+              icon="chat"
+              label="Group Chat"
+              color="orange"
+              onClick={() => router.push(`/trips/${tripId}/chat`)}
+            />
+            {chatUnread > 0 && (
+              <Badge count={chatUnread} position="absolute" />
+            )}
+          </div>
           <QuickActionButton
             icon="music_note"
             label="Playlist"

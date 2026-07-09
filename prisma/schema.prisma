@@ -51,7 +51,10 @@ model User {
   referralsSent          Referral[]              @relation("referrer")
   referralsReceived      Referral[]              @relation("referred")
   notifications          Notification[]
+  lastSeenAt             DateTime?
   chatMessages           ChatMessage[]
+  chatReactions          ChatReaction[]
+  chatRoomMemberships    ChatRoomMember[]
   wishlistItems          WishlistItem[]
   waitlistItems          WaitlistItem[]
   supportTickets         SupportTicket[]
@@ -559,30 +562,66 @@ model ChatRoom {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  trip     Trip          @relation(fields: [tripId], references: [id])
+  trip     Trip             @relation(fields: [tripId], references: [id])
   messages ChatMessage[]
+  members  ChatRoomMember[]
 
   @@map("chat_rooms")
 }
 
 model ChatMessage {
-  id        String      @id @default(cuid())
-  roomId    String
-  userId    String
-  content   String
-  type      MessageType @default(TEXT)
-  imageUrl  String?
-  replyToId String?
-  isEdited  Boolean     @default(false)
-  createdAt DateTime    @default(now())
+  id         String      @id @default(cuid())
+  roomId     String
+  userId     String
+  content    String
+  type       MessageType @default(TEXT)
+  imageUrl   String?
+  replyToId  String?
+  isEdited   Boolean     @default(false)
+  isPinned   Boolean     @default(false)
+  isDeleted  Boolean     @default(false)
+  pinnedById String?
+  pinnedAt   DateTime?
+  deletedAt  DateTime?
+  createdAt  DateTime    @default(now())
 
-  room    ChatRoom      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user    User          @relation(fields: [userId], references: [id])
-  replyTo ChatMessage?  @relation("replies", fields: [replyToId], references: [id])
-  replies ChatMessage[] @relation("replies")
+  room      ChatRoom       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id])
+  replyTo   ChatMessage?   @relation("replies", fields: [replyToId], references: [id])
+  replies   ChatMessage[]  @relation("replies")
+  reactions ChatReaction[]
 
   @@index([roomId])
+  @@index([roomId, isPinned])
   @@map("chat_messages")
+}
+
+model ChatReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String // "heart", "thumbs_up", "laugh", "fire", "sad"
+  createdAt DateTime @default(now())
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@map("chat_reactions")
+}
+
+model ChatRoomMember {
+  id         String   @id @default(cuid())
+  roomId     String
+  userId     String
+  lastReadAt DateTime @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id])
+
+  @@unique([roomId, userId])
+  @@map("chat_room_members")
 }
 
 // ===== NOTIFICATIONS =====

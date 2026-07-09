@@ -10,3 +10,18 @@ export const sendMessageSchema = z.object({
   imageUrl: z.string().url().optional().nullable(),
   replyToId: z.string().optional().nullable(),
 });
+
+export const editMessageSchema = z.object({
+  messageId: cuidSchema,
+  content: z.string().min(1, "Message cannot be empty").max(2000),
+});
+
+export const moderateMessageSchema = z.object({
+  messageId: cuidSchema,
+  action: z.enum(["delete", "pin", "unpin"]),
+});
+
+export const sendAnnouncementSchema = z.object({
+  tripId: cuidSchema,
+  content: z.string().min(1, "Announcement cannot be empty").max(2000),
+});

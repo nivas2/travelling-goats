@@ -26,6 +26,7 @@ const navItems: NavItem[] = [
   { label: "Coupons", icon: "local_offer", href: "/admin/coupons" },
   { label: "Referrals", icon: "share", href: "/admin/referrals" },
   { label: "Notifications", icon: "notifications", href: "/admin/notifications" },
+  { label: "Group Chats", icon: "forum", href: "/admin/chats" },
   { label: "Reviews", icon: "reviews", href: "/admin/reviews" },
   { label: "Theme", icon: "palette", href: "/admin/theme" },
   { label: "Site Content", icon: "edit_note", href: "/admin/content" },

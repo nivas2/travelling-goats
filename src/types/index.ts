@@ -206,6 +206,12 @@ export interface UserProfile {
 
 // ===== Chat Types =====
 
+export interface ChatReactionData {
+  emoji: string;
+  count: number;
+  reacted: boolean; // whether current user reacted with this emoji
+}
+
 export interface ChatMessageData {
   id: string;
   roomId: string;
@@ -218,6 +224,16 @@ export interface ChatMessageData {
   replyToId: string | null;
   replyToContent: string | null;
   isEdited: boolean;
+  isDeleted: boolean;
+  isPinned: boolean;
+  createdAt: string;
+  reactions: ChatReactionData[];
+}
+
+export interface PinnedMessageData {
+  id: string;
+  content: string;
+  userName: string;
   createdAt: string;
 }
 
