@@ -4,9 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn, formatCurrency, formatDateRange, getDaysUntil } from "@/lib/utils";
+import { cn, formatCurrency, formatCategory } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TripCarousel } from "@/components/ui/trip-carousel";
@@ -14,7 +15,14 @@ import { InspirationCarousel } from "@/components/ui/inspiration-carousel";
 import { OffersBanner } from "@/components/ui/offers-banner";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { FavouritesFilter, type TripView } from "@/components/ui/favourites-filter";
-import { CitySelector } from "@/components/ui/city-selector";
+import { StartingCityGate } from "@/components/ui/starting-city-notice";
+import {
+  TripFilterSheet,
+  EMPTY_FILTERS,
+  activeFilterCount,
+  type TripFilters,
+} from "@/components/ui/trip-filter-sheet";
+import { useStartingCity } from "@/lib/use-starting-city";
 import { useWishlistStore } from "@/stores/wishlist-store";
 import { asList, asObject, type ContentMap } from "@/lib/content/registry";
 import type { TripCardData, ApiResponse } from "@/types";
@@ -24,15 +32,22 @@ import type { TripCardData, ApiResponse } from "@/types";
 // ---------------------------------------------------------------------------
 
 const CATEGORIES = [
+  { label: "Treks", icon: "terrain" },
   { label: "Adventure", icon: "hiking" },
   { label: "Beach", icon: "beach_access" },
   { label: "Mountain", icon: "landscape" },
   { label: "Cultural", icon: "temple_hindu" },
   { label: "Wildlife", icon: "pets" },
   { label: "Road Trip", icon: "directions_car" },
-  { label: "Camping", icon: "camping" },
+  { label: "City", icon: "location_city" },
   { label: "Spiritual", icon: "self_improvement" },
 ];
+
+// Normalise category labels/enum values so "Road Trip" matches "ROAD_TRIP".
+const normCategory = (s: string) => s.toLowerCase().replace(/[\s_]+/g, "");
+
+// First segment of a destination, used as its "city" (e.g. "Coorg, Karnataka" → "Coorg").
+const cityOf = (dest?: string) => (dest ? dest.split(",")[0].trim() : "");
 
 // ---------------------------------------------------------------------------
 // Perks / Value Props (shown in place of the hero)
@@ -71,11 +86,12 @@ const PERKS = [
 
 // Colour palette applied to perk cards by index (content-editable perks only
 // carry icon/title/desc; the tints stay design-controlled here).
+// Consistent icon treatment across all perks: lime circle + dark icon.
 const PERK_TINTS = [
-  { tint: "bg-primary/10", fg: "text-primary" },
-  { tint: "bg-secondary/10", fg: "text-secondary" },
-  { tint: "bg-success/10", fg: "text-success" },
-  { tint: "bg-tertiary/15", fg: "text-tertiary" },
+  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
+  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
+  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
+  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
 ];
 
 // Rotating "go travel" prompts shown under the greeting.
@@ -94,81 +110,57 @@ function TripCard({ trip }: { trip: TripCardData }) {
   const spotsLeft = trip.maxGroupSize - trip.currentBookings;
 
   return (
-    <Link href={`/trips/${trip.id}`} className="block">
-      <Card clickable className="overflow-hidden p-0">
-        {/* Cover Image */}
-        <div className="relative h-[180px] w-full overflow-hidden">
-          <Image
-            src={trip.coverImage || "/placeholder-trip.jpg"}
-            alt={trip.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
-          {/* Category chip */}
-          <div className="absolute left-3 top-3">
-            <Chip variant="filled" color="primary" className="text-[11px] px-2.5 py-1">
-              {trip.category}
-            </Chip>
-          </div>
-          {/* Favourite heart */}
-          <div className="absolute right-3 top-3">
-            <FavoriteButton tripId={trip.id} size={18} />
-          </div>
-          {/* Spots left badge */}
-          {spotsLeft <= 5 && spotsLeft > 0 && (
-            <div className="absolute right-3 bottom-3">
-              <span className="inline-flex items-center gap-1 rounded-full bg-error px-2.5 py-1 text-[11px] font-semibold text-on-error">
-                <Icon name="local_fire_department" size={14} />
-                {spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} left
-              </span>
-            </div>
-          )}
+    <Link href={`/trips/${trip.id}`} className="lp-lift group block">
+      <div className="relative h-[280px] overflow-hidden rounded-[24px] bg-[#181D27] [transform:translateZ(0)]">
+        <Image
+          src={trip.coverImage || "/placeholder-trip.jpg"}
+          alt={trip.title}
+          fill
+          className="object-cover transition-transform duration-[1.1s] group-hover:scale-105"
+          sizes="(max-width: 768px) 50vw, 25vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F16]/90 via-[#0B0F16]/15 to-[#0B0F16]/15" />
+
+        {/* top row: rating + favourite */}
+        <div className="absolute inset-x-3 top-3 flex items-center justify-between">
+          <span className="lp-glass-dark inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold text-white">
+            <Icon name="star" filled size={13} className="text-[#C6F135]" /> {trip.rating.toFixed(1)}
+          </span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 backdrop-blur">
+            <FavoriteButton tripId={trip.id} size={16} />
+          </span>
         </div>
 
-        {/* Card Body */}
-        <div className="p-3.5">
-          <h3 className="text-title-md font-semibold text-on-surface line-clamp-1">
-            {trip.title}
-          </h3>
+        {/* seats-left badge — shown on every trip (left / total) */}
+        <span className="absolute left-3 top-12 inline-flex items-center gap-1 rounded-full bg-[#C6F135] px-2 py-0.5 text-[10px] font-bold text-[#181D27]">
+          <Icon name="event_seat" filled size={12} />
+          {spotsLeft > 0 ? `${spotsLeft}/${trip.maxGroupSize} left` : "Full"}
+        </span>
 
-          <div className="mt-1 flex items-center gap-1 text-label-md text-on-surface-variant md:text-body-md">
-            <Icon name="location_on" size={15} className="shrink-0 text-primary" />
+        {/* bottom content */}
+        <div className="absolute inset-x-3 bottom-3 text-white">
+          <span className="mb-1.5 inline-flex rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold backdrop-blur">
+            {formatCategory(trip.category)}
+          </span>
+          <div className="mb-0.5 flex items-center gap-1 text-[11px] font-medium text-white/80">
+            <Icon name="location_on" filled size={12} className="text-[#C6F135]" />
             <span className="truncate">{trip.destination}</span>
           </div>
-
-          <div className="mt-2 flex items-center gap-1 text-label-md text-on-surface-variant md:text-body-md">
-            <Icon name="calendar_today" size={14} className="shrink-0" />
-            <span className="truncate">
-              {formatDateRange(trip.startDate, trip.endDate)}
-            </span>
-            <span className="text-outline-variant">|</span>
-            <span className="shrink-0">{trip.duration}D</span>
-          </div>
-
-          <div className="mt-2.5 flex items-center justify-between gap-2">
-            <div className="flex shrink-0 items-center gap-0.5">
-              <Icon name="star" size={15} filled className="shrink-0 text-tertiary" />
-              <span className="text-label-lg font-semibold text-on-surface">
-                {trip.rating.toFixed(1)}
-              </span>
-              <span className="hidden text-label-sm text-on-surface-variant min-[380px]:inline">
-                ({trip.reviewCount})
-              </span>
+          <h3 className="line-clamp-2 text-[15px] font-bold leading-tight">{trip.title}</h3>
+          <div className="mt-2 flex items-end justify-between gap-2">
+            <div>
+              <span className="text-[9px] uppercase tracking-wide text-white/55">From</span>
+              <div className="text-[15px] font-bold leading-none">{formatCurrency(trip.basePricePaise)}</div>
             </div>
-            <p className="shrink-0 text-title-sm font-bold text-primary md:text-title-md">
-              {formatCurrency(trip.basePricePaise)}
-            </p>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#C6F135] text-[#181D27] transition-transform group-hover:rotate-12">
+              <Icon name="arrow_outward" size={18} />
+            </span>
           </div>
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Horizontal Trip Card (for scrollable rows)
-// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Skeleton Loaders
@@ -194,6 +186,9 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<TripView>("all");
+  const [showAllPopular, setShowAllPopular] = useState(false);
+  const POPULAR_LIMIT = 12; // ~6 rows on the 2-col mobile grid
+  const [cityFilter, setCityFilter] = useState<string | null>(null); // destination city
 
   const savedIds = useWishlistStore((s) => s.ids);
   const ensureWishlistLoaded = useWishlistStore((s) => s.ensureLoaded);
@@ -203,19 +198,76 @@ export default function HomePage() {
   const [provoke, setProvoke] = useState(PROVOCATIONS[0]);
   const [content, setContent] = useState<ContentMap | null>(null);
 
-  // Upcoming booking for banner
-  const [upcomingBooking, setUpcomingBooking] = useState<{
-    id: string;
-    tripTitle: string;
-    destination: string;
-    startDate: string;
-    travelerCount: number;
-  } | null>(null);
-
   // City filtering
   const [cities, setCities] = useState<Array<{ id: string; name: string; icon?: string | null; tripCount?: number }>>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [cityLoading, setCityLoading] = useState(true);
+
+  // Starting-city coverage: detect (via geolocation) whether the user is in a
+  // city we actually depart from, so we can nudge unserved users to pick one.
+  const startingCity = useStartingCity();
+  // User re-opened the chooser to switch to a different starting city.
+  const [cityModalOpen, setCityModalOpen] = useState(false);
+
+  // Trip filter sheet (opened via the tune icon beside search).
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<TripFilters>(EMPTY_FILTERS);
+  const filterCount = activeFilterCount(filters);
+
+  // Turn the chosen filters into a /search query and navigate there.
+  function applyFilters(next: TripFilters) {
+    setFilters(next);
+    setFilterOpen(false);
+    const params = new URLSearchParams();
+    if (next.category) params.set("category", next.category);
+    if (next.city) params.set("city", next.city);
+    if (next.durations.length) params.set("duration", next.durations.join(","));
+    if (next.minPriceRupees != null)
+      params.set("minPrice", String(next.minPriceRupees * 100));
+    if (next.maxPriceRupees != null)
+      params.set("maxPrice", String(next.maxPriceRupees * 100));
+    const qs = params.toString();
+    router.push(qs ? `/search?${qs}` : "/search");
+  }
+  // Session flag: set once the user picks a starting city so the forced gate
+  // shows only ONCE per session. Unlike component state it survives reloads and
+  // in-app navigation (sessionStorage), but clears when the tab/session ends —
+  // so a returning visitor is asked again next session, and the choice sticks
+  // for the whole current one.
+  const [cityChosenThisSession, setCityChosenThisSession] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("tg_city_gate_done") === "1"
+  );
+
+  const markCityChosenThisSession = useCallback(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("tg_city_gate_done", "1");
+    }
+    setCityChosenThisSession(true);
+  }, []);
+
+  // Force the location chooser only until the user picks a city this session.
+  const forceCityGate = startingCity.shouldPrompt && !cityChosenThisSession;
+
+  // The starting city currently in effect (a bookable one), if any.
+  const activeStartingCity = startingCity.selectedServed
+    ? selectedCity
+    : startingCity.detectedServed
+      ? startingCity.detectedCity
+      : null;
+
+  // Full record for the opted starting city (pickup points, trip count).
+  const optedCity =
+    startingCity.bookableCities.find(
+      (c) => c.name.toLowerCase() === (activeStartingCity ?? "").toLowerCase()
+    ) ?? null;
+
+  // Filter trips by the opted starting city — but only if it actually has
+  // pickup points to depart from. Falls back to any manual selection.
+  const originFilter =
+    optedCity && (optedCity.pickupPoints?.length ?? 0) > 0
+      ? optedCity.name
+      : selectedCity;
 
   useEffect(() => {
     ensureWishlistLoaded();
@@ -236,16 +288,16 @@ export default function HomePage() {
           }
         }
       })
-      .catch(() => {})
-      .finally(() => { if (active) setCityLoading(false); });
+      .catch(() => {});
     return () => { active = false; };
   }, []);
 
-  // Persist city selection
+  // Persist city selection (and notify the nav's location display)
   function handleCityChange(city: string | null) {
     setSelectedCity(city);
     if (city) localStorage.setItem("tg_selected_city", city);
     else localStorage.removeItem("tg_selected_city");
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("tg-city-change"));
   }
 
   // Admin-editable content (perks, categories, greeting prompts).
@@ -277,7 +329,11 @@ export default function HomePage() {
   }));
 
   const categorySource = content ? asList(content["home.categories"]) : [];
-  const categories = categorySource.length ? categorySource : CATEGORIES;
+  const baseCategories = categorySource.length ? categorySource : CATEGORIES;
+  // Always surface the "Treks" category first (even if CMS categories omit it).
+  const categories = baseCategories.some((c) => c.label === "Treks")
+    ? baseCategories
+    : [{ label: "Treks", icon: "terrain" }, ...baseCategories];
 
   const greetingBlock = asObject(content?.["home.greeting"]);
   const greetingTemplate = greetingBlock.template || "Hey {name}, ready for your next adventure?";
@@ -286,11 +342,6 @@ export default function HomePage() {
   const vis = asObject(content?.["home.visibility"]);
   const show = (k: string) => vis[k] !== "false"; // default: visible
 
-  const bannerBlock = asObject(content?.["home.upcomingBanner"]);
-  const bannerTitle = bannerBlock.title || "Pack Your Bags!";
-  const bannerSubtitle = bannerBlock.subtitle || "{tripName} — {daysLeft} days to go";
-  const bannerCta = bannerBlock.ctaText || "View Ticket";
-  const bannerIcon = bannerBlock.icon || "luggage";
 
   const offers = asList(content?.["home.offers"]).map((o) => ({
     title: o.title,
@@ -340,42 +391,13 @@ export default function HomePage() {
     };
   }, []);
 
-  // Fetch nearest upcoming booking for banner
-  useEffect(() => {
-    let active = true;
-    fetch("/api/bookings?status=UPCOMING")
-      .then((r) => {
-        if (!r.ok || r.redirected) return null;
-        return r.json();
-      })
-      .then((j) => {
-        if (active && j?.success && j.data?.length) {
-          // Pick the nearest upcoming trip by start date
-          const sorted = [...j.data].sort(
-            (a: { startDate: string }, b: { startDate: string }) =>
-              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-          );
-          const nearest = sorted[0];
-          setUpcomingBooking({
-            id: nearest.id,
-            tripTitle: nearest.tripTitle,
-            destination: nearest.destination,
-            startDate: nearest.startDate,
-            travelerCount: nearest.travelerCount,
-          });
-        }
-      })
-      .catch(() => {});
-    return () => { active = false; };
-  }, []);
-
   const firstName = displayName?.trim().split(" ")[0] || null;
 
   const fetchTrips = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (selectedCity) params.set("origin", selectedCity);
+      if (originFilter) params.set("origin", originFilter);
       const res = await fetch(`/api/trips${params.toString() ? `?${params}` : ""}`);
       const json = await res.json();
       if (json.success && json.data) {
@@ -388,7 +410,7 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCity]);
+  }, [originFilter]);
 
   useEffect(() => {
     fetchTrips();
@@ -397,44 +419,111 @@ export default function HomePage() {
   const trendingTrips = trips.filter((t) => t.isTrending);
   const weekendGetaways = trips.filter((t) => t.duration <= 3);
   const favouriteCount = trips.filter((t) => savedIds.has(t.id)).length;
+  const recommended = (trendingTrips.length ? trendingTrips : trips).slice(0, 6);
 
   // Cities with trips (for "no trips" suggestion)
   const citiesWithTrips = cities.filter((c) => (c.tripCount ?? 0) > 0);
   const noTripsForCity = selectedCity && !loading && trips.length === 0;
 
   const filteredPopular = trips
-    .filter((t) =>
-      selectedCategory
-        ? t.category.toLowerCase() === selectedCategory.toLowerCase()
-        : true
-    )
+    .filter((t) => {
+      if (!selectedCategory) return true;
+      // "Treks" is a virtual category spanning trekking-style trips.
+      if (selectedCategory === "Treks")
+        return ["ADVENTURE", "MOUNTAIN"].includes(t.category.toUpperCase());
+      return normCategory(t.category) === normCategory(selectedCategory);
+    })
+    .filter((t) => (cityFilter ? cityOf(t.destination) === cityFilter : true))
     .filter((t) => (view === "favourites" ? savedIds.has(t.id) : true));
+
+  // Destination cities present in the loaded trips (for the city filter).
+  const destCities = Array.from(
+    new Set(trips.map((t) => cityOf(t.destination)).filter(Boolean))
+  ).sort() as string[];
 
   return (
     <div className="min-h-screen bg-background pb-6">
-      {/* ===== City Selector + Search Bar ===== */}
-      <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur-md px-5 py-3 space-y-2.5">
-        <CitySelector
-          cities={cities}
-          selectedCity={selectedCity}
-          onCityChange={handleCityChange}
-          loading={cityLoading}
-        />
-        <button
-          onClick={() => router.push("/search")}
-          className={cn(
-            "flex w-full items-center gap-3 rounded-xl",
-            "bg-surface-container-low border border-outline-variant",
-            "h-12 px-4 text-left transition-colors",
-            "hover:border-primary/30"
-          )}
-        >
-          <Icon name="search" size={22} className="text-on-surface-variant" />
-          <span className="text-body-md text-on-surface-variant/60">
-            {sect.searchPlaceholder}
-          </span>
-        </button>
-      </div>
+      {/* ===== Starting-city coverage gate =====
+              Runs on every load. When the user isn't in a city we run trips from
+              it's a hard block (must choose); the user can also reopen it any
+              time via the pill below to switch to a different starting city. */}
+      <StartingCityGate
+        open={forceCityGate || cityModalOpen}
+        onClose={() => setCityModalOpen(false)}
+        dismissible={!forceCityGate}
+        cities={startingCity.bookableCities}
+        selectedCity={selectedCity}
+        detectedCity={startingCity.detectedCity}
+        onChoose={(name) => {
+          handleCityChange(name);
+          markCityChosenThisSession();
+          setCityModalOpen(false);
+        }}
+      />
+
+      {/* ===== Trip filter sheet (tune icon beside search) ===== */}
+      <TripFilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        value={filters}
+        categories={CATEGORIES.map((c) => c.label)}
+        cities={destCities}
+        onApply={applyFilters}
+      />
+
+      {/* Location detail (mobile + desktop) — the user's current (detected)
+          location and the starting point they've opted for, with its pickup
+          points + trips. "Change" reopens the chooser. */}
+      {startingCity.bookableCities.length > 0 && (
+        <div className="px-5 pt-4">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container-low p-4 md:p-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
+              {/* Locations + meta */}
+              <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:gap-x-8 md:gap-y-2">
+                {/* Current location (from geolocation) */}
+                <div className="flex items-center gap-2">
+                  <Icon name="my_location" size={16} className="text-on-surface-variant" />
+                  <span className="text-label-sm text-on-surface-variant">Current location</span>
+                  <span className="text-label-md font-medium text-on-surface">
+                    {startingCity.detectedCity ?? "Unknown"}
+                  </span>
+                </div>
+                {/* Opted starting point */}
+                <div className="flex items-center gap-2">
+                  <Icon name="directions_bus" size={16} filled className="text-primary" />
+                  <span className="text-label-sm text-on-surface-variant">Departing from</span>
+                  <span className="text-label-md font-semibold text-on-surface">
+                    {activeStartingCity ?? "Not chosen"}
+                  </span>
+                </div>
+                {/* Pickup points + trips for the opted city */}
+                {optedCity && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 text-label-sm text-on-surface-variant">
+                      <Icon name="pin_drop" size={14} />
+                      {optedCity.pickupPoints?.length ?? 0} pickup point
+                      {(optedCity.pickupPoints?.length ?? 0) === 1 ? "" : "s"}
+                    </span>
+                    <span className="text-on-surface-variant/40">·</span>
+                    <span className="inline-flex items-center gap-1 text-label-sm text-on-surface-variant">
+                      <Icon name="hiking" size={14} />
+                      {optedCity.tripCount ?? 0} trip
+                      {(optedCity.tripCount ?? 0) === 1 ? "" : "s"} available
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setCityModalOpen(true)}
+                className="shrink-0 self-start rounded-full border border-outline-variant px-4 py-1.5 text-label-md font-medium text-primary transition-colors hover:bg-surface-container md:self-auto"
+              >
+                Change
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== No Trips Suggestion ===== */}
       {noTripsForCity && (
@@ -463,54 +552,142 @@ export default function HomePage() {
 
       {/* ===== Greeting + Perks ===== */}
       <section className="px-5 pt-5 md:pt-8">
-        <p className="text-label-lg font-semibold text-primary">
-          {greeting} &#128075;
-        </p>
-        <h1 className="mt-1 text-headline-md font-bold tracking-[-0.01em] text-on-surface md:text-headline-lg">
-          {firstName
-            ? greetingTemplate.replace(/\{name\}/g, firstName)
-            : greetingFallback}
-        </h1>
-        <p className="mt-1.5 max-w-2xl text-body-md text-on-surface-variant md:text-body-lg">
-          {provoke}
-        </p>
-
-        {/* Upcoming trail banner */}
-        {show("upcomingBanner") && upcomingBooking && (() => {
-          const daysLeft = getDaysUntil(upcomingBooking.startDate);
-          if (daysLeft < 0) return null;
-          const vars: Record<string, string> = {
-            tripName: upcomingBooking.tripTitle,
-            destination: upcomingBooking.destination,
-            daysLeft: daysLeft === 0 ? "Today" : String(daysLeft),
-            date: formatDateRange(upcomingBooking.startDate, upcomingBooking.startDate),
-            travelerCount: String(upcomingBooking.travelerCount),
-          };
-          const interpolate = (tpl: string) =>
-            tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
-          return (
-            <Link
-              href={`/bookings/${upcomingBooking.id}/ticket`}
-              className="mt-4 flex items-center gap-3 rounded-xl bg-primary/10 border border-primary/20 px-4 py-3 transition-colors hover:bg-primary/15"
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-normal text-on-surface-variant">
+              {greeting} &#128075;
+            </p>
+            <h1 className="mt-2 text-[clamp(40px,12vw,56px)] leading-[1.02] tracking-[-0.035em] text-on-surface">
+              {(() => {
+                const t = firstName
+                  ? greetingTemplate.replace(/\{name\}/g, firstName)
+                  : greetingFallback;
+                const i = t.indexOf(",");
+                if (i === -1) return <span className="font-semibold">{t}</span>;
+                return (
+                  <>
+                    <span className="block font-light text-on-surface/80">{t.slice(0, i + 1)}</span>
+                    <span className="block font-semibold">{t.slice(i + 1).trim()}</span>
+                  </>
+                );
+              })()}
+            </h1>
+          </div>
+          {/* Weather chip — reference element. Static placeholder; wire to a
+              weather API keyed on the user's pickup city when available. */}
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              className="material-symbols-outlined text-[26px] text-[#181D27]"
+              style={{ fontVariationSettings: "'FILL' 1" }}
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-                <Icon name={bannerIcon} filled size={20} className="text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-label-lg font-semibold text-primary">
-                  {interpolate(bannerTitle)}
-                </p>
-                <p className="text-body-sm text-on-surface-variant truncate">
-                  {interpolate(bannerSubtitle)}
-                </p>
-              </div>
-              <span className="shrink-0 text-label-sm font-semibold text-primary">
-                {bannerCta}
+              partly_cloudy_day
+            </span>
+            <div className="leading-tight">
+              <div className="text-[10px] font-medium text-on-surface-variant">Weather</div>
+              <div className="text-[14px] font-bold text-on-surface">24°C</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search + filter */}
+        <div className="mt-5 flex items-center gap-2.5">
+          <button
+            onClick={() => router.push("/search")}
+            className="glass flex h-12 flex-1 items-center gap-3 rounded-2xl px-4 text-left transition-transform active:scale-[0.99]"
+          >
+            <Icon name="search" size={22} className="text-on-surface-variant" />
+            <span className="text-body-md text-on-surface-variant/60">{sect.searchPlaceholder}</span>
+          </button>
+          <button
+            onClick={() => setFilterOpen(true)}
+            aria-label="Filter trips"
+            className="glass relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform active:scale-[0.97]"
+          >
+            <Icon name="tune" size={22} className="text-on-surface" />
+            {filterCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-on-primary">
+                {filterCount}
               </span>
-              <Icon name="chevron_right" size={18} className="shrink-0 text-primary" />
-            </Link>
-          );
-        })()}
+            )}
+          </button>
+        </div>
+
+        {/* ===== Explore by destination ===== */}
+        {destCities.length > 1 && (
+          <div className="mt-10">
+            <h2 className="mb-4 text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
+              Explore by destination
+            </h2>
+            <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-2 hide-scrollbar">
+              <Chip
+                variant={!cityFilter ? "selected" : "outlined"}
+                color="primary"
+                icon={<Icon name="public" size={16} />}
+                onClick={() => setCityFilter(null)}
+                className="shrink-0"
+              >
+                All destinations
+              </Chip>
+              {destCities.map((c) => (
+                <Chip
+                  key={c}
+                  variant={cityFilter === c ? "selected" : "outlined"}
+                  color="primary"
+                  icon={<Icon name="location_on" size={16} />}
+                  onClick={() => setCityFilter((prev) => (prev === c ? null : c))}
+                  className="shrink-0"
+                >
+                  {c}
+                </Chip>
+              ))}
+            </div>
+
+            {/* Results for the selected destination */}
+            {cityFilter && (() => {
+              const cityTrips = trips.filter((t) => cityOf(t.destination) === cityFilter);
+              return (
+                <div className="mt-5">
+                  {cityTrips.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+                      {cityTrips.map((trip) => (
+                        <TripCard key={trip.id} trip={trip} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="py-6 text-center text-body-md text-on-surface-variant">
+                      No trips to {cityFilter} right now.
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Recommended — horizontal snap-scroll carousel (mobile + desktop) */}
+        {recommended.length > 0 && (
+          <div className="mt-10">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface">Recommended trips</h2>
+              <span className="inline-flex items-center gap-1 text-[12px] font-medium text-on-surface-variant">
+                Swipe to explore
+                <Icon name="arrow_forward" size={14} />
+              </span>
+            </div>
+            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {recommended.map((trip) => (
+                <div
+                  key={trip.id}
+                  className="w-[82%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]"
+                >
+                  <TripCard trip={trip} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming-trip "Pack Your Bags!" reminder now lives in Notifications. */}
 
         {/* Promotional offer banners */}
         {show("offers") && (
@@ -555,7 +732,7 @@ export default function HomePage() {
       {/* ===== Trending Now ===== */}
       <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
-          <h2 className="text-title-lg font-title-lg text-on-surface">
+          <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
             {sect.trendingTitle}
           </h2>
           <button
@@ -584,7 +761,7 @@ export default function HomePage() {
       {/* ===== Weekend Getaways ===== */}
       <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
-          <h2 className="text-title-lg font-title-lg text-on-surface">
+          <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
             {sect.weekendTitle}
           </h2>
           <button
@@ -612,7 +789,7 @@ export default function HomePage() {
       {/* ===== Category Chips ===== */}
       {show("categories") && (
       <section className="mt-8 px-5">
-        <h2 className="text-title-lg font-title-lg text-on-surface mb-3">
+        <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
           {sect.categoriesTitle}
         </h2>
         <div className="flex gap-2.5 overflow-x-auto pb-2 hide-scrollbar">
@@ -639,7 +816,7 @@ export default function HomePage() {
       {/* ===== Popular Destinations / Favourites ===== */}
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 mb-3">
-          <h2 className="text-title-lg font-title-lg text-on-surface">
+          <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
             {view === "favourites"
               ? selectedCategory
                 ? `${selectedCategory} Favourites`
@@ -658,41 +835,72 @@ export default function HomePage() {
         {loading ? (
           <GridCardsSkeleton />
         ) : filteredPopular.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 px-5 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
-            {filteredPopular.map((trip) => (
-              <TripCard key={trip.id} trip={trip} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-3 px-5 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+              {(showAllPopular ? filteredPopular : filteredPopular.slice(0, POPULAR_LIMIT)).map((trip) => (
+                <TripCard key={trip.id} trip={trip} />
+              ))}
+            </div>
+            {filteredPopular.length > POPULAR_LIMIT && (
+              <div className="mt-6 flex justify-center px-5">
+                <button
+                  onClick={() => setShowAllPopular((v) => !v)}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[14px] font-semibold text-on-surface ring-1 ring-black/[0.06] shadow-[0_2px_10px_rgba(20,30,40,0.05)] transition active:scale-[0.98]"
+                >
+                  {showAllPopular ? "Show less" : `Show all ${filteredPopular.length} trips`}
+                  <Icon name={showAllPopular ? "expand_less" : "expand_more"} size={18} />
+                </button>
+              </div>
+            )}
+          </>
         ) : view === "favourites" ? (
-          <div className="px-5 py-16 text-center">
-            <Icon
-              name="favorite"
-              size={48}
-              className="mx-auto text-on-surface-variant/40"
+          <div className="py-8">
+            <EmptyState
+              icon="favorite"
+              title="No favourites yet"
+              description="Tap the heart on any trip to save it here for later."
+              action={{ label: "Browse trips", onClick: () => setView("all") }}
             />
-            <p className="mt-3 text-body-md text-on-surface-variant">
-              No favourites yet — tap the{" "}
-              <Icon
-                name="favorite"
-                size={16}
-                className="inline align-text-bottom text-primary"
-              />{" "}
-              on any trip to save it here.
-            </p>
           </div>
         ) : (
-          <div className="px-5 py-16 text-center">
-            <Icon
-              name="travel_explore"
-              size={48}
-              className="mx-auto text-on-surface-variant/40"
+          <div className="py-8">
+            <EmptyState
+              icon="travel_explore"
+              title="No trips found"
+              description={
+                cityFilter || selectedCategory
+                  ? "Nothing matches these filters yet — try clearing them."
+                  : "No trips available right now. Check back soon!"
+              }
+              action={
+                cityFilter || selectedCategory
+                  ? {
+                      label: "Clear filters",
+                      onClick: () => {
+                        setCityFilter(null);
+                        setSelectedCategory(null);
+                      },
+                    }
+                  : undefined
+              }
             />
-            <p className="mt-3 text-body-md text-on-surface-variant">
-              No trips found for this category
-            </p>
           </div>
         )}
       </section>
+
+      {/* ===== #travellingGoats footer ===== */}
+      <footer className="px-5 pb-10 pt-20 text-center">
+        <h2 className="text-[clamp(38px,12vw,72px)] font-semibold leading-[0.9] tracking-[-0.045em] text-on-surface">
+          #travelling<span className="text-[#C6F135]">Goats</span>
+        </h2>
+        <p className="mx-auto mt-4 max-w-sm text-[14px] leading-relaxed text-on-surface-variant">
+          Curated group adventures across India — planned end to end,
+          so all you have to do is show up and explore.
+        </p>
+        <p className="mt-8 text-[12px] text-on-surface-variant/70">
+          © 2026 Travelling Goats. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 }

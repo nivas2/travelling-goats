@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { cn, getInitials } from "@/lib/utils";
-import { BrandLogo } from "@/components/ui/brand-logo";
+import { BrandMark } from "@/components/ui/brand-mark";
 
 interface TopNavBarProps {
   notificationCount?: number;
@@ -27,6 +27,7 @@ export function TopNavBar({
   avatarUrl: avatarUrlProp,
 }: TopNavBarProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [city, setCity] = useState<string | null>(null);
   const pathname = usePathname();
   const { data: session } = useSession();
 
@@ -43,6 +44,29 @@ export function TopNavBar({
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Current location = the real device location (Geolocation → reverse-geocoded).
+  // Deliberately independent of the opted departure city (tg_selected_city) — this
+  // label reflects where the user actually is, not where their trip starts.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const r = await fetch(`/api/geocode?lat=${latitude}&lng=${longitude}`);
+          const d = await r.json();
+          if (d?.city) setCity(d.city);
+        } catch {
+          /* leave as "India" */
+        }
+      },
+      () => {
+        /* permission denied — leave as "India" */
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+    );
   }, []);
 
   // Hide on trip detail pages (they have their own back/share/wishlist)
@@ -63,10 +87,27 @@ export function TopNavBar({
           : "bg-transparent"
       )}
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-3 md:px-6">
-        {/* Logo / App Name */}
-        <Link href="/" className="flex items-center">
-          <BrandLogo size="sm" />
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 pb-3 pt-[max(1.75rem,env(safe-area-inset-top))] md:px-6 md:pt-3">
+        {/* Desktop: logo. Mobile: current location (logo hidden). */}
+        <Link href="/" className="hidden items-center md:flex">
+          <BrandMark size="sm" />
+        </Link>
+        <Link href="/search" className="flex items-center gap-1.5 md:hidden" aria-label="Current location">
+          <span
+            className="material-symbols-outlined text-[22px] text-primary"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
+            location_on
+          </span>
+          <span className="leading-tight">
+            <span className="block text-[11px] font-medium text-on-surface-variant">Current location</span>
+            <span className="flex items-center gap-0.5 text-[15px] font-semibold text-on-surface">
+              {city || "India"}
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant/70">
+                keyboard_arrow_down
+              </span>
+            </span>
+          </span>
         </Link>
 
         {/* Desktop Nav Links */}

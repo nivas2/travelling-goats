@@ -77,6 +77,8 @@ export async function getUpcomingTrips(limit = 4) {
         description: true,
         duration: true,
         origin: true,
+        destination: true,
+        category: true,
         maxGroupSize: true,
         currentBookings: true,
         basePricePaise: true,

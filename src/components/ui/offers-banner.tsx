@@ -13,6 +13,10 @@ export interface Offer {
   image?: string;
 }
 
+// Vibrant, harmonious palette — cards cycle through these so the row is
+// colourful and lively while staying cohesive.
+const OFFER_COLORS = ["#FF385C", "#7C4DFF", "#0EA5E9", "#F97316", "#10B981"];
+
 export function OffersBanner({ offers }: { offers: Offer[] }) {
   if (!offers.length) return null;
 
@@ -20,12 +24,12 @@ export function OffersBanner({ offers }: { offers: Offer[] }) {
     <section className="mt-2">
       <div className="mb-3 flex items-center gap-2 px-5">
         <Icon name="local_offer" size={18} className="text-primary" filled />
-        <h2 className="text-title-lg font-title-lg text-on-surface">Offers for you</h2>
+        <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface">Offers for you</h2>
       </div>
 
       <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1">
         {offers.map((o, i) => {
-          const color = o.color || "#FF385C";
+          const color = OFFER_COLORS[i % OFFER_COLORS.length];
           const CardInner = (
             <div
               className="relative flex h-[128px] w-[300px] shrink-0 snap-start overflow-hidden rounded-2xl p-4 shadow-sm md:w-[340px]"

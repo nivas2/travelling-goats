@@ -77,13 +77,15 @@ function QuickActionButton({
   color?: "default" | "red" | "blue" | "green" | "orange" | "purple";
   onClick: () => void;
 }) {
+  // All quick actions share the lime-green / black look — except SOS (red).
+  const lime = "bg-[#C6F135] text-[#181D27] hover:brightness-[1.04] shadow-[0_8px_22px_rgba(198,241,53,0.30)]";
   const colorStyles = {
-    default: "bg-surface-container-low text-on-surface hover:bg-surface-container",
-    red: "bg-error text-on-error hover:bg-error/90 shadow-lg",
-    blue: "bg-secondary text-on-secondary hover:bg-secondary/90",
-    green: "bg-success text-on-success hover:bg-success/90",
-    orange: "bg-warning text-on-surface hover:bg-warning/90",
-    purple: "bg-tertiary text-on-tertiary hover:bg-tertiary/90",
+    default: lime,
+    red: "bg-error text-white hover:bg-error/90 shadow-[0_8px_22px_rgba(220,38,38,0.28)]",
+    blue: lime,
+    green: lime,
+    orange: lime,
+    purple: lime,
   };
 
   return (
@@ -138,10 +140,10 @@ function StatusBanner({
         {/* Content overlay */}
         <div className="absolute inset-x-0 bottom-0 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/90 px-3 py-1 text-label-sm font-semibold text-on-success">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F135] px-3 py-1 text-label-sm font-semibold text-[#181D27]">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-on-success opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-on-success" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#181D27] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#181D27]" />
               </span>
               Live Trip
             </span>

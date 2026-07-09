@@ -59,15 +59,21 @@ export function TripCarousel({ trips, interval = 3000 }: TripCarouselProps) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
+              {/* Spots-left badge */}
+              <div className="absolute left-5 top-16 inline-flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-[12px] font-bold text-white backdrop-blur-md">
+                <Icon name="event_seat" size={13} filled className="text-[#C6F135]" />
+                {Math.max(trip.maxGroupSize - trip.currentBookings, 0)}/{trip.maxGroupSize} left
+              </div>
+
               {/* Trending badge */}
-              <div className="absolute left-5 top-5 flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 backdrop-blur-md">
+              <div className="absolute left-5 top-5 flex items-center gap-1.5 rounded-full bg-[#C6F135] px-3 py-1.5">
                 <Icon
                   name="local_fire_department"
                   size={16}
                   filled
-                  className="text-tertiary"
+                  className="text-[#181D27]"
                 />
-                <span className="text-label-sm font-semibold text-white">
+                <span className="text-label-sm font-semibold text-[#181D27]">
                   Trending
                 </span>
               </div>
@@ -100,12 +106,16 @@ export function TripCarousel({ trips, interval = 3000 }: TripCarouselProps) {
                     {trip.duration}D
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Icon name="star" size={15} filled className="text-tertiary" />
+                    <Icon name="star" size={15} filled className="text-[#C6F135]" />
                     {trip.rating.toFixed(1)} ({trip.reviewCount})
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Icon name="event_seat" size={15} filled className="text-[#C6F135]" />
+                    {Math.max(trip.maxGroupSize - trip.currentBookings, 0)}/{trip.maxGroupSize} left
                   </span>
                 </div>
                 <div className="mt-4 flex items-center gap-3">
-                  <span className="rounded-full bg-white px-5 py-2 text-label-lg font-semibold text-primary">
+                  <span className="rounded-full bg-[#C6F135] px-5 py-2 text-label-lg font-semibold text-[#181D27]">
                     Explore Trip &rarr;
                   </span>
                   <span className="text-title-md font-bold text-white">

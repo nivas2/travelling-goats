@@ -852,6 +852,27 @@ model PrivateRequestMessage {
 // Songs travellers suggest for the shared trip ("bus") playlist. Metadata comes
 // from the free iTunes Search API (title, artist, artwork, 30s preview).
 
+// ===== CONTACT / PARTNER REQUESTS =====
+// Public contact-form submissions from the marketing footer ("Contact Us" and
+// "Partner with Us"). No auth required — anyone can submit. Surfaced to admins
+// under /admin/contact-requests.
+model ContactRequest {
+  id        String   @id @default(cuid())
+  type      String   @default("GENERAL") // GENERAL | PARTNER
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  message   String
+  status    String   @default("OPEN") // OPEN | RESOLVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@map("contact_requests")
+}
+
 model PlaylistTrack {
   id         String   @id @default(cuid())
   tripId     String

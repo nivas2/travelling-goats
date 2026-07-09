@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { cn, getDaysUntil } from "@/lib/utils";
 import type { NotificationData } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -89,7 +89,43 @@ export default function NotificationsPage() {
       const json = await res.json();
       // API returns { data: { notifications, unreadCount } }.
       const list = json.data?.notifications ?? (Array.isArray(json.data) ? json.data : []);
-      setNotifications(Array.isArray(list) ? list : []);
+      let items: NotificationData[] = Array.isArray(list) ? list : [];
+
+      // Surface the upcoming-trip "Pack Your Bags!" reminder here (moved off the
+      // home screen) as a synthetic notification.
+      try {
+        const b = await fetch("/api/bookings?status=UPCOMING");
+        if (b.ok) {
+          const bj = await b.json();
+          const bookings: Array<{ id: string; tripTitle: string; destination: string; startDate: string }> =
+            bj?.data ?? [];
+          if (Array.isArray(bookings) && bookings.length) {
+            const nearest = [...bookings].sort(
+              (a, z) => new Date(a.startDate).getTime() - new Date(z.startDate).getTime()
+            )[0];
+            const days = getDaysUntil(nearest.startDate);
+            if (days >= 0) {
+              const when = days === 0 ? "starts today" : `starts in ${days} day${days === 1 ? "" : "s"}`;
+              items = [
+                {
+                  id: `upcoming-${nearest.id}`,
+                  title: "Pack Your Bags!",
+                  body: `${nearest.tripTitle} · ${nearest.destination} ${when}. Time to get ready!`,
+                  type: "TRIP",
+                  data: { bookingId: nearest.id },
+                  isRead: false,
+                  createdAt: new Date().toISOString(),
+                },
+                ...items,
+              ];
+            }
+          }
+        }
+      } catch {
+        /* reminder is best-effort */
+      }
+
+      setNotifications(items);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

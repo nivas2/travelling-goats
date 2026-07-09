@@ -35,7 +35,7 @@ export function BookingBottomBar({
   leftContent,
 }: BookingBottomBarProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant/10 bg-surface/95 backdrop-blur-md pb-safe">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.06] bg-white/90 backdrop-blur-xl shadow-[0_-10px_30px_rgba(20,30,40,0.06)] pb-safe">
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Left side: custom content / back + price info */}
         <div className="flex flex-1 items-center gap-3">
@@ -61,7 +61,7 @@ export function BookingBottomBar({
                   <p className="text-label-sm text-on-surface-variant truncate">
                     {priceSummary.label}
                   </p>
-                  <p className="text-title-md font-title-md text-primary">
+                  <p className="text-[18px] font-bold tracking-[-0.02em] text-on-surface">
                     {formatCurrency(priceSummary.amountPaise)}
                   </p>
                 </div>
@@ -74,6 +74,7 @@ export function BookingBottomBar({
         <div className="flex items-center gap-2">
           {leftAction}
           <Button
+            variant="accent"
             size="lg"
             onClick={onNext}
             disabled={isNextDisabled}

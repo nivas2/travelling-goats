@@ -41,23 +41,24 @@ export function EmptyState({
     >
       {/* Icon */}
       {(icon || iconElement) && (
-        <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-surface-container">
+        <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[26px] bg-[#C6F135]/20 ring-1 ring-[#C6F135]/40">
           {iconElement ?? (
             <Icon
               name={icon!}
-              size={40}
-              className="text-on-surface-variant"
+              size={38}
+              filled
+              className="text-[#181D27]"
             />
           )}
         </div>
       )}
 
       {/* Title */}
-      <h3 className="text-title-lg font-semibold text-on-surface">{title}</h3>
+      <h3 className="text-[20px] font-semibold tracking-[-0.02em] text-on-surface">{title}</h3>
 
       {/* Description */}
       {description && (
-        <p className="mt-2 max-w-xs text-body-md text-on-surface-variant">
+        <p className="mt-2 max-w-xs text-[14px] leading-relaxed text-on-surface-variant">
           {description}
         </p>
       )}
@@ -67,10 +68,11 @@ export function EmptyState({
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
           {action && (
             <Button
-              variant={action.variant ?? "primary"}
+              variant={action.variant ?? "accent"}
               icon={action.icon}
               loading={action.loading}
               onClick={action.onClick}
+              className="rounded-full"
             >
               {action.label}
             </Button>

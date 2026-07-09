@@ -1,74 +1,34 @@
-const CACHE_NAME = "travellinggoats-v2";
-const STATIC_ASSETS = [
-  "/manifest.json",
-];
+// Kill-switch service worker.
+//
+// A previous version of this app shipped a *caching* service worker, which can
+// keep serving stale HTML/JS/CSS after changes ("I can't see my changes").
+// This replacement does the opposite: on activation it deletes every cache,
+// unregisters itself, and reloads any open tabs — so nothing is ever cached
+// and the browser always fetches the latest from the server.
 
-// Install — skip waiting to activate immediately
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  );
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
-// Activate — delete ALL old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    )
-  );
-  self.clients.claim();
-});
-
-// Fetch — network only for navigation, network-first for static assets
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-
-  const url = new URL(event.request.url);
-
-  // Never cache API, _next, or auth routes
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_next/")) {
-    return;
-  }
-
-  // Navigation requests (page loads) — always network, never cache
-  // This prevents stale HTML from being served after deployments
-  if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match("/manifest.json").then(() => {
-          return new Response(
-            "<html><body><h1>Offline</h1><p>Please check your connection.</p></body></html>",
-            { headers: { "Content-Type": "text/html" } }
-          );
-        });
-      })
-    );
-    return;
-  }
-
-  // Other GET requests (images, fonts etc.) — network first, cache fallback
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          return new Response("Offline", { status: 503 });
-        });
-      })
+    (async () => {
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      } catch {
+        /* ignore */
+      }
+      try {
+        await self.registration.unregister();
+      } catch {
+        /* ignore */
+      }
+      const clients = await self.clients.matchAll({ type: "window" });
+      clients.forEach((c) => c.navigate(c.url));
+    })()
   );
 });
+
+// Pass every request straight through to the network — never serve from cache.
+self.addEventListener("fetch", () => {});

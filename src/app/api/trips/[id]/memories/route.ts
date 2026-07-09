@@ -6,6 +6,42 @@ import { applyRateLimit } from "@/lib/rate-limit";
 
 const logger = createLogger({ route: "trip-memories" });
 
+// List uploaded photos for a trip (photos only — entries with an image).
+// `isMine` lets the client show a delete control on the viewer's own photos.
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+    const { id: tripId } = await params;
+
+    const rows = await prisma.memoryEntry.findMany({
+      where: { tripId, imageUrl: { not: null } },
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { name: true, avatar: true } } },
+    });
+
+    const data = rows.map((m) => ({
+      id: m.id,
+      imageUrl: m.imageUrl ?? "",
+      caption: m.content ?? "",
+      userName: m.user.name ?? "Traveller",
+      userAvatar: m.user.avatar,
+      createdAt: m.createdAt.toISOString(),
+      isMine: m.userId === session.user.id,
+    }));
+
+    return NextResponse.json({ success: true, data });
+  } catch (error) {
+    logger.error("List memories error", error);
+    return NextResponse.json({ success: false, error: "Failed to load memories" }, { status: 500 });
+  }
+}
+
 // Add a memory/photo to the shared trip journal.
 export async function POST(
   req: NextRequest,

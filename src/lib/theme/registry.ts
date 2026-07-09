@@ -29,7 +29,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Brand Colors",
     type: "color",
     vars: ["--brand-primary"],
-    default: "#FF385C",
+    default: "#181D27",
   },
   {
     key: "secondary",
@@ -38,7 +38,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Brand Colors",
     type: "color",
     vars: ["--brand-secondary"],
-    default: "#222222",
+    default: "#181D27",
   },
   {
     key: "accent",
@@ -47,7 +47,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Brand Colors",
     type: "color",
     vars: ["--brand-accent"],
-    default: "#FF385C",
+    default: "#181D27",
   },
   // ---- Status Colors ----
   {
@@ -75,7 +75,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Status Colors",
     type: "color",
     vars: ["--brand-error"],
-    default: "#FF385C",
+    default: "#DC2626",
   },
   // ---- Surfaces ----
   {
@@ -84,7 +84,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Surfaces",
     type: "color",
     vars: ["--brand-background"],
-    default: "#FFFFFF",
+    default: "#F2F2F5",
   },
   {
     key: "surface",
@@ -101,9 +101,9 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Typography",
     type: "select",
     vars: ["--font-sans", "--font-display"],
-    default: '"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif',
+    default: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif',
     options: [
-      { label: "Plus Jakarta Sans (default)", value: '"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif' },
+      { label: "SF Pro (default)", value: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif' },
       { label: "Inter / System", value: 'Inter, ui-sans-serif, system-ui, -apple-system, sans-serif' },
       { label: "Rounded (system)", value: 'ui-rounded, "SF Pro Rounded", system-ui, sans-serif' },
       { label: "Georgia (serif)", value: 'Georgia, "Times New Roman", serif' },
@@ -161,6 +161,26 @@ export interface ThemePreset {
 }
 
 export const THEME_PRESETS: ThemePreset[] = [
+  {
+    name: "DocNow",
+    hint: "Ink + lime + light-grey (current)",
+    swatch: "#181D27",
+    values: {
+      primary: "#181D27", secondary: "#181D27", accent: "#181D27",
+      success: "#3F7D4E", warning: "#D08A2C", error: "#DC2626",
+      background: "#F2F2F5", surface: "#FFFFFF",
+    },
+  },
+  {
+    name: "Easy Trip",
+    hint: "Premium ink + lavender",
+    swatch: "#231212",
+    values: {
+      primary: "#231212", secondary: "#231212", accent: "#231212",
+      success: "#3F7D4E", warning: "#D08A2C", error: "#DC2626",
+      background: "#F7F6FA", surface: "#FFFFFF",
+    },
+  },
   {
     name: "Coral",
     hint: "The original brand look",

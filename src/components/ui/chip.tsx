@@ -14,30 +14,30 @@ export interface ChipProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const colorFilled: Record<NonNullable<ChipProps["color"]>, string> = {
-  primary: "bg-primary-container text-on-primary-container",
-  secondary: "bg-secondary-container text-on-secondary-container",
-  tertiary: "bg-tertiary-container text-on-tertiary-container",
+  primary: "bg-white text-on-surface ring-1 ring-black/[0.06]",
+  secondary: "bg-white text-on-surface ring-1 ring-black/[0.06]",
+  tertiary: "bg-[#C6F135]/15 text-on-surface",
 };
 
 const colorOutlined: Record<NonNullable<ChipProps["color"]>, string> = {
-  primary: "border-primary text-primary",
-  secondary: "border-secondary text-secondary",
-  tertiary: "border-tertiary text-tertiary",
+  primary: "bg-white border-black/10 text-on-surface",
+  secondary: "bg-white border-black/10 text-on-surface-variant",
+  tertiary: "bg-white border-black/10 text-on-surface",
 };
 
 const colorSelected: Record<NonNullable<ChipProps["color"]>, string> = {
-  primary: "bg-primary text-on-primary",
-  secondary: "bg-secondary text-on-secondary",
-  tertiary: "bg-tertiary text-on-tertiary",
+  primary: "bg-[#181D27] text-white",
+  secondary: "bg-[#181D27] text-white",
+  tertiary: "bg-[#C6F135] text-[#181D27]",
 };
 
 // Inline color guarantee for selected variant.
 // tailwind-merge can strip `text-on-primary` when className includes other
 // `text-*` utilities (e.g. `text-body-md`). The style prop bypasses twMerge.
 const selectedColorStyle: Record<NonNullable<ChipProps["color"]>, string> = {
-  primary: "var(--color-on-primary)",
-  secondary: "var(--color-on-secondary)",
-  tertiary: "var(--color-on-tertiary)",
+  primary: "#ffffff",
+  secondary: "#ffffff",
+  tertiary: "#181D27",
 };
 
 const Chip = forwardRef<HTMLDivElement, ChipProps>(

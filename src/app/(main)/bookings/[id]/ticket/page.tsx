@@ -71,14 +71,14 @@ function titleCase(s?: string) {
 function statusStyle(status: string) {
   switch (status) {
     case "CONFIRMED":
-      return "bg-success/90 text-white";
+      return "bg-[#C6F135] text-[#181D27]";
     case "COMPLETED":
-      return "bg-white/90 text-on-surface";
+      return "bg-white text-[#181D27]";
     case "CANCELLED":
     case "REFUNDED":
-      return "bg-error/90 text-white";
+      return "bg-error text-white";
     default:
-      return "bg-secondary/90 text-white";
+      return "bg-white/20 text-white backdrop-blur-md";
   }
 }
 
@@ -92,13 +92,13 @@ function Detail({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-2.5">
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#C6F135]/15 text-[#C6F135]">
         <Icon name={icon} size={18} filled />
       </span>
       <div className="min-w-0">
-        <p className="text-label-sm text-on-surface-variant">{label}</p>
-        <p className="truncate text-label-lg font-semibold text-on-surface">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-white/50">{label}</p>
+        <p className="truncate text-[14px] font-semibold text-white">
           {value || "—"}
         </p>
       </div>
@@ -184,7 +184,7 @@ export default function TicketPage() {
       const dataUrl = await toPng(ticketRef.current, {
         pixelRatio: 2,
         cacheBust: true,
-        backgroundColor: "#ffffff",
+        backgroundColor: "#181D27",
       });
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `ticket-${ticket.bookingNumber}.png`, {
@@ -217,26 +217,26 @@ export default function TicketPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-surface-container-low px-4 pb-28 pt-5 md:pb-10">
+    <div className="min-h-dvh bg-background px-4 pb-28 pt-[max(1.25rem,env(safe-area-inset-top))] md:pb-10">
       {/* Top bar */}
       <div className="mx-auto mb-5 flex max-w-md items-center justify-between">
         <button
           onClick={() => router.back()}
           aria-label="Back"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-on-surface shadow-sm transition active:scale-95"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-on-surface ring-1 ring-black/5 transition active:scale-95"
         >
-          <Icon name="chevron_left" size={24} />
+          <Icon name="arrow_back" size={22} />
         </button>
-        <h1 className="text-title-lg font-semibold text-on-surface">Your Ticket</h1>
+        <h1 className="text-[17px] font-semibold tracking-[-0.01em] text-on-surface">Your Ticket</h1>
         <div className="w-10" />
       </div>
 
       {loading ? (
         <div className="mx-auto max-w-md">
-          <Skeleton variant="rectangular" height={520} className="rounded-3xl" />
+          <Skeleton variant="rectangular" height={520} className="rounded-[28px]" />
         </div>
       ) : error || !ticket ? (
-        <div className="mx-auto flex max-w-md flex-col items-center rounded-3xl bg-surface px-6 py-16 text-center shadow-sm">
+        <div className="mx-auto flex max-w-md flex-col items-center rounded-[28px] bg-white px-6 py-16 text-center ring-1 ring-black/5">
           <Icon
             name="confirmation_number"
             size={56}
@@ -259,7 +259,7 @@ export default function TicketPage() {
         <div className="mx-auto max-w-md">
           <div
             ref={ticketRef}
-            className="overflow-hidden rounded-3xl bg-surface shadow-elevated"
+            className="overflow-hidden rounded-[28px] bg-[#181D27] shadow-[0_30px_70px_rgba(20,30,40,0.28)] ring-1 ring-white/10"
           >
             {/* ===== Header with cover ===== */}
             <div className="relative h-44">
@@ -269,12 +269,16 @@ export default function TicketPage() {
                 alt={ticket.trip.title}
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#181D27] via-[#181D27]/55 to-[#181D27]/10" />
               <div className="absolute inset-0 flex flex-col justify-between p-5">
-                <div className="flex justify-end">
+                <div className="flex items-start justify-between">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
+                    <Icon name="confirmation_number" size={15} filled />
+                    Boarding Pass
+                  </span>
                   <span
                     className={cn(
-                      "rounded-full px-3 py-1 text-label-sm font-bold uppercase tracking-wide backdrop-blur-sm",
+                      "rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide backdrop-blur-sm",
                       statusStyle(ticket.status)
                     )}
                   >
@@ -282,11 +286,11 @@ export default function TicketPage() {
                   </span>
                 </div>
                 <div>
-                  <h2 className="text-headline-sm font-bold text-white text-shadow-premium">
+                  <h2 className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-white">
                     {ticket.trip.title}
                   </h2>
-                  <p className="mt-1 inline-flex items-center gap-1 text-body-md text-white/90">
-                    <Icon name="location_on" size={16} />
+                  <p className="mt-1 inline-flex items-center gap-1 text-[13px] text-white/85">
+                    <Icon name="location_on" size={16} filled />
                     {ticket.trip.destination}
                   </p>
                 </div>
@@ -301,42 +305,42 @@ export default function TicketPage() {
                 return (
                   <>
                     <div className="text-center">
-                      <p className="text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
                         Depart
                       </p>
-                      <p className="mt-1 text-headline-sm font-bold text-on-surface">
+                      <p className="mt-1 text-[28px] font-bold leading-none text-white">
                         {s.day}
                       </p>
-                      <p className="text-label-md text-on-surface-variant">
+                      <p className="mt-1 text-[12px] text-white/60">
                         {s.month} · {s.weekday}
                       </p>
                     </div>
 
                     <div className="flex flex-1 flex-col items-center justify-center px-2">
-                      <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-label-sm font-bold text-primary">
+                      <span className="rounded-full bg-[#C6F135] px-2.5 py-0.5 text-[11px] font-bold text-[#181D27]">
                         {ticket.trip.duration}D
                       </span>
                       <div className="relative mt-2 flex w-full items-center">
-                        <span className="h-2 w-2 rounded-full bg-primary" />
-                        <span className="h-px flex-1 border-t-2 border-dashed border-primary/40" />
+                        <span className="h-2 w-2 rounded-full bg-[#C6F135]" />
+                        <span className="h-px flex-1 border-t-2 border-dashed border-white/25" />
                         <Icon
                           name="hiking"
                           size={18}
-                          className="mx-1 text-primary"
+                          className="mx-1 text-[#C6F135]"
                         />
-                        <span className="h-px flex-1 border-t-2 border-dashed border-primary/40" />
-                        <span className="h-2 w-2 rounded-full bg-primary" />
+                        <span className="h-px flex-1 border-t-2 border-dashed border-white/25" />
+                        <span className="h-2 w-2 rounded-full bg-[#C6F135]" />
                       </div>
                     </div>
 
                     <div className="text-center">
-                      <p className="text-label-sm font-semibold uppercase tracking-wide text-on-surface-variant">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
                         Return
                       </p>
-                      <p className="mt-1 text-headline-sm font-bold text-on-surface">
+                      <p className="mt-1 text-[28px] font-bold leading-none text-white">
                         {e.day}
                       </p>
-                      <p className="text-label-md text-on-surface-variant">
+                      <p className="mt-1 text-[12px] text-white/60">
                         {e.month} · {e.weekday}
                       </p>
                     </div>
@@ -372,7 +376,7 @@ export default function TicketPage() {
 
               {/* Travellers / members */}
               <div>
-                <p className="mb-2.5 text-label-md font-semibold uppercase tracking-wide text-on-surface-variant">
+                <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-white/50">
                   Travellers · {ticket.travelerCount}
                 </p>
                 <div className="space-y-2">
@@ -380,17 +384,17 @@ export default function TicketPage() {
                     travelers.map((t, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 rounded-xl bg-surface-container-low p-2.5"
+                        className="flex items-center gap-3 rounded-xl bg-white/[0.06] p-2.5"
                       >
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-container text-label-lg font-bold text-on-primary-container">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#C6F135] text-[13px] font-bold text-[#181D27]">
                           {initials(t.name)}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-label-lg font-semibold text-on-surface">
+                          <p className="truncate text-[14px] font-semibold text-white">
                             {t.name}
                           </p>
                           {(t.gender || t.age) && (
-                            <p className="text-label-sm text-on-surface-variant">
+                            <p className="text-[12px] text-white/55">
                               {[titleCase(t.gender), t.age ? `${t.age} yrs` : null]
                                 .filter(Boolean)
                                 .join(" · ")}
@@ -400,13 +404,13 @@ export default function TicketPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="flex items-center gap-3 rounded-xl bg-surface-container-low p-2.5">
+                    <div className="flex items-center gap-3 rounded-xl bg-white/[0.06] p-2.5">
                       <Icon
                         name="group"
                         size={20}
-                        className="text-on-surface-variant"
+                        className="text-white/60"
                       />
-                      <p className="text-label-lg text-on-surface-variant">
+                      <p className="text-[14px] text-white/70">
                         {ticket.travelerCount} traveller
                         {ticket.travelerCount !== 1 ? "s" : ""}
                       </p>
@@ -418,14 +422,14 @@ export default function TicketPage() {
 
             {/* ===== Perforated tear line ===== */}
             <div className="relative">
-              <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-surface-container-low" />
-              <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-surface-container-low" />
-              <div className="mx-5 border-t-2 border-dashed border-outline-variant/60" />
+              <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-background" />
+              <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-background" />
+              <div className="mx-5 border-t-2 border-dashed border-white/20" />
             </div>
 
             {/* ===== QR stub ===== */}
             <div className="flex flex-col items-center px-6 py-7">
-              <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-outline-variant/40">
+              <div className="rounded-2xl bg-white p-3">
                 <QRCodeCanvas
                   value={
                     typeof window !== "undefined"
@@ -435,22 +439,22 @@ export default function TicketPage() {
                   size={148}
                   level="M"
                   marginSize={0}
-                  fgColor="#1c1b1f"
+                  fgColor="#181D27"
                   bgColor="#ffffff"
                 />
               </div>
-              <p className="mt-4 inline-flex items-center gap-1.5 text-label-lg font-semibold text-on-surface">
-                <Icon name="qr_code_scanner" size={18} className="text-primary" />
+              <p className="mt-4 inline-flex items-center gap-1.5 text-[14px] font-semibold text-white">
+                <Icon name="qr_code_scanner" size={18} className="text-[#C6F135]" />
                 Show this at check-in
               </p>
-              <p className="mt-1 font-mono text-label-md tracking-widest text-on-surface-variant">
+              <p className="mt-1 font-mono text-[13px] tracking-widest text-white/55">
                 {ticket.bookingNumber}
               </p>
-              <div className="mt-4 flex w-full items-center justify-between border-t border-outline-variant/40 pt-4">
-                <span className="text-label-md text-on-surface-variant">
+              <div className="mt-4 flex w-full items-center justify-between border-t border-white/15 pt-4">
+                <span className="text-[13px] text-white/60">
                   Total Paid
                 </span>
-                <span className="text-title-md font-bold text-primary">
+                <span className="text-[18px] font-bold text-[#C6F135]">
                   {formatCurrency(ticket.totalPricePaise)}
                 </span>
               </div>

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GlassCard } from "@/components/ui/glass-card";
 import { useAuthStore } from "@/stores/auth-store";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { useGoatSound } from "@/hooks/use-goat-sound";
@@ -59,18 +58,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6">
-      {/* Decorative background blobs */}
+    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6">
+      {/* subtle brand glow */}
       <div
-        className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-primary-container/30 blur-3xl md:h-96 md:w-96"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-secondary-container/20 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute top-1/3 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-primary-fixed/20 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#C6F135]/20 blur-3xl"
         aria-hidden="true"
       />
 
@@ -84,12 +75,12 @@ export default function LoginPage() {
       </div>
 
       {/* Login Card */}
-      <GlassCard className="w-full max-w-md space-y-6 p-6 md:max-w-xl md:p-8">
+      <div className="w-full max-w-md space-y-6 rounded-[28px] bg-white p-6 ring-1 ring-black/[0.06] shadow-[0_20px_50px_rgba(20,30,40,0.08)] md:max-w-xl md:p-8">
         <div className="text-center">
-          <h2 className="text-title-lg font-title-lg text-on-surface md:text-headline-md md:font-headline-md">
+          <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-on-surface">
             Welcome back
           </h2>
-          <p className="mt-1 text-body-md text-on-surface-variant">
+          <p className="mt-1.5 text-[14px] text-on-surface-variant">
             Enter your phone number to continue
           </p>
         </div>
@@ -139,6 +130,7 @@ export default function LoginPage() {
 
           <Button
             type="submit"
+            variant="accent"
             fullWidth
             size="lg"
             loading={loading}
@@ -190,7 +182,7 @@ export default function LoginPage() {
             Continue with Google
           </Button>
         </div>
-      </GlassCard>
+      </div>
 
       {/* Terms Footer */}
       <p className="mt-6 max-w-md text-center text-label-sm text-on-surface-variant">

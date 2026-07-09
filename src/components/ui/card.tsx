@@ -10,9 +10,11 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<NonNullable<CardProps["variant"]>, string> = {
-  default: "bg-surface-container-lowest shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.04)] border border-outline-variant/10",
-  elevated: "bg-surface-container-lowest shadow-[0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.08)]",
-  outlined: "bg-surface-container-lowest border border-outline-variant shadow-none",
+  default:
+    "bg-white ring-1 ring-black/[0.06] shadow-[0_1px_3px_rgba(20,30,40,0.05)]",
+  elevated:
+    "bg-white ring-1 ring-black/[0.05] shadow-[0_12px_34px_rgba(20,30,40,0.10)]",
+  outlined: "bg-white ring-1 ring-black/[0.08]",
 };
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -28,10 +30,10 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     ref
   ) => {
     const classes = cn(
-      "rounded-2xl p-5",
+      "rounded-[20px] p-5",
       variantStyles[variant],
       clickable &&
-        "cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08),0_12px_32px_rgba(0,0,0,0.06)] active:scale-[0.99]",
+        "cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_14px_36px_rgba(20,30,40,0.12)] active:scale-[0.99]",
       className
     );
 

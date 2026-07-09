@@ -53,9 +53,8 @@ export type BlockDef = SingleBlockDef | ListBlockDef;
 export type ContentValue = Record<string, string> | Record<string, string>[];
 export type ContentMap = Record<string, ContentValue>;
 
-/** Default hero background — high-res render of the original landing image. */
-export const HERO_IMAGE_DEFAULT =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAD7CRbu1MDRsH4TN6CMMoCuZem3bk7Zoa_bscO-phi_SuypUigU8_5QJZGTeNS_ktfncpFQBKZtFu3rAO0JX-qcm-O4Sj0EA08Z10p0AScu-A7iJPOGzB2CSra3zxcvfjgBXNt2iHnS6Xl0fr4JrMG-2UTby9AL3upWcLLHem5w300tDsCUG5YJJbznbq9aB80G8OMtG-44TQ98OFl_bUJPbLhMijXnLd_jebhBFcneWlESt43Uc_n=w2560";
+/** Default hero background — self-hosted moody misty-forest photo. */
+export const HERO_IMAGE_DEFAULT = "/uploads/hero-forest.jpg";
 
 export const CONTENT_BLOCKS: BlockDef[] = [
   // --------------------------------------------------------------- Branding --
@@ -387,10 +386,10 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       },
     ],
     default: [
-      { title: "Flat ₹1000 OFF", subtitle: "On your first group trip", badge: "FIRST1000", color: "#FF385C", ctaText: "Grab now", link: "/trips", image: "" },
-      { title: "Weekend Getaways", subtitle: "Starting ₹2,999 per person", badge: "WEEKEND", color: "#0E7C7B", ctaText: "Explore", link: "/trips", image: "" },
-      { title: "Refer & Earn", subtitle: "Get 50 points per friend", badge: "REFER50", color: "#7C3AED", ctaText: "Invite", link: "/referral", image: "" },
-      { title: "Monsoon Special", subtitle: "20% off all hill stations", badge: "RAIN20", color: "#1E6FB0", ctaText: "Book now", link: "/trips", image: "" },
+      { title: "Flat ₹1000 OFF", subtitle: "On your first group trip", badge: "FIRST1000", color: "#181D27", ctaText: "Grab now", link: "/trips", image: "" },
+      { title: "Weekend Getaways", subtitle: "Starting ₹2,999 per person", badge: "WEEKEND", color: "#2A3140", ctaText: "Explore", link: "/trips", image: "" },
+      { title: "Refer & Earn", subtitle: "Get 50 points per friend", badge: "REFER50", color: "#232A38", ctaText: "Invite", link: "/referral", image: "" },
+      { title: "Monsoon Special", subtitle: "20% off all hill stations", badge: "RAIN20", color: "#2E3646", ctaText: "Book now", link: "/trips", image: "" },
     ],
   },
   {

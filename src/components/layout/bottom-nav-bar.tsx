@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,23 @@ const tabs: NavTab[] = [
 export function BottomNavBar() {
   const pathname = usePathname();
 
+  // Hide the bar while the user is actively scrolling; reveal it once scrolling
+  // stops (idle). Hooks run before any early return (rules of hooks).
+  const [scrolling, setScrolling] = useState(false);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolling(true);
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      idleTimer.current = setTimeout(() => setScrolling(false), 250);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    };
+  }, []);
+
   // Hide on trip detail pages (they have their own fixed bottom bar)
   const isTripDetail = /^\/trips\/[^/]+$/.test(pathname);
   if (isTripDetail) return null;
@@ -32,51 +50,39 @@ export function BottomNavBar() {
   return (
     <nav
       className={cn(
-        "fixed left-4 right-4 z-50 md:hidden",
+        "app-bottom-nav fixed left-4 right-4 z-50 md:hidden",
         "bottom-[max(1rem,env(safe-area-inset-bottom))]",
-        "rounded-2xl bg-surface-container-lowest/90 backdrop-blur-xl shadow-nav",
-        "border border-outline-variant/20"
+        "transition-all duration-300 ease-out",
+        scrolling
+          ? "pointer-events-none translate-y-[180%] opacity-0"
+          : "translate-y-0 opacity-100"
       )}
     >
-      <div className="flex items-center justify-around gap-1 px-3 py-2.5">
+      {/* Floating dark liquid-glass pill with a lime-highlighted active tab */}
+      <div className="glass-dark mx-auto flex max-w-sm items-center justify-around rounded-full px-2 py-2">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
           return (
             <Link
               key={tab.href}
               href={tab.href}
+              aria-label={tab.label}
               className={cn(
-                "flex flex-col items-center gap-0.5 min-w-[64px] transition-all duration-200",
-                active
-                  ? "text-primary"
-                  : "text-on-surface-variant/60 hover:text-on-surface-variant"
+                "flex h-12 items-center justify-center gap-1.5 rounded-full transition-all duration-300",
+                active ? "bg-[#C6F135] px-5" : "w-12 text-white/80 hover:text-white"
               )}
             >
               <span
                 className={cn(
-                  "flex items-center justify-center transition-all duration-200",
-                  active
-                    ? "bg-primary/12 rounded-xl px-4 py-1.5"
-                    : "px-4 py-1.5"
+                  "material-symbols-outlined text-[24px]",
+                  active && "filled text-[#181D27]"
                 )}
               >
-                <span
-                  className={cn(
-                    "material-symbols-outlined text-[22px]",
-                    active && "filled"
-                  )}
-                >
-                  {tab.icon}
-                </span>
+                {tab.icon}
               </span>
-              <span
-                className={cn(
-                  "text-[11px] leading-none",
-                  active ? "font-semibold" : "font-normal"
-                )}
-              >
-                {tab.label}
-              </span>
+              {active && (
+                <span className="text-[13px] font-bold text-[#181D27]">{tab.label}</span>
+              )}
             </Link>
           );
         })}

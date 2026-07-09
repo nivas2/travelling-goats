@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Turn a raw category value ("ROAD_TRIP", "Road_Trip") into a display label
+ * ("Road Trip"): underscores → spaces, each word title-cased.
+ */
+export function formatCategory(category?: string | null): string {
+  if (!category) return "";
+  return category
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function formatCurrency(paise: number): string {
   const rupees = paise / 100;
   return new Intl.NumberFormat("en-IN", {

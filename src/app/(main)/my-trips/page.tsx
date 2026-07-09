@@ -60,27 +60,27 @@ function getStatusBadgeProps(status: BookingTrip["status"]) {
     case "UPCOMING":
       return {
         label: "Upcoming",
-        className: "bg-secondary-container text-on-secondary-container",
+        className: "bg-[#181D27] text-white",
       };
     case "ONGOING":
       return {
         label: "Live",
-        className: "bg-success text-on-success",
+        className: "bg-[#C6F135] text-[#181D27]",
       };
     case "COMPLETED":
       return {
         label: "Completed",
-        className: "bg-surface-container-high text-on-surface-variant",
+        className: "bg-white text-on-surface ring-1 ring-black/[0.06]",
       };
     case "CANCELLED":
       return {
         label: "Cancelled",
-        className: "bg-error-container text-on-error-container",
+        className: "bg-error/10 text-error",
       };
     default:
       return {
         label: status,
-        className: "bg-surface-container text-on-surface-variant",
+        className: "bg-white text-on-surface-variant ring-1 ring-black/[0.06]",
       };
   }
 }
@@ -308,7 +308,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
   );
 
   return (
-    <Card variant="elevated" className="overflow-hidden p-0 border-2 border-primary/20">
+    <Card variant="elevated" className="overflow-hidden p-0 ring-2 ring-[#C6F135]/70">
       {/* Cover Image */}
       <div className="relative h-[180px] w-full overflow-hidden">
         <Image
@@ -320,10 +320,10 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
         />
         {/* Live Badge */}
         <div className="absolute left-3 top-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1 text-label-sm font-semibold text-on-success">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F135] px-3 py-1 text-label-sm font-semibold text-[#181D27]">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-on-success opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-on-success" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#181D27] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#181D27]" />
             </span>
             Day {dayNumber} of {booking.duration}
           </span>
@@ -380,6 +380,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
         {/* CTA */}
         <div className="mt-4 flex items-center gap-2">
           <Button
+            variant="accent"
             className="flex-1"
             icon={<Icon name="explore" size={20} />}
             onClick={() => router.push(`/trips/${booking.tripId}/hub`)}
@@ -472,6 +473,7 @@ function CompletedTripCard({ booking }: { booking: BookingTrip }) {
           {!booking.hasReviewed ? (
             <Button
               size="sm"
+              variant="accent"
               icon={<Icon name="rate_review" size={16} />}
               onClick={() => router.push(`/trips/${booking.tripId}/reviews`)}
             >
@@ -487,7 +489,7 @@ function CompletedTripCard({ booking }: { booking: BookingTrip }) {
             size="sm"
             variant="ghost"
             icon={<Icon name="photo_library" size={16} />}
-            onClick={() => router.push(`/trips/${booking.tripId}/hub`)}
+            onClick={() => router.push(`/trips/${booking.tripId}/memories`)}
           >
             Memories
           </Button>
@@ -541,11 +543,11 @@ export default function MyTripsPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-6">
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-headline-md font-headline-md text-on-surface">
+      <div className="mb-6 pt-[max(0.5rem,env(safe-area-inset-top))]">
+        <h1 className="text-[32px] font-semibold leading-[1.05] tracking-[-0.03em] text-on-surface">
           My Trails
         </h1>
-        <p className="mt-1 text-body-md text-on-surface-variant">
+        <p className="mt-1.5 text-[14px] text-on-surface-variant">
           Your upcoming adventures and past memories
         </p>
       </div>

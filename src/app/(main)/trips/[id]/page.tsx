@@ -7,17 +7,24 @@ import { useRouter, useParams } from "next/navigation";
 import { cn, formatCurrency, formatDateRange, formatDate } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
-import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Rating } from "@/components/ui/rating";
-import { ProgressBar } from "@/components/ui/progress-bar";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui/tabs";
 import { Avatar } from "@/components/ui/avatar";
 import { WriteReviewModal } from "@/components/reviews/write-review-modal";
+import { TripLocationWeather } from "@/components/trips/trip-location-weather";
+import { StartingCityGate } from "@/components/ui/starting-city-notice";
+import { useStartingCity } from "@/lib/use-starting-city";
 import type { TripDetail, ApiResponse } from "@/types";
+
+// Representative traveller avatars for the "who's going" stack on the hero.
+const TRAVELER_AVATARS = [
+  "/uploads/avatar1.jpg",
+  "/uploads/avatar2.jpg",
+  "/uploads/avatar3.jpg",
+];
 
 // ---------------------------------------------------------------------------
 // Image Carousel
@@ -77,7 +84,7 @@ function ImageCarousel({
 
   return (
     <div
-      className="relative h-[360px] w-full overflow-hidden"
+      className="relative h-[440px] w-full overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -244,12 +251,30 @@ export default function TripDetailPage() {
   const [fetchError, setFetchError] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [weather, setWeather] = useState<{
+    tempC: number;
+    icon: string;
+    condition: string;
+  } | null>(null);
 
   // Real reviews for the reviews tab
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [canReview, setCanReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [writeOpen, setWriteOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+
+  // Only riders departing from a served starting city can book.
+  const startingCity = useStartingCity();
+
+  // Gate booking: users from unserved locations must pick a starting city first.
+  const startBooking = useCallback(() => {
+    if (startingCity.ready && !startingCity.isServed) {
+      setGateOpen(true);
+      return;
+    }
+    router.push(`/${id}/travelers`);
+  }, [startingCity.ready, startingCity.isServed, router, id]);
 
   const loadReviews = useCallback(async () => {
     try {
@@ -303,6 +328,21 @@ export default function TripDetailPage() {
   useEffect(() => {
     fetchTrip();
   }, [fetchTrip]);
+
+  // Live weather for the hero pill (Open-Meteo via /api/weather).
+  useEffect(() => {
+    if (!trip?.destination) return;
+    let active = true;
+    fetch(`/api/weather?place=${encodeURIComponent(trip.destination)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (active && d?.available) setWeather(d);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [trip?.destination]);
 
   const handleShare = async () => {
     if (navigator.share && trip) {
@@ -364,15 +404,20 @@ export default function TripDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-40">
-      {/* ===== Hero Image Carousel ===== */}
+      {/* ===== Hero ===== */}
       <div className="relative">
         <ImageCarousel images={trip.images} title={trip.title} />
 
-        {/* Top action buttons */}
-        <div className="absolute left-4 right-4 top-4 flex items-center justify-between z-10">
+        {/* overall black tint for depth + contrast */}
+        <div className="pointer-events-none absolute inset-0 bg-black/30" />
+        {/* bottom scrim for overlaid title legibility */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+        {/* top bar: back + (share, weather) */}
+        <div className="absolute inset-x-4 top-[max(1rem,env(safe-area-inset-top))] z-10 flex items-start justify-between">
           <button
             onClick={() => router.back()}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur-md transition-colors hover:bg-black/50"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-black/30 ring-1 ring-white/15 backdrop-blur-md transition active:scale-95 hover:bg-black/45"
             aria-label="Go back"
           >
             <Icon name="arrow_back" size={22} className="text-white" />
@@ -381,128 +426,162 @@ export default function TripDetailPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleShare}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur-md transition-colors hover:bg-black/50"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-black/30 ring-1 ring-white/15 backdrop-blur-md transition active:scale-95 hover:bg-black/45"
               aria-label="Share trip"
             >
-              <Icon name="share" size={22} className="text-white" />
+              <Icon name="share" size={20} className="text-white" />
             </button>
-            <button
-              onClick={toggleWishlist}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 backdrop-blur-md transition-colors hover:bg-black/50"
-              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-            >
-              <Icon
-                name="favorite"
-                size={22}
-                filled={isWishlisted}
-                className={isWishlisted ? "text-primary" : "text-white"}
-              />
-            </button>
+            {weather && (
+              <div className="flex items-center gap-2 rounded-full bg-white/90 py-1.5 pl-2 pr-3.5 backdrop-blur-md">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C6F135]/25 text-on-surface">
+                  <Icon name={weather.icon} size={18} filled />
+                </span>
+                <div className="leading-tight">
+                  <p className="text-[10px] font-medium text-on-surface-variant">Weather</p>
+                  <p className="text-[13px] font-bold text-on-surface">{weather.tempC}°C</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Price badge removed — shown in fixed bottom bar */}
+        {/* overlaid destination title + stat + travellers */}
+        <div className="absolute inset-x-5 bottom-14 z-10">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-black/30 px-3 py-1.5 text-[12px] font-semibold text-white ring-1 ring-white/15 backdrop-blur-md">
+            <Icon name="hiking" size={15} className="text-[#C6F135]" filled />
+            {trip.duration}-day trip
+          </span>
+          <h2 className="mt-3 text-[34px] font-semibold leading-[1.04] tracking-[-0.03em] text-white text-shadow-premium">
+            {trip.destination}
+          </h2>
+          <div className="mt-3 flex items-center gap-2.5">
+            <div className="flex -space-x-3">
+              {TRAVELER_AVATARS.map((src) => (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img key={src} src={src} alt="" className="h-10 w-10 rounded-full border-2 border-white/80 object-cover" />
+              ))}
+              {trip.currentBookings > 0 && (
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/80 bg-black/40 text-[11px] font-bold text-white backdrop-blur">
+                  +{trip.currentBookings}
+                </span>
+              )}
+            </div>
+            <span className="text-[13px] font-medium text-white/85">going</span>
+          </div>
+        </div>
       </div>
 
-      {/* ===== Trip Info ===== */}
-      <div className="px-5 pt-5">
-        {/* Title & Destination */}
-        <h1 className="text-headline-md font-bold text-on-surface">
-          {trip.title}
-        </h1>
-        <div className="mt-1.5 flex items-center gap-1.5 text-body-md text-on-surface-variant">
-          <Icon name="location_on" size={18} className="text-primary" />
-          <span>{trip.destination}</span>
-        </div>
+      {/* ===== Sheet ===== */}
+      <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-5 pt-7">
+        {/* floating wishlist */}
+        <button
+          onClick={toggleWishlist}
+          className="absolute -top-7 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#C6F135] shadow-[0_10px_28px_rgba(198,241,53,0.45)] ring-4 ring-background transition active:scale-95"
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <Icon name="favorite" size={24} filled={isWishlisted} className="text-[#181D27]" />
+        </button>
 
-        {/* Duration */}
-        <div className="mt-3 flex items-center gap-2.5">
-          <Chip variant="outlined" color="secondary" className="gap-1">
-            <Icon name="schedule" size={14} />
-            {trip.duration} Days
-          </Chip>
+        {/* location + trending */}
+        <div className="flex items-center gap-2 pr-16">
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-on-surface-variant">
+            <Icon name="location_on" size={16} filled className="text-on-surface" />
+            {trip.destination}
+          </span>
           {trip.isTrending && (
-            <Chip variant="filled" color="tertiary">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#C6F135] px-2.5 py-1 text-[11px] font-semibold text-[#181D27]">
+              <Icon name="trending_up" size={13} />
               Trending
-            </Chip>
+            </span>
           )}
         </div>
 
+        {/* title */}
+        <h1 className="mt-2 text-[26px] font-semibold leading-[1.14] tracking-[-0.03em] text-on-surface">
+          {trip.title}
+        </h1>
+
+        {/* chip row */}
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {[
+            { icon: "calendar_today", text: formatDateRange(trip.startDate, trip.endDate) },
+            { icon: "schedule", text: `${trip.duration} days` },
+            { icon: "group", text: `${trip.currentBookings}/${trip.maxGroupSize}` },
+            { icon: "star", text: `${trip.rating.toFixed(1)} (${trip.reviewCount})`, lime: true },
+          ].map((c) => (
+            <span
+              key={c.icon}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[13px] font-semibold text-on-surface ring-1 ring-black/[0.06]"
+            >
+              <Icon name={c.icon} size={15} filled={c.lime} className={c.lime ? "text-[#C6F135]" : "text-on-surface-variant"} />
+              {c.text}
+            </span>
+          ))}
+        </div>
+
         {/* Spots Remaining */}
-        <div className="mt-5">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-label-lg font-semibold text-on-surface">
-              Spots Remaining
+        <div className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-black/[0.06]">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-on-surface">
+              <Icon name="groups" size={16} className="text-on-surface-variant" />
+              Spots remaining
             </span>
             <span
               className={cn(
-                "text-label-lg font-bold",
-                spotsLeft <= 5 ? "text-error" : "text-success"
+                "text-[13px] font-bold",
+                spotsLeft <= 5 ? "text-error" : "text-on-surface"
               )}
             >
-              {spotsLeft} / {trip.maxGroupSize}
+              {spotsLeft} / {trip.maxGroupSize} left
             </span>
           </div>
-          <ProgressBar
-            value={spotsPercentage}
-            color={spotsLeft <= 5 ? "primary" : "success"}
-            className="w-full"
-          />
-        </div>
-
-        {/* Rating */}
-        <div className="mt-4 flex items-center gap-2">
-          <Rating value={trip.rating} readonly size="sm" />
-          <span className="text-label-lg font-semibold text-on-surface">
-            {trip.rating.toFixed(1)}
-          </span>
-          <span className="text-label-sm text-on-surface-variant">
-            ({trip.reviewCount} reviews)
-          </span>
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-container">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all",
+                spotsLeft <= 5 ? "bg-error" : "bg-[#C6F135]"
+              )}
+              style={{ width: `${Math.max(spotsPercentage, 6)}%` }}
+            />
+          </div>
         </div>
 
         {/* Quick Info Row */}
-        <div className="mt-5 grid grid-cols-3 gap-3">
-          <Card variant="outlined" className="flex flex-col items-center p-3 text-center">
-            <Icon name="calendar_today" size={22} className="text-primary mb-1" />
-            <p className="text-label-sm text-on-surface-variant">Dates</p>
-            <p className="text-label-sm font-semibold text-on-surface mt-0.5">
-              {formatDateRange(trip.startDate, trip.endDate)}
-            </p>
-          </Card>
-          <Card variant="outlined" className="flex flex-col items-center p-3 text-center">
-            <Icon name="group" size={22} className="text-primary mb-1" />
-            <p className="text-label-sm text-on-surface-variant">Group Size</p>
-            <p className="text-label-sm font-semibold text-on-surface mt-0.5">
-              {trip.minGroupSize} - {trip.maxGroupSize}
-            </p>
-          </Card>
-          <Card variant="outlined" className="flex flex-col items-center p-3 text-center">
-            <Icon name="pin_drop" size={22} className="text-primary mb-1" />
-            <p className="text-label-sm text-on-surface-variant">From</p>
-            <p className="text-label-sm font-semibold text-on-surface mt-0.5 line-clamp-1">
-              {trip.origin ?? "TBA"}
-            </p>
-          </Card>
+        <div className="mt-4 grid grid-cols-3 gap-2.5">
+          {[
+            { icon: "calendar_today", label: "Dates", value: formatDateRange(trip.startDate, trip.endDate) },
+            { icon: "group", label: "Group Size", value: `${trip.minGroupSize} - ${trip.maxGroupSize}` },
+            { icon: "pin_drop", label: "From", value: trip.origin ?? "TBA" },
+          ].map((q) => (
+            <div key={q.label} className="rounded-2xl bg-white p-3 text-center ring-1 ring-black/[0.06]">
+              <span className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#C6F135]/15 text-on-surface">
+                <Icon name={q.icon} size={19} filled />
+              </span>
+              <p className="text-[11px] text-on-surface-variant">{q.label}</p>
+              <p className="mt-0.5 line-clamp-1 text-[12px] font-semibold text-on-surface">
+                {q.value}
+              </p>
+            </div>
+          ))}
         </div>
 
         {/* Vehicle Info */}
         {trip.vehicleTemplate && (
           <section className="mt-6">
-            <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
+            <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
               Vehicle
             </h3>
-            <Card variant="outlined" className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <span className="material-symbols-outlined text-[22px] text-primary">
+            <div className="flex items-start gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/[0.06]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#C6F135]/15">
+                <span className="material-symbols-outlined text-[22px] text-on-surface">
                   {trip.vehicleTemplate.vehicleType?.icon ?? "directions_bus"}
                 </span>
               </div>
               <div className="flex-1">
-                <p className="text-title-md font-title-md text-on-surface">
+                <p className="text-[15px] font-semibold text-on-surface">
                   {trip.vehicleTemplate.vehicleType?.name ?? "Vehicle"}
                 </p>
-                <p className="text-body-sm text-on-surface-variant">
+                <p className="text-[13px] text-on-surface-variant">
                   {trip.vehicleTemplate.name} &middot; {trip.vehicleTemplate.totalSeats} seats
                 </p>
                 {trip.vehicleTemplate.amenities && trip.vehicleTemplate.amenities.length > 0 && (
@@ -510,7 +589,7 @@ export default function TripDetailPage() {
                     {trip.vehicleTemplate.amenities.map((amenity, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-surface-container px-2.5 py-0.5 text-label-sm text-on-surface-variant"
+                        className="rounded-full bg-surface-container px-2.5 py-0.5 text-[12px] text-on-surface-variant"
                       >
                         {amenity}
                       </span>
@@ -518,26 +597,23 @@ export default function TripDetailPage() {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           </section>
         )}
 
         {/* Inclusions */}
         {trip.inclusions.length > 0 && (
           <section className="mt-6">
-            <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
+            <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
               Inclusions
             </h3>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-2.5">
               {trip.inclusions.map((item, i) => (
                 <div key={i} className="flex items-start gap-2.5">
-                  <Icon
-                    name="check_circle"
-                    size={20}
-                    filled
-                    className="text-success mt-0.5 shrink-0"
-                  />
-                  <span className="text-body-md text-on-surface">{item}</span>
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#C6F135]">
+                    <Icon name="check" size={13} className="text-[#181D27]" />
+                  </span>
+                  <span className="text-[14px] text-on-surface">{item}</span>
                 </div>
               ))}
             </div>
@@ -547,19 +623,16 @@ export default function TripDetailPage() {
         {/* Exclusions */}
         {trip.exclusions.length > 0 && (
           <section className="mt-6">
-            <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
+            <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
               Exclusions
             </h3>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-2.5">
               {trip.exclusions.map((item, i) => (
                 <div key={i} className="flex items-start gap-2.5">
-                  <Icon
-                    name="cancel"
-                    size={20}
-                    filled
-                    className="text-error mt-0.5 shrink-0"
-                  />
-                  <span className="text-body-md text-on-surface-variant">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-error/10">
+                    <Icon name="close" size={13} className="text-error" />
+                  </span>
+                  <span className="text-[14px] text-on-surface-variant">
                     {item}
                   </span>
                 </div>
@@ -583,7 +656,7 @@ export default function TripDetailPage() {
               {/* Highlights */}
               {trip.highlights.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-title-lg font-title-lg text-on-surface mb-3">
+                  <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
                     Highlights
                   </h3>
                   <div className="grid grid-cols-1 gap-3">
@@ -614,6 +687,9 @@ export default function TripDetailPage() {
                   </p>
                 </div>
               )}
+
+              {/* Live weather + location map */}
+              <TripLocationWeather destination={trip.destination} />
             </TabPanel>
 
             {/* Itinerary Tab */}
@@ -821,58 +897,43 @@ export default function TripDetailPage() {
       </div>
 
       {/* ===== Fixed Bottom Bar ===== */}
-      <div
-        className={cn(
-          "fixed left-0 right-0 z-40",
-          "bottom-0",
-          "bg-surface/95 backdrop-blur-md",
-          "border-t border-outline-variant/20",
-          "px-4 py-2.5 md:pb-safe",
-          "shadow-nav"
-        )}
-      >
-        <div className="flex items-center gap-3">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.06] bg-white/90 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl shadow-[0_-10px_30px_rgba(20,30,40,0.07)]">
+        <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-5">
           {/* Wishlist */}
           <button
             onClick={toggleWishlist}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-outline-variant transition-colors hover:bg-surface-container"
+            className={cn(
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition active:scale-95",
+              isWishlisted ? "bg-[#C6F135]" : "bg-surface-container hover:bg-surface-container-high"
+            )}
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Icon
               name="favorite"
               size={22}
               filled={isWishlisted}
-              className={isWishlisted ? "text-primary" : "text-on-surface-variant"}
+              className={isWishlisted ? "text-[#181D27]" : "text-on-surface-variant"}
             />
           </button>
 
-          {/* Share */}
-          <button
-            onClick={handleShare}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-outline-variant transition-colors hover:bg-surface-container"
-            aria-label="Share trip"
-          >
-            <Icon name="share" size={22} className="text-on-surface-variant" />
-          </button>
-
           {/* Price */}
-          <div className="ml-1 flex-1">
-            <p className="text-label-sm text-on-surface-variant leading-tight">
+          <div className="ml-0.5 flex-1">
+            <p className="text-[11px] text-on-surface-variant leading-tight">
               Starting from
             </p>
-            <p className="text-title-lg font-bold text-primary leading-tight">
+            <p className="text-[20px] font-bold tracking-[-0.02em] text-on-surface leading-tight">
               {formatCurrency(trip.basePricePaise)}
             </p>
           </div>
 
           {/* Join the Herd */}
-          <Button
-            size="lg"
-            onClick={() => router.push(`/${id}/travelers`)}
-            className="shrink-0"
+          <button
+            onClick={startBooking}
+            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#C6F135] px-6 py-3.5 text-[15px] font-semibold text-[#181D27] shadow-[0_10px_26px_rgba(198,241,53,0.4)] transition active:scale-[0.98]"
           >
             Join the Herd
-          </Button>
+            <Icon name="arrow_forward" size={18} />
+          </button>
         </div>
       </div>
 
@@ -881,6 +942,19 @@ export default function TripDetailPage() {
         open={writeOpen}
         onClose={() => setWriteOpen(false)}
         onSubmitted={loadReviews}
+      />
+
+      <StartingCityGate
+        open={gateOpen}
+        onClose={() => setGateOpen(false)}
+        cities={startingCity.bookableCities}
+        selectedCity={startingCity.selectedCity}
+        detectedCity={startingCity.detectedCity}
+        onChoose={(name) => {
+          startingCity.chooseCity(name);
+          setGateOpen(false);
+          router.push(`/${id}/travelers`);
+        }}
       />
     </div>
   );

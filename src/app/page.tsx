@@ -21,7 +21,7 @@ export default async function RootPage() {
     getContentMap(false),
     getFeaturedTestimonials(3),
     getActiveFaqs(),
-    getUpcomingTrips(4),
+    getUpcomingTrips(100),
   ]);
 
   const hero = asObject(content["landing.hero"]);
@@ -53,8 +53,11 @@ export default async function RootPage() {
       sections={asObject(content["landing.sections"])}
       footer={asObject(content["landing.footer"])}
       trips={upcomingTrips.map((t) => ({
+        id: t.id,
         title: t.title,
         description: (t.description ?? "").slice(0, 150) + ((t.description ?? "").length > 150 ? "..." : ""),
+        category: t.category,
+        destination: t.destination,
         duration: `${t.duration}D/${Math.max(t.duration - 1, 0)}N`,
         pickup: t.origin || "TBD",
         seats: `${Math.max(t.maxGroupSize - t.currentBookings, 0)} Left`,

@@ -4,71 +4,95 @@
 /* Non-inline so color/radius utilities reference the CSS vars, enabling the
    admin Theme Manager to override them at runtime. */
 @theme {
-  /* ===== FONT FAMILIES ===== */
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  /* ===== FONT FAMILIES — SF Pro (native Apple system font) ===== */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  /* ===== COLOR TOKENS (3-Color System) ===== */
-  /* Primary — #FF385C coral */
-  --color-primary: var(--brand-primary, #FF385C);
+  /* ===== ACCENT VARS (DocNow: ink × lime × light-grey) ===== */
+  --lp-forest: #181D27;
+  --lp-forest-2: #0E121A;
+  --lp-lime: #C6F135;
+  --lp-lime-bright: #D0F754;
+  --lp-sage: #F2F2F5;
+  --lp-sage-2: #EAEAEE;
+  --lp-ink: #181D27;
+  --lp-muted: #6B7280;
+
+  /* ===== COLOR TOKENS — Ink (navy-black) × Lime × Light-grey =====
+     Matches the DocNow reference: near-black navy ink, bright lime CTAs,
+     white cards on a light cool-grey ground. */
+
+  /* Primary — near-black navy ink (text, dark buttons, active states) */
+  --color-primary: var(--brand-primary, #181D27);
   --color-on-primary: #ffffff;
-  --color-primary-container: var(--brand-primary, #FF385C);
+  --color-primary-container: var(--brand-primary, #181D27);
   --color-on-primary-container: #ffffff;
-  --color-inverse-primary: #FF6B7D;
-  --color-primary-fixed: #FFE0E5;
-  --color-primary-fixed-dim: #FF8FA0;
-  --color-on-primary-fixed: #5C0017;
-  --color-on-primary-fixed-variant: #CC2D4A;
+  --color-inverse-primary: #C6F135;
+  --color-primary-fixed: #E9EAEE;
+  --color-primary-fixed-dim: #C3C6CF;
+  --color-on-primary-fixed: #181D27;
+  --color-on-primary-fixed-variant: #3A4150;
 
-  /* Secondary — #222222 dark charcoal */
-  --color-secondary: var(--brand-secondary, #222222);
+  /* Secondary — ink */
+  --color-secondary: var(--brand-secondary, #181D27);
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #555555;
+  --color-secondary-container: #0E121A;
   --color-on-secondary-container: #ffffff;
-  --color-secondary-fixed: #E0E0E0;
-  --color-secondary-fixed-dim: #AAAAAA;
-  --color-on-secondary-fixed: #222222;
-  --color-on-secondary-fixed-variant: #444444;
+  --color-secondary-fixed: #E9EAEE;
+  --color-secondary-fixed-dim: #C3C6CF;
+  --color-on-secondary-fixed: #181D27;
+  --color-on-secondary-fixed-variant: #3A4150;
 
-  /* Tertiary — same as primary */
-  --color-tertiary: var(--brand-accent, #FF385C);
+  /* Tertiary — ink (lime is a dedicated accent below) */
+  --color-tertiary: var(--brand-accent, #181D27);
   --color-on-tertiary: #ffffff;
-  --color-tertiary-container: var(--brand-accent, #FF385C);
-  --color-on-tertiary-container: #ffffff;
-  --color-tertiary-fixed: #FFE0E5;
-  --color-tertiary-fixed-dim: #FF8FA0;
-  --color-on-tertiary-fixed: #5C0017;
-  --color-on-tertiary-fixed-variant: #CC2D4A;
+  --color-tertiary-container: #EDEDF1;
+  --color-on-tertiary-container: #181D27;
+  --color-tertiary-fixed: #EDEDF1;
+  --color-tertiary-fixed-dim: #D4D4DB;
+  --color-on-tertiary-fixed: #181D27;
+  --color-on-tertiary-fixed-variant: #3A4150;
 
-  /* Error — coral-red family */
-  --color-error: var(--brand-error, #FF385C);
+  /* Error */
+  --color-error: var(--brand-error, #DC2626);
   --color-on-error: #ffffff;
-  --color-error-container: #FFE0E5;
-  --color-on-error-container: #5C0017;
+  --color-error-container: #FCE4E4;
+  --color-on-error-container: #5C1414;
 
-  /* Surface — white and subtle grays */
+  /* Accent — lime CTA + neutral tints */
+  --color-lime: #C6F135;
+  --color-on-lime: #181D27;
+  --color-forest: #181D27;
+  --color-lavender: #EDEDF1;
+  --color-on-lavender: #181D27;
+  --color-sage: #EDEDF1;
+  --color-blush: #F3F3F6;
+  --color-sky: #E7EBF2;
+  --color-canvas: #F2F2F5;
+
+  /* Surface — white cards on a light cool-grey app background */
   --color-surface: var(--brand-surface, #FFFFFF);
-  --color-surface-dim: #E0E0E0;
+  --color-surface-dim: #E6E6EA;
   --color-surface-bright: #FFFFFF;
   --color-surface-container-lowest: var(--brand-surface, #FFFFFF);
-  --color-surface-container-low: #F7F7F7;
-  --color-surface-container: #F0F0F0;
-  --color-surface-container-high: #E8E8E8;
-  --color-surface-container-highest: #E0E0E0;
-  --color-on-surface: #222222;
-  --color-on-surface-variant: #717171;
-  --color-surface-variant: #E8E8E8;
-  --color-surface-tint: var(--brand-primary, #FF385C);
-  --color-inverse-surface: #222222;
-  --color-inverse-on-surface: #F0F0F0;
+  --color-surface-container-low: #F8F8FA;
+  --color-surface-container: #F0F0F3;
+  --color-surface-container-high: #E9E9ED;
+  --color-surface-container-highest: #E2E2E7;
+  --color-on-surface: #181D27;
+  --color-on-surface-variant: #6B7280;
+  --color-surface-variant: #E9E9ED;
+  --color-surface-tint: var(--brand-primary, #181D27);
+  --color-inverse-surface: #181D27;
+  --color-inverse-on-surface: #F0F0F3;
 
   /* Outline */
-  --color-outline: #AAAAAA;
-  --color-outline-variant: #E0E0E0;
+  --color-outline: #CDCED4;
+  --color-outline-variant: #E6E6EB;
 
-  /* Background */
-  --color-background: var(--brand-background, #FFFFFF);
-  --color-on-background: #222222;
+  /* Background — light cool grey */
+  --color-background: var(--brand-background, #F2F2F5);
+  --color-on-background: #181D27;
 
   /* Success */
   --color-success: var(--brand-success, #2e7d32);
@@ -131,12 +155,52 @@ body {
   overflow-x: hidden;
 }
 
+/* Hide the floating bottom nav while a modal/dialog is open so it can't
+   overlap the dialog (Modal toggles `modal-open` on <body>). */
+body.modal-open .app-bottom-nav {
+  display: none !important;
+}
+
 body {
-  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  background-color: var(--color-background, #FFFFFF);
-  color: var(--color-on-background, #222222);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--color-background, #F2F2F5);
+  color: var(--color-on-background, #181D27);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Headings use SF Pro Display (larger optical size). */
+h1, h2, h3, h4, .font-display {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.022em;
+}
+
+/* ===== APPLE-STYLE LIQUID GLASS =====
+   Translucent frosted surface: strong blur + saturation, a bright hairline
+   edge, and an inner top highlight. Sits on the SOLID background (no gradient). */
+.glass {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 0 rgba(20, 40, 30, 0.04),
+    0 8px 26px rgba(20, 40, 30, 0.08);
+}
+
+/* Dark liquid glass (forest-tinted) — for the bottom nav & dark chips.
+   Kept fairly opaque so white icons stay legible over any content behind. */
+.glass-dark {
+  background: color-mix(in srgb, var(--color-primary, #181D27) 88%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+    0 12px 34px rgba(20, 40, 30, 0.38);
 }
 
 /* ===== MATERIAL SYMBOLS ===== */
@@ -326,14 +390,39 @@ body {
 }
 
 .btn-primary-landing {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 68%, #fff) 0%, var(--color-primary) 100%);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 40%, transparent);
-  transition: all 0.3s ease;
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  transition: all 0.25s ease;
 }
 
 .btn-primary-landing:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 55%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 88%, #fff);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+/* Easy-Trip display headline: heavy, tight, uppercase. The `em` inside renders
+   as the signature italic accent line (e.g. "PLAN YOUR *ESCAPE*"). */
+.display-head {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+}
+.display-head em {
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Section heading — sleek, tight */
+.section-head {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.section-head em {
+  font-style: normal;
+  font-weight: 600;
 }
 
 .landing-card-shadow {
@@ -359,6 +448,139 @@ body {
     transform: translateY(0);
   }
 }
+
+/* ================================================================== */
+/*  2026 LANDING SYSTEM — forest × lime × sage (bespoke, landing-only) */
+/*  (--lp-* custom properties live in the @theme block at the top.)    */
+/* ================================================================== */
+
+/* Frosted glass — light & dark variants */
+.lp-glass {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.lp-glass-dark {
+  background: color-mix(in srgb, var(--lp-forest) 55%, transparent);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* Hero image — slow cinematic zoom */
+@keyframes lp-hero-zoom {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.14); }
+}
+.lp-hero-img {
+  transform: scale(1.04);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-hero-img {
+    animation: lp-hero-zoom 22s ease-out forwards;
+  }
+}
+
+/* Scroll cue dot */
+@keyframes lp-scroll-dot {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-scroll-dot {
+    animation: lp-scroll-dot 1.8s cubic-bezier(0.3, 0.7, 0.2, 1) infinite;
+  }
+}
+
+/* Lime pill button with tactile hover */
+.lp-lime-btn {
+  background: var(--lp-lime);
+  color: var(--lp-ink);
+  transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.22s ease, background 0.22s ease;
+}
+.lp-lime-btn:hover {
+  transform: translateY(-2px);
+  background: var(--lp-lime-bright);
+  box-shadow: 0 12px 32px rgba(203, 238, 78, 0.5);
+}
+
+/* Dark (forest) pill button */
+.lp-dark-btn {
+  background: var(--lp-forest);
+  color: #fff;
+  transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.22s ease;
+}
+.lp-dark-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(21, 39, 29, 0.35);
+}
+
+/* Card that lifts on hover */
+.lp-lift {
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.4s ease;
+  will-change: transform;
+}
+.lp-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 56px rgba(20, 40, 30, 0.18);
+}
+
+/* Reveal on scroll (staggered) */
+@media (prefers-reduced-motion: no-preference) {
+  .lp-reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .lp-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Edge-to-edge marquee (duplicated content, translate -50%) */
+@keyframes lp-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.lp-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: lp-marquee 40s linear infinite;
+}
+.lp-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* Soft float for accent orbs / chips */
+@keyframes lp-activity-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lp-activity {
+  animation: lp-activity-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.lp-float { animation: lp-float 7s ease-in-out infinite; }
+
+/* Animated conic sheen behind the hero */
+@keyframes lp-spin {
+  to { transform: rotate(1turn); }
+}
+.lp-sheen {
+  background: conic-gradient(from 0deg, transparent 0deg, color-mix(in srgb, var(--lp-lime) 40%, transparent) 90deg, transparent 200deg, color-mix(in srgb, var(--lp-forest) 30%, transparent) 300deg, transparent 360deg);
+  animation: lp-spin 24s linear infinite;
+}
+
+/* Marquee for the "endless" hero eyebrow */
+.lp-hide-scrollbar::-webkit-scrollbar { display: none; }
+.lp-hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ------------------------------------------------------------------ */
 /*  Travelling Goats — Brand Animation Stubs                          */

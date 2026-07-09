@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { GlassCard } from "@/components/ui/glass-card";
 import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@/lib/utils";
 import { maskPhone } from "@/lib/utils";
@@ -202,18 +201,14 @@ export default function OtpPage() {
   if (!phone) return null;
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6">
-      {/* Decorative blobs */}
+    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6">
+      {/* subtle brand glow */}
       <div
-        className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-primary-container/30 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-secondary-container/20 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#C6F135]/20 blur-3xl"
         aria-hidden="true"
       />
 
-      <GlassCard className="w-full max-w-md space-y-6 p-6 md:max-w-xl md:p-8">
+      <div className="w-full max-w-md space-y-6 rounded-[28px] bg-white p-6 ring-1 ring-black/[0.06] shadow-[0_20px_50px_rgba(20,30,40,0.08)] md:max-w-xl md:p-8">
         {/* Back button */}
         <button
           type="button"
@@ -226,13 +221,13 @@ export default function OtpPage() {
 
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary-fixed">
-            <Icon name="sms" size={28} className="text-primary" />
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#C6F135]/20">
+            <Icon name="sms" size={28} className="text-[#181D27]" filled />
           </div>
-          <h1 className="text-headline-md font-headline-md text-on-surface">
+          <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-on-surface">
             Verify OTP
           </h1>
-          <p className="mt-1 text-body-md text-on-surface-variant">
+          <p className="mt-1.5 text-[14px] text-on-surface-variant">
             Enter the 6-digit code sent to{" "}
             <span className="font-semibold text-on-surface">
               +91 {maskPhone(phone)}
@@ -256,13 +251,13 @@ export default function OtpPage() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={index === 0 ? handlePaste : undefined}
               className={cn(
-                "h-13 w-11 rounded-xl border-2 bg-surface-container-low text-center text-title-lg font-semibold text-on-surface",
+                "h-13 w-11 rounded-xl border-2 bg-white text-center text-title-lg font-semibold text-on-surface",
                 "transition-all duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
+                "focus:outline-none focus:ring-2 focus:ring-[#181D27]/30 focus:border-[#181D27]",
                 digit
-                  ? "border-primary bg-primary-fixed/10"
-                  : "border-outline-variant",
-                error && "border-error focus:ring-error"
+                  ? "border-[#181D27] bg-[#C6F135]/15"
+                  : "border-black/10",
+                error && "border-error focus:ring-error/30"
               )}
               aria-label={`OTP digit ${index + 1}`}
             />
@@ -299,6 +294,7 @@ export default function OtpPage() {
         {/* Verify Button */}
         <Button
           type="button"
+          variant="accent"
           fullWidth
           size="lg"
           loading={loading}
@@ -308,7 +304,7 @@ export default function OtpPage() {
         >
           Verify
         </Button>
-      </GlassCard>
+      </div>
     </div>
   );
 }

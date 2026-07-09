@@ -4,12 +4,17 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn, formatCurrency, formatDateRange } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
+import { cn, formatCurrency, formatCategory } from "@/lib/utils";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FavoriteButton } from "@/components/ui/favorite-button";
+import {
+  TripFilterSheet,
+  activeFilterCount,
+  type TripFilters,
+} from "@/components/ui/trip-filter-sheet";
 import type { TripCardData, ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -29,6 +34,26 @@ const CATEGORY_FILTERS = [
 
 const RECENT_SEARCHES_KEY = "travellinggoats_recent_searches";
 const MAX_RECENT_SEARCHES = 8;
+
+/** First segment of a "City, Region" destination string. */
+const cityOf = (dest?: string) => (dest ? dest.split(",")[0].trim() : "");
+
+/** Client-side filters that the /api/trips endpoint doesn't support. */
+interface ClientFilters {
+  durations: number[]; // 5 means "5+ days"
+  city: string; // destination city
+}
+
+function matchesClientFilters(trip: TripCardData, f: ClientFilters): boolean {
+  if (f.city && cityOf(trip.destination) !== f.city) return false;
+  if (f.durations.length) {
+    const ok = f.durations.some((d) =>
+      d >= 5 ? trip.duration >= 5 : trip.duration === d
+    );
+    if (!ok) return false;
+  }
+  return true;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -65,69 +90,84 @@ function clearRecentSearches() {
 // ---------------------------------------------------------------------------
 
 function SearchResultCard({ trip }: { trip: TripCardData }) {
-  const spotsLeft = trip.maxGroupSize - trip.currentBookings;
+  const spotsLeft = Math.max(0, trip.maxGroupSize - trip.currentBookings);
 
   return (
-    <Link href={`/trips/${trip.id}`} className="block">
-      <Card clickable className="flex gap-3 p-3">
-        {/* Thumbnail */}
-        <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-xl">
-          <Image
-            src={trip.coverImage || "/placeholder-trip.jpg"}
-            alt={trip.title}
-            fill
-            className="object-cover"
-            sizes="100px"
-          />
+    <Link href={`/trips/${trip.id}`} className="lp-lift group block">
+      <div className="relative isolate h-[320px] overflow-hidden rounded-[30px] bg-[#181D27] [transform:translateZ(0)]">
+        <Image
+          src={trip.coverImage || "/placeholder-trip.jpg"}
+          alt={trip.title}
+          fill
+          className="object-cover transition-transform duration-[1.1s] group-hover:scale-105"
+          sizes="(max-width:768px) 100vw, 700px"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F16]/55 via-transparent to-[#0B0F16]/25" />
+
+        {/* Top row — category pill + favourite */}
+        <div className="absolute inset-x-4 top-4 flex items-center justify-between">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F135] px-3 py-1 text-[12px] font-bold text-[#181D27]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#181D27]" /> {formatCategory(trip.category)}
+          </span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur">
+            <FavoriteButton tripId={trip.id} size={18} />
+          </span>
         </div>
 
-        {/* Info */}
-        <div className="flex flex-1 flex-col justify-between py-0.5">
-          <div>
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="text-label-lg font-semibold text-on-surface line-clamp-1 flex-1">
-                {trip.title}
-              </h3>
-              <Chip
-                variant="filled"
-                color="secondary"
-                className="text-[10px] px-2 py-0.5 shrink-0"
-              >
-                {trip.category}
-              </Chip>
-            </div>
+        {/* Floating frosted info panel with a lime arrow button breaking out.
+            A circular notch is masked out of the panel's top edge so the arrow
+            sits inside a curved corner cut-out. */}
+        <div className="absolute inset-x-3 bottom-3 rounded-[26px] p-4 pt-4">
+          {/* masked frosted background — a circular notch is cut from the top
+              edge so the arrow button sits in a curved corner cut-out */}
+          <div
+            aria-hidden
+            className="absolute inset-0 z-0 rounded-[26px] border border-white/12 bg-[#0B0F16]/45 backdrop-blur-md"
+            style={{
+              WebkitMaskImage:
+                "radial-gradient(circle 34px at calc(100% - 44px) 0, transparent 33px, #000 34px)",
+              maskImage:
+                "radial-gradient(circle 34px at calc(100% - 44px) 0, transparent 33px, #000 34px)",
+            }}
+          />
+          {/* lime circular arrow button — nestled in the corner notch */}
+          <div className="absolute -top-7 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#C6F135] shadow-[0_10px_24px_rgba(203,238,78,0.4)] transition-transform group-hover:rotate-12">
+            <Icon name="arrow_outward" size={26} className="text-[#181D27]" />
+          </div>
 
-            <div className="mt-1 flex items-center gap-1 text-label-sm text-on-surface-variant">
-              <Icon name="location_on" size={13} className="text-primary" />
-              <span className="line-clamp-1">{trip.destination}</span>
-            </div>
+          <div className="relative z-10">
+          <div className="mb-2 flex items-center gap-1 text-[12px] font-medium text-white/85">
+            <Icon name="location_on" filled size={14} className="text-[#C6F135]" />
+            <span className="truncate">{trip.destination}</span>
+          </div>
+          <h3 className="max-w-[78%] text-[20px] font-bold leading-tight text-white">{trip.title}</h3>
 
-            <div className="mt-1 flex items-center gap-1 text-label-sm text-on-surface-variant">
-              <Icon name="calendar_today" size={12} />
-              <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
-              <span className="mx-0.5 text-outline-variant">|</span>
-              <span>{trip.duration}D</span>
+          <div className="mt-3 flex items-end justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white">
+                <Icon name="calendar_today" size={13} /> {trip.duration}D
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white">
+                <Icon name="event_seat" size={13} /> {spotsLeft}/{trip.maxGroupSize} seats
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white">
+                <Icon name="star" filled size={13} className="text-[#C6F135]" /> {trip.rating.toFixed(1)}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <Icon name="star" size={14} filled className="text-tertiary" />
-              <span className="text-label-sm font-semibold">
-                {trip.rating.toFixed(1)}
-              </span>
-              {spotsLeft <= 5 && spotsLeft > 0 && (
-                <span className="ml-1 text-[10px] font-bold text-error">
-                  {spotsLeft} left
-                </span>
-              )}
+          <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+            <div>
+              <span className="text-[11px] uppercase tracking-wide text-white/55">From</span>
+              <div className="text-[18px] font-bold text-white">{formatCurrency(trip.basePricePaise)}</div>
             </div>
-            <span className="text-label-lg font-bold text-primary">
-              {formatCurrency(trip.basePricePaise)}
+            <span className="text-[12px] font-semibold text-[#C6F135]">
+              {spotsLeft > 0 ? `${spotsLeft} of ${trip.maxGroupSize} left` : "Fully booked"}
             </span>
           </div>
+          </div>
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }
@@ -148,36 +188,64 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  // Focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-    setRecentSearches(getRecentSearches());
-  }, []);
+  // Price bounds (paise) + client-side filters coming from the home filter sheet.
+  const [minPrice, setMinPrice] = useState<string | null>(null);
+  const [maxPrice, setMaxPrice] = useState<string | null>(null);
+  const [clientFilters, setClientFilters] = useState<ClientFilters>({
+    durations: [],
+    city: "",
+  });
+  const [filterOpen, setFilterOpen] = useState(false);
+  // Destination cities to offer in the filter sheet (captured from results).
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  // Keep the latest price/client filters available to performSearch without
+  // making it a dependency-churning callback. Updated wherever these filters
+  // change (mount effect / applyFilterSheet / clearExtraFilters) — never during
+  // render.
+  const filtersRef = useRef({ minPrice, maxPrice, clientFilters });
 
   // Debounced search
   const performSearch = useCallback(
     async (searchQuery: string, category: string) => {
+      const { minPrice, maxPrice, clientFilters } = filtersRef.current;
+      const anyFilter =
+        !!searchQuery.trim() ||
+        !!category ||
+        minPrice != null ||
+        maxPrice != null ||
+        clientFilters.durations.length > 0 ||
+        !!clientFilters.city;
+
       const params = new URLSearchParams();
       if (searchQuery.trim()) params.set("search", searchQuery.trim());
       if (category) params.set("category", category);
-
-      if (!searchQuery.trim() && !category) {
-        setResults([]);
-        setHasSearched(false);
-        return;
-      }
+      if (minPrice) params.set("minPrice", minPrice);
+      if (maxPrice) params.set("maxPrice", maxPrice);
+      // Ask for a large page so client-side duration/city filters have enough
+      // to work with (the API defaults to a small page).
+      params.set("pageSize", "100");
 
       try {
         setLoading(true);
-        setHasSearched(true);
+        setHasSearched(anyFilter);
         const res = await fetch(`/api/trips?${params.toString()}`);
         const json = await res.json();
-        if (json.success && json.data) {
-          const items = Array.isArray(json.data) ? json.data : (json.data.items ?? []);
-          setResults(items);
-        } else {
-          setResults([]);
-        }
+        const items: TripCardData[] =
+          json.success && json.data
+            ? Array.isArray(json.data)
+              ? json.data
+              : (json.data.items ?? [])
+            : [];
+        // Grow the destination-city option list from the server-filtered set.
+        setCityOptions((prev) => {
+          const set = new Set(prev);
+          items.forEach((t) => {
+            const c = cityOf(t.destination);
+            if (c) set.add(c);
+          });
+          return Array.from(set).sort();
+        });
+        setResults(items.filter((t) => matchesClientFilters(t, clientFilters)));
       } catch {
         setResults([]);
       } finally {
@@ -186,6 +254,37 @@ export default function SearchPage() {
     },
     []
   );
+
+  // Focus input on mount + seed filters from the URL (?category, ?minPrice,
+  // ?maxPrice, ?duration=1,2, ?city=...), then run the initial search.
+  useEffect(() => {
+    inputRef.current?.focus();
+    setRecentSearches(getRecentSearches());
+
+    const sp = new URLSearchParams(window.location.search);
+    const category = sp.get("category") ?? "";
+    const min = sp.get("minPrice");
+    const max = sp.get("maxPrice");
+    const durations = (sp.get("duration") ?? "")
+      .split(",")
+      .map((s) => parseInt(s, 10))
+      .filter((n) => !Number.isNaN(n));
+    const city = sp.get("city") ?? "";
+    const q = sp.get("search") ?? "";
+
+    setActiveCategory(category);
+    setMinPrice(min);
+    setMaxPrice(max);
+    setClientFilters({ durations, city });
+    setQuery(q);
+    filtersRef.current = {
+      minPrice: min,
+      maxPrice: max,
+      clientFilters: { durations, city },
+    };
+    performSearch(q, category);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleQueryChange = (value: string) => {
     setQuery(value);
@@ -221,8 +320,72 @@ export default function SearchPage() {
     setRecentSearches([]);
   };
 
+  // Extra filters (price / duration / city) carried in from the home filter
+  // sheet — surfaced as a clearable summary chip.
+  const extraFilters = [
+    ...clientFilters.durations.map((d) => (d >= 5 ? "5+ days" : `${d} day${d > 1 ? "s" : ""}`)),
+    ...(minPrice || maxPrice
+      ? [
+          `₹${minPrice ? Number(minPrice) / 100 : 0}${
+            maxPrice ? `–₹${Number(maxPrice) / 100}` : "+"
+          }`,
+        ]
+      : []),
+    ...(clientFilters.city ? [clientFilters.city] : []),
+  ];
+
+  const clearExtraFilters = () => {
+    setMinPrice(null);
+    setMaxPrice(null);
+    setClientFilters({ durations: [], city: "" });
+    filtersRef.current = {
+      minPrice: null,
+      maxPrice: null,
+      clientFilters: { durations: [], city: "" },
+    };
+    performSearch(query, activeCategory);
+  };
+
+  // ----- Filter sheet (tune icon) --------------------------------------------
+  const currentFilters: TripFilters = {
+    durations: clientFilters.durations,
+    minPriceRupees: minPrice ? Number(minPrice) / 100 : null,
+    maxPriceRupees: maxPrice ? Number(maxPrice) / 100 : null,
+    category: activeCategory,
+    city: clientFilters.city,
+  };
+
+  const applyFilterSheet = (next: TripFilters) => {
+    const nextMin = next.minPriceRupees != null ? String(next.minPriceRupees * 100) : null;
+    const nextMax = next.maxPriceRupees != null ? String(next.maxPriceRupees * 100) : null;
+    const nextClient = { durations: next.durations, city: next.city };
+    setActiveCategory(next.category);
+    setMinPrice(nextMin);
+    setMaxPrice(nextMax);
+    setClientFilters(nextClient);
+    filtersRef.current = {
+      minPrice: nextMin,
+      maxPrice: nextMax,
+      clientFilters: nextClient,
+    };
+    setFilterOpen(false);
+    performSearch(query, next.category);
+  };
+
+  const totalFilterCount = activeFilterCount(currentFilters);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* ===== Filter sheet ===== */}
+      <TripFilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        value={currentFilters}
+        categories={CATEGORY_FILTERS.filter((c) => c.value).map((c) => c.label)}
+        cities={cityOptions}
+        onApply={applyFilterSheet}
+      />
+
       {/* ===== Search Header ===== */}
       <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur-md border-b border-outline-variant/10">
         <div className="flex items-center gap-2 px-4 py-3">
@@ -260,9 +423,8 @@ export default function SearchPage() {
               <button
                 onClick={() => {
                   setQuery("");
-                  setResults([]);
-                  setHasSearched(false);
                   inputRef.current?.focus();
+                  performSearch("", activeCategory);
                 }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
                 aria-label="Clear search"
@@ -271,6 +433,20 @@ export default function SearchPage() {
               </button>
             )}
           </div>
+
+          {/* Filter (tune) */}
+          <button
+            onClick={() => setFilterOpen(true)}
+            aria-label="Filter trips"
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-low transition-colors hover:bg-surface-container-high"
+          >
+            <Icon name="tune" size={22} className="text-on-surface" />
+            {totalFilterCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-on-primary">
+                {totalFilterCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Category Quick Filters */}
@@ -287,12 +463,33 @@ export default function SearchPage() {
             </Chip>
           ))}
         </div>
+
+        {/* Active extra filters (from the home filter sheet) */}
+        {extraFilters.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto px-4 pb-3 hide-scrollbar">
+            {extraFilters.map((label) => (
+              <span
+                key={label}
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/12 px-3 py-1 text-label-sm font-medium text-primary"
+              >
+                {label}
+              </span>
+            ))}
+            <button
+              onClick={clearExtraFilters}
+              className="inline-flex shrink-0 items-center gap-1 text-label-sm font-semibold text-on-surface-variant hover:text-on-surface"
+            >
+              <Icon name="close" size={14} />
+              Clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ===== Content ===== */}
       <div className="px-5 py-4">
         {/* Recent Searches (show when no search/results) */}
-        {!hasSearched && !loading && recentSearches.length > 0 && (
+        {!hasSearched && !loading && results.length === 0 && recentSearches.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-title-lg font-title-lg text-on-surface">
@@ -337,20 +534,25 @@ export default function SearchPage() {
 
         {/* Loading Skeletons */}
         {loading && (
-          <div className="flex flex-col gap-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} variant="card" height={108} />
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} variant="card" height={230} className="rounded-[24px]" />
             ))}
           </div>
         )}
 
-        {/* Search Results */}
-        {!loading && hasSearched && results.length > 0 && (
+        {/* Trip list — Popular (browse) or Search results */}
+        {!loading && results.length > 0 && (
           <div>
-            <p className="text-label-sm text-on-surface-variant mb-3">
-              {results.length} trail{results.length !== 1 ? "s" : ""} found
-            </p>
-            <div className="flex flex-col gap-3">
+            <div className="mb-4 flex items-end justify-between">
+              <h1 className="text-[26px] font-bold tracking-[-0.02em] text-on-surface">
+                {hasSearched ? "Results" : "Popular trails"}
+              </h1>
+              <span className="text-label-sm font-medium text-on-surface-variant">
+                {results.length} trail{results.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex flex-col gap-4">
               {results.map((trip) => (
                 <SearchResultCard key={trip.id} trip={trip} />
               ))}
@@ -378,7 +580,7 @@ export default function SearchPage() {
         )}
 
         {/* Initial State (no recent searches) */}
-        {!hasSearched && !loading && recentSearches.length === 0 && (
+        {!hasSearched && !loading && results.length === 0 && recentSearches.length === 0 && (
           <div className="mt-16 flex flex-col items-center text-center">
             <Icon
               name="travel_explore"

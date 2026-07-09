@@ -87,10 +87,14 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
       if (open) {
         document.addEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "hidden";
+        // Flag used by app chrome (bottom nav etc.) to hide itself while a
+        // modal is open, so it can't overlap the dialog.
+        document.body.classList.add("modal-open");
       }
       return () => {
         document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "";
+        document.body.classList.remove("modal-open");
       };
     }, [open, handleKeyDown]);
 
@@ -98,7 +102,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
             initial="hidden"
             animate="visible"
             exit="hidden"

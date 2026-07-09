@@ -4,7 +4,7 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "destructive";
+  variant?: "primary" | "secondary" | "ghost" | "destructive" | "accent";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   icon?: ReactNode;
@@ -37,13 +37,15 @@ const Spinner = ({ className }: { className?: string }) => (
 
 const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "primary-gradient text-on-primary shadow-elevated hover:shadow-lg hover:brightness-110",
+    "bg-[#181D27] text-white shadow-[0_6px_18px_rgba(24,29,39,0.18)] hover:bg-[#181D27]/90",
+  accent:
+    "bg-[#C6F135] text-[#181D27] shadow-[0_8px_22px_rgba(198,241,53,0.38)] hover:brightness-[1.04]",
   secondary:
-    "bg-transparent border-2 border-primary text-primary hover:bg-primary/5",
+    "bg-white text-on-surface ring-1 ring-black/10 hover:bg-surface-container",
   ghost:
     "bg-transparent text-on-surface hover:bg-surface-container-high",
   destructive:
-    "bg-error text-on-error hover:brightness-110",
+    "bg-error text-white hover:bg-error/90",
 };
 
 const sizeStyles: Record<NonNullable<ButtonProps["size"]>, string> = {

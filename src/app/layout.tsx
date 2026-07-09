@@ -1,22 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { getThemeCss } from "@/lib/theme/server";
 import "./globals.css";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta",
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-  weight: ["400", "500", "600"],
-});
+// Typography = SF Pro Display / Text via the native Apple system stack
+// (renders SF Pro on iOS/macOS; graceful system fallback elsewhere). No web
+// font is loaded — SF Pro is a system font. Family stacks live in globals.css.
 
 export const metadata: Metadata = {
   title: {
@@ -83,7 +72,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakartaSans.variable} ${inter.variable}`}
+      className=""
     >
       <head>
         <link
