@@ -479,9 +479,9 @@ export default function TripDetailPage() {
           </Card>
           <Card variant="outlined" className="flex flex-col items-center p-3 text-center">
             <Icon name="pin_drop" size={22} className="text-primary mb-1" />
-            <p className="text-label-sm text-on-surface-variant">Meeting</p>
+            <p className="text-label-sm text-on-surface-variant">From</p>
             <p className="text-label-sm font-semibold text-on-surface mt-0.5 line-clamp-1">
-              {trip.meetingPoint ?? "TBA"}
+              {trip.origin ?? "TBA"}
             </p>
           </Card>
         </div>

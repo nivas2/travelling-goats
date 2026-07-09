@@ -55,6 +55,7 @@ export const createTripSchema = z.object({
   })).optional().default([]),
   pickupPointSelections: z.array(z.object({
     pickupPointId: z.string().min(1),
+    pickupTime: z.string().max(20).optional().nullable(),
   })).optional().default([]),
 });
 

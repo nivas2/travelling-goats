@@ -30,6 +30,7 @@ export async function GET(
       icon: sel.pickupPoint.icon ?? "location_on",
       landmark: sel.pickupPoint.landmark,
       cityName: sel.pickupPoint.city.name,
+      pickupTime: sel.pickupTime ?? null,
     }));
 
     return NextResponse.json({ success: true, data: pickupPoints });

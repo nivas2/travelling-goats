@@ -196,9 +196,10 @@ export async function PUT(
       if (body.pickupPointSelections.length > 0) {
         await prisma.tripPickupPoint.createMany({
           data: body.pickupPointSelections.map(
-            (s: { pickupPointId: string }) => ({
+            (s: { pickupPointId: string; pickupTime?: string | null }) => ({
               tripId: id,
               pickupPointId: s.pickupPointId,
+              pickupTime: s.pickupTime ?? null,
             })
           ),
         });

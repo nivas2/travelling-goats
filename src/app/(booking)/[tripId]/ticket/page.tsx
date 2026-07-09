@@ -22,8 +22,8 @@ interface TicketData {
   tripName: string;
   startDate: string;
   endDate: string;
-  meetingPoint: string;
-  meetingTime: string;
+  pickupPoint: string;
+  pickupTime: string;
   travelerCount: number;
   travelers: Array<{ name: string; age?: number; gender?: string }>;
   contactName: string | null;
@@ -72,8 +72,8 @@ export default function TicketPage() {
               tripName: data.trip?.title ?? "Trip",
               startDate: data.trip?.startDate ?? "",
               endDate: data.trip?.endDate ?? "",
-              meetingPoint: data.trip?.meetingPoint ?? "To be announced",
-              meetingTime: data.trip?.meetingTime ?? "06:00 AM",
+              pickupPoint: data.pickupPoint ?? "To be announced",
+              pickupTime: data.pickupTime ?? "TBA",
               travelerCount: data.travelerCount ?? travelerCount,
               travelers,
               contactName: travelers[0]?.name ?? null,
@@ -102,8 +102,8 @@ export default function TicketPage() {
           tripName: trip?.title ?? "Your Trip",
           startDate: trip?.startDate ?? "",
           endDate: trip?.endDate ?? "",
-          meetingPoint: trip?.meetingPoint ?? "To be announced",
-          meetingTime: trip?.meetingTime ?? "06:00 AM",
+          pickupPoint: "To be announced",
+          pickupTime: "TBA",
           travelerCount,
           travelers: fallbackTravelers,
           contactName: fallbackTravelers[0]?.name ?? null,
@@ -124,8 +124,8 @@ export default function TicketPage() {
           tripName: "Your Trip",
           startDate: "",
           endDate: "",
-          meetingPoint: "To be announced",
-          meetingTime: "06:00 AM",
+          pickupPoint: "To be announced",
+          pickupTime: "TBA",
           travelerCount,
           travelers: fallbackTravelers,
           contactName: fallbackTravelers[0]?.name ?? null,
@@ -162,9 +162,9 @@ export default function TicketPage() {
     );
     url.searchParams.set(
       "details",
-      `Booking: ${ticket.bookingNumber}\nMeeting Point: ${ticket.meetingPoint}\nMeeting Time: ${ticket.meetingTime}`,
+      `Booking: ${ticket.bookingNumber}\nPickup: ${ticket.pickupPoint}\nTime: ${ticket.pickupTime}`,
     );
-    url.searchParams.set("location", ticket.meetingPoint);
+    url.searchParams.set("location", ticket.pickupPoint);
 
     window.open(url.toString(), "_blank");
   };
@@ -229,13 +229,13 @@ export default function TicketPage() {
           <div className="p-5">
             <div className="grid grid-cols-2 gap-4">
               <InfoItem
-                label="Meeting Point"
-                value={ticket.meetingPoint}
+                label="Pickup Point"
+                value={ticket.pickupPoint}
                 icon="pin_drop"
               />
               <InfoItem
-                label="Meeting Time"
-                value={ticket.meetingTime}
+                label="Pickup Time"
+                value={ticket.pickupTime}
                 icon="schedule"
               />
               <InfoItem

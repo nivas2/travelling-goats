@@ -164,8 +164,8 @@ model Trip {
   inclusions         String[]           @default([])
   exclusions         String[]           @default([])
   highlights         String[]           @default([])
-  meetingPoint       String?
-  meetingTime        String?
+  meetingPoint       String? // @deprecated — use TripPickupPoint.pickupTime
+  meetingTime        String? // @deprecated — use TripPickupPoint.pickupTime
   status             TripStatus         @default(DRAFT)
   isFeatured         Boolean            @default(false)
   isTrending         Boolean            @default(false)
@@ -329,9 +329,10 @@ model PickupPoint {
 }
 
 model TripPickupPoint {
-  id            String @id @default(cuid())
+  id            String  @id @default(cuid())
   tripId        String
   pickupPointId String
+  pickupTime    String? // e.g. "06:00 AM"
 
   trip        Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
   pickupPoint PickupPoint @relation(fields: [pickupPointId], references: [id], onDelete: Cascade)

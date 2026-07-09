@@ -113,8 +113,6 @@ export default function EditTripPage() {
   // Location
   const [destination, setDestination] = useState("");
   const [origin, setOrigin] = useState("Bengaluru");
-  const [meetingPoint, setMeetingPoint] = useState("");
-  const [meetingTime, setMeetingTime] = useState("");
 
   // Media
   const [coverImage, setCoverImage] = useState("");
@@ -168,7 +166,7 @@ export default function EditTripPage() {
     city?: { id: string; name: string };
   }
   const [globalPickupPoints, setGlobalPickupPoints] = useState<PickupPointItem[]>([]);
-  const [selectedPickupPoints, setSelectedPickupPoints] = useState<Set<string>>(new Set());
+  const [selectedPickupPoints, setSelectedPickupPoints] = useState<Map<string, string | null>>(new Map());
 
   // FAQs
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
@@ -197,8 +195,6 @@ export default function EditTripPage() {
         setShortDescription(t.shortDescription ?? "");
         setDestination(t.destination);
         setOrigin(t.origin);
-        setMeetingPoint(t.meetingPoint ?? "");
-        setMeetingTime(t.meetingTime ?? "");
         setCoverImage(t.coverImage);
         setAdditionalImages((t.images ?? []).join("\n"));
         setBasePrice(String(paiseToRupees(t.basePricePaise)));
@@ -245,12 +241,12 @@ export default function EditTripPage() {
         }
         setSelectedSnacks(snackMap);
 
-        // Pickup point selections
-        const ppSet = new Set<string>();
+        // Pickup point selections (with times)
+        const ppMap = new Map<string, string | null>();
         for (const sel of (t.pickupPointSelections ?? [])) {
-          ppSet.add(sel.pickupPointId ?? sel.pickupPoint?.id);
+          ppMap.set(sel.pickupPointId ?? sel.pickupPoint?.id, sel.pickupTime ?? null);
         }
-        setSelectedPickupPoints(ppSet);
+        setSelectedPickupPoints(ppMap);
 
         // FAQs
         setFaqs(
@@ -445,9 +441,17 @@ export default function EditTripPage() {
 
   function togglePickupPointSelection(id: string) {
     setSelectedPickupPoints((prev) => {
-      const next = new Set(prev);
+      const next = new Map(prev);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else next.set(id, null);
+      return next;
+    });
+  }
+
+  function setPickupPointTime(id: string, time: string) {
+    setSelectedPickupPoints((prev) => {
+      const next = new Map(prev);
+      next.set(id, time || null);
       return next;
     });
   }
@@ -488,8 +492,6 @@ export default function EditTripPage() {
       shortDescription,
       destination,
       origin,
-      meetingPoint,
-      meetingTime,
       coverImage,
       images: additionalImages
         .split("\n")
@@ -533,8 +535,9 @@ export default function EditTripPage() {
         answer: f.answer,
         order: i,
       })),
-      pickupPointSelections: Array.from(selectedPickupPoints).map((pickupPointId) => ({
+      pickupPointSelections: Array.from(selectedPickupPoints.entries()).map(([pickupPointId, pickupTime]) => ({
         pickupPointId,
+        pickupTime,
       })),
     };
   }
@@ -646,8 +649,6 @@ export default function EditTripPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label="Destination" required value={destination} onChange={(e) => setDestination(e.target.value)} fullWidth />
           <Input label="Origin" value={origin} onChange={(e) => setOrigin(e.target.value)} fullWidth />
-          <Input label="Meeting Point" value={meetingPoint} onChange={(e) => setMeetingPoint(e.target.value)} fullWidth />
-          <Input label="Meeting Time" value={meetingTime} onChange={(e) => setMeetingTime(e.target.value)} fullWidth />
         </div>
       </FormSection>
 
@@ -907,17 +908,29 @@ export default function EditTripPage() {
           return Array.from(grouped.entries()).map(([cityName, pts]) => (
             <div key={cityName} className="space-y-2">
               <h4 className="text-label-lg font-semibold text-on-surface-variant">{cityName}</h4>
-              {pts.map((point) => (
-                <div key={point.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-container">
-                  <input
-                    type="checkbox"
-                    checked={selectedPickupPoints.has(point.id)}
-                    onChange={() => togglePickupPointSelection(point.id)}
-                    className="h-4 w-4 accent-primary shrink-0"
-                  />
-                  <span className="flex-1 text-body-md text-on-surface">{point.name}</span>
-                </div>
-              ))}
+              {pts.map((point) => {
+                const selected = selectedPickupPoints.has(point.id);
+                return (
+                  <div key={point.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-container">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => togglePickupPointSelection(point.id)}
+                      className="h-4 w-4 accent-primary shrink-0"
+                    />
+                    <span className="flex-1 text-body-md text-on-surface">{point.name}</span>
+                    {selected && (
+                      <Input
+                        placeholder="e.g. 6:00 AM"
+                        value={selectedPickupPoints.get(point.id) ?? ""}
+                        onChange={(e) => setPickupPointTime(point.id, e.target.value)}
+                        inputSize="sm"
+                        className="w-32"
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ));
         })()}

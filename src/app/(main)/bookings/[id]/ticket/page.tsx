@@ -28,6 +28,7 @@ interface TicketData {
   travelerCount: number;
   travelers: Traveler[];
   pickupPoint: string | null;
+  pickupTime: string | null;
   totalPricePaise: number;
   trip: {
     id: string;
@@ -36,8 +37,6 @@ interface TicketData {
     startDate: string;
     endDate: string;
     duration: number;
-    meetingPoint: string | null;
-    meetingTime: string | null;
     coverImage: string | null;
   };
 }
@@ -361,15 +360,13 @@ export default function TicketPage() {
                 />
                 <Detail
                   icon="location_on"
-                  label="Meeting Point"
-                  value={
-                    ticket.pickupPoint || ticket.trip.meetingPoint || "TBA"
-                  }
+                  label="Pickup Point"
+                  value={ticket.pickupPoint || "TBA"}
                 />
                 <Detail
                   icon="schedule"
-                  label="Meeting Time"
-                  value={ticket.trip.meetingTime || "TBA"}
+                  label="Pickup Time"
+                  value={ticket.pickupTime || "TBA"}
                 />
               </div>
 

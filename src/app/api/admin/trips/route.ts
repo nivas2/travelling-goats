@@ -161,6 +161,7 @@ export async function POST(req: NextRequest) {
         pickupPointSelections: {
           create: (pickupPointSelections ?? []).map((s) => ({
             pickupPointId: s.pickupPointId,
+            pickupTime: s.pickupTime ?? null,
           })),
         },
       },

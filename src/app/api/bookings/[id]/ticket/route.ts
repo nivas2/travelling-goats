@@ -39,6 +39,9 @@ export async function GET(
             meetingPoint: true,
             meetingTime: true,
             coverImage: true,
+            pickupPointSelections: {
+              include: { pickupPoint: true },
+            },
           },
         },
         user: {
@@ -99,6 +102,13 @@ export async function GET(
             },
           ];
 
+    // Resolve pickup point name and time from trip selections
+    const matchedPickup = booking.pickupPoint
+      ? booking.trip.pickupPointSelections.find(
+          (s) => s.pickupPointId === booking.pickupPoint || s.pickupPoint.name === booking.pickupPoint
+        )
+      : null;
+
     return NextResponse.json({
       success: true,
       data: {
@@ -108,13 +118,22 @@ export async function GET(
         bookingType: booking.bookingType,
         travelerCount: booking.travelerCount,
         travelers,
-        pickupPoint: booking.pickupPoint,
+        pickupPoint: matchedPickup?.pickupPoint.name ?? booking.pickupPoint,
+        pickupTime: matchedPickup?.pickupTime ?? null,
         contactEmail: booking.contactEmail,
         contactPhone: booking.contactPhone,
         seatPreference: booking.seatPreference,
         totalPricePaise: booking.totalPricePaise,
         paymentId: booking.payment?.razorpayPaymentId ?? null,
-        trip: booking.trip,
+        trip: {
+          id: booking.trip.id,
+          title: booking.trip.title,
+          destination: booking.trip.destination,
+          startDate: booking.trip.startDate,
+          endDate: booking.trip.endDate,
+          duration: booking.trip.duration,
+          coverImage: booking.trip.coverImage,
+        },
       },
     });
   } catch (error) {

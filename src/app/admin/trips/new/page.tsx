@@ -107,8 +107,6 @@ export default function CreateTripPage() {
   // Location
   const [destination, setDestination] = useState("");
   const [origin, setOrigin] = useState("Bengaluru");
-  const [meetingPoint, setMeetingPoint] = useState("");
-  const [meetingTime, setMeetingTime] = useState("");
 
   // Media
   const [coverImage, setCoverImage] = useState("");
@@ -160,7 +158,8 @@ export default function CreateTripPage() {
     city?: { id: string; name: string };
   }
   const [globalPickupPoints, setGlobalPickupPoints] = useState<PickupPointItem[]>([]);
-  const [selectedPickupPoints, setSelectedPickupPoints] = useState<Set<string>>(new Set());
+  // Map<pickupPointId, pickupTime string | null>
+  const [selectedPickupPoints, setSelectedPickupPoints] = useState<Map<string, string | null>>(new Map());
 
   // FAQs
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
@@ -356,9 +355,17 @@ export default function CreateTripPage() {
 
   function togglePickupPointSelection(id: string) {
     setSelectedPickupPoints((prev) => {
-      const next = new Set(prev);
+      const next = new Map(prev);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else next.set(id, null);
+      return next;
+    });
+  }
+
+  function setPickupPointTime(id: string, time: string) {
+    setSelectedPickupPoints((prev) => {
+      const next = new Map(prev);
+      next.set(id, time || null);
       return next;
     });
   }
@@ -399,8 +406,6 @@ export default function CreateTripPage() {
       shortDescription,
       destination,
       origin,
-      meetingPoint,
-      meetingTime,
       coverImage,
       images: additionalImages
         .split("\n")
@@ -447,8 +452,9 @@ export default function CreateTripPage() {
         answer: f.answer,
         order: i,
       })),
-      pickupPointSelections: Array.from(selectedPickupPoints).map((pickupPointId) => ({
+      pickupPointSelections: Array.from(selectedPickupPoints.entries()).map(([pickupPointId, pickupTime]) => ({
         pickupPointId,
+        pickupTime,
       })),
     };
   }
@@ -560,20 +566,6 @@ export default function CreateTripPage() {
             placeholder="e.g. Bengaluru"
             value={origin}
             onChange={(e) => setOrigin(e.target.value)}
-            fullWidth
-          />
-          <Input
-            label="Meeting Point"
-            placeholder="e.g. Majestic Bus Stand"
-            value={meetingPoint}
-            onChange={(e) => setMeetingPoint(e.target.value)}
-            fullWidth
-          />
-          <Input
-            label="Meeting Time"
-            placeholder="e.g. 6:00 AM"
-            value={meetingTime}
-            onChange={(e) => setMeetingTime(e.target.value)}
             fullWidth
           />
         </div>
@@ -1021,17 +1013,29 @@ export default function CreateTripPage() {
           return Array.from(grouped.entries()).map(([cityName, pts]) => (
             <div key={cityName} className="space-y-2">
               <h4 className="text-label-lg font-semibold text-on-surface-variant">{cityName}</h4>
-              {pts.map((point) => (
-                <div key={point.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-container">
-                  <input
-                    type="checkbox"
-                    checked={selectedPickupPoints.has(point.id)}
-                    onChange={() => togglePickupPointSelection(point.id)}
-                    className="h-4 w-4 accent-primary shrink-0"
-                  />
-                  <span className="flex-1 text-body-md text-on-surface">{point.name}</span>
-                </div>
-              ))}
+              {pts.map((point) => {
+                const selected = selectedPickupPoints.has(point.id);
+                return (
+                  <div key={point.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-container">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => togglePickupPointSelection(point.id)}
+                      className="h-4 w-4 accent-primary shrink-0"
+                    />
+                    <span className="flex-1 text-body-md text-on-surface">{point.name}</span>
+                    {selected && (
+                      <Input
+                        placeholder="e.g. 6:00 AM"
+                        value={selectedPickupPoints.get(point.id) ?? ""}
+                        onChange={(e) => setPickupPointTime(point.id, e.target.value)}
+                        inputSize="sm"
+                        className="w-32"
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ));
         })()}

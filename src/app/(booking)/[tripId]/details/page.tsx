@@ -419,13 +419,13 @@ export default function DetailsPage() {
           role="radiogroup"
           aria-label="Pickup point"
         >
-          {pickupPoints.map((pp) => (
+          {pickupPoints.map((pp: { id: string; name: string; address: string; icon: string; pickupTime?: string | null }) => (
             <RadioCard
               key={pp.id}
               selected={selectedPickup === pp.id}
               icon={pp.icon}
               title={pp.name}
-              description={pp.address}
+              description={pp.pickupTime ? `${pp.address} · ${pp.pickupTime}` : pp.address}
               onChange={() =>
                 setValue("pickupPoint", pp.id, { shouldValidate: true })
               }
