@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { cn, formatDate } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Dropdown } from "@/components/ui/dropdown";
 
 interface Review {
   id: string;
@@ -37,6 +39,9 @@ export default function AdminTestimonialsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "featured">("all");
+  const [tripFilter, setTripFilter] = useState("");
+  const [ratingFilter, setRatingFilter] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -65,10 +70,38 @@ export default function AdminTestimonialsPage() {
   }
 
   const featuredCount = reviews.filter((r) => r.isFeatured).length;
-  const shown = useMemo(
-    () => (filter === "featured" ? reviews.filter((r) => r.isFeatured) : reviews),
-    [reviews, filter]
-  );
+
+  // Unique trip names for filter dropdown
+  const tripOptions = useMemo(() => {
+    const trips = [...new Set(reviews.map((r) => r.trip.title))].sort();
+    return [
+      { label: "All Trips", value: "" },
+      ...trips.map((t) => ({ label: t, value: t })),
+    ];
+  }, [reviews]);
+
+  const ratingOptions = [
+    { label: "All Ratings", value: "" },
+    { label: "5 Stars", value: "5" },
+    { label: "4+ Stars", value: "4" },
+    { label: "3+ Stars", value: "3" },
+  ];
+
+  const shown = useMemo(() => {
+    let list = reviews;
+    if (filter === "featured") list = list.filter((r) => r.isFeatured);
+    if (tripFilter) list = list.filter((r) => r.trip.title === tripFilter);
+    if (ratingFilter) list = list.filter((r) => r.overallRating >= Number(ratingFilter));
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (r) =>
+          (r.user.name ?? "").toLowerCase().includes(q) ||
+          (r.comment ?? "").toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [reviews, filter, tripFilter, ratingFilter, search]);
 
   return (
     <div className="space-y-6">
@@ -79,21 +112,45 @@ export default function AdminTestimonialsPage() {
         </p>
       </div>
 
-      <div className="flex gap-2">
-        {(["all", "featured"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              "rounded-full px-4 py-1.5 text-label-md font-label-md capitalize transition-colors",
-              filter === f
-                ? "bg-primary text-on-primary"
-                : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
-            )}
-          >
-            {f}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex gap-2">
+          {(["all", "featured"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-label-md font-label-md capitalize transition-colors",
+                filter === f
+                  ? "bg-primary text-on-primary"
+                  : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+        <Dropdown
+          label="Trip"
+          options={tripOptions}
+          value={tripFilter}
+          onChange={setTripFilter}
+          className="w-48"
+        />
+        <Dropdown
+          label="Rating"
+          options={ratingOptions}
+          value={ratingFilter}
+          onChange={setRatingFilter}
+          className="w-36"
+        />
+        <Input
+          placeholder="Search name or comment..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          inputSize="sm"
+          className="w-56"
+        />
       </div>
 
       {loading ? (
