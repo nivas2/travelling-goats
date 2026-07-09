@@ -32,7 +32,7 @@ export async function GET(
       userName: m.user.name ?? "Traveller",
       userAvatar: m.user.avatar,
       createdAt: m.createdAt.toISOString(),
-      isMine: m.userId === session.user.id,
+      isMine: m.userId === session.user!.id,
     }));
 
     return NextResponse.json({ success: true, data });
