@@ -41,6 +41,23 @@ export default async function RootPage() {
         label: e.label,
         icon: e.icon,
       }))}
+      showcase={asList(content["landing.showcase"]).map((s) => ({
+        place: s.place,
+        experience: s.experience,
+        tagline: s.tagline,
+        location: s.location,
+        quote: s.quote,
+        image: s.image,
+        video: s.video,
+        mapX: Number(s.mapX) || 512,
+        mapY: Number(s.mapY) || 512,
+      }))}
+      trustPillars={asList(content["landing.trustPillars"]).map((p) => ({
+        icon: p.icon,
+        title: p.title,
+        desc: p.desc,
+      }))}
+      filterCategories={asList(content["landing.filters"]).map((f) => f.label).filter(Boolean)}
       steps={asList(content["landing.steps"]).map((s) => ({
         title: s.title,
         desc: s.desc,
@@ -56,6 +73,7 @@ export default async function RootPage() {
       navLinks={asList(content["landing.nav"]).map((n) => n.label)}
       buttons={asObject(content["landing.buttons"])}
       sections={asObject(content["landing.sections"])}
+      story={asObject(content["landing.story"])}
       footer={asObject(content["landing.footer"])}
       trips={upcomingTrips.map((t) => ({
         id: t.id,

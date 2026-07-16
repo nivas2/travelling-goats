@@ -301,7 +301,11 @@ export interface LandingContentProps {
   navLinks?: string[];
   buttons?: Record<string, string>;
   sections?: Record<string, string>;
+  story?: Record<string, string>;
   footer?: Record<string, string>;
+  showcase?: { place: string; experience: string; tagline: string; location: string; quote: string; image: string; video: string; mapX: number; mapY: number }[];
+  trustPillars?: { icon: string; title: string; desc: string }[];
+  filterCategories?: string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -336,10 +340,13 @@ export default function LandingPage(props: LandingContentProps = {}) {
   const testimonials = props.testimonials ?? [];
   const faqs = props.faqs ?? [];
   const navLinks = props.navLinks?.length ? props.navLinks : NAV_LINKS;
+  const trustPillars = props.trustPillars?.length ? props.trustPillars : TRUST_PILLARS;
+  const filterCategories = props.filterCategories?.length ? props.filterCategories : CATEGORIES;
   const btn = props.buttons ?? {};
   const loginLabel = btn.login || "Login";
   const joinLabel = btn.join || "Join Now";
   const sx = props.sections ?? {};
+  const st = props.story ?? {};
   const footerCopyright = props.footer?.copyright || "Meet My Route. All rights reserved.";
 
   const visibleTrips = useMemo(() => {
@@ -350,21 +357,37 @@ export default function LandingPage(props: LandingContentProps = {}) {
   // Categories that actually have trips (hide empty chips).
   const activeCategories = useMemo(
     () =>
-      CATEGORIES.filter(
+      filterCategories.filter(
         (c) => c === "All" || trips.some((t) => tripInCategory(t.category, c))
       ),
     [trips]
   );
 
-  // Hero cue cards — the curated showcase, but everything data-driven is REAL:
-  // each place is matched to its trips (by the place's first word, e.g. "Spiti"
-  // → "Spiti, Himachal Pradesh") and "joined" is the real total bookings there.
-  const allHeroCards = HERO_SHOWCASE.map((c) => {
+  // Hero showcase — admin-editable (landing.showcase); falls back to the built-in
+  // curated set. Each card carries its own poster image, video and map pin.
+  const showcase =
+    props.showcase && props.showcase.length
+      ? props.showcase
+      : HERO_SHOWCASE.map((c) => ({
+          place: c.place,
+          experience: c.experience,
+          tagline: c.tagline,
+          location: c.location,
+          quote: c.quote,
+          image: uns(c.photo, 1280),
+          video: c.video,
+          mapX: MAP_COORDS[c.place]?.x ?? 512,
+          mapY: MAP_COORDS[c.place]?.y ?? 512,
+        }));
+
+  // Hero cue cards — everything data-driven is REAL: each place is matched to its
+  // trips (by the place's first word, e.g. "Spiti" → "Spiti, Himachal Pradesh")
+  // and "joined" is the real total bookings there.
+  const allHeroCards = showcase.map((c) => {
     const key = c.place.split(" ")[0].toLowerCase();
     const matched = trips.filter((t) => (t.destination ?? "").toLowerCase().includes(key));
     return {
       ...c,
-      image: uns(c.photo, 1280),
       joined: matched.reduce((sum, t) => sum + (t.currentBookings ?? 0), 0),
       tripId: matched[0]?.id,
     };
@@ -902,17 +925,17 @@ export default function LandingPage(props: LandingContentProps = {}) {
       <section id="why-us" className="px-3 py-14 md:px-6 md:py-20">
         <div className="mx-auto max-w-[1240px]">
           <div className="lp-reveal mb-12 max-w-2xl">
-            <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#526200]">Why travel with us</span>
+            <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#526200]">{sx.trustOverline || "Why travel with us"}</span>
             <h2 className="mt-2 text-[clamp(26px,3.4vw,40px)] font-semibold tracking-[-0.02em]">
-              Small crews, big care — every trail covered
+              {sx.trustTitle || "Small crews, big care — every trail covered"}
             </h2>
             <p className="mt-3 text-[16px] leading-relaxed text-[#526200]">
-              We&rsquo;re a young team obsessed with getting the details right, so you only have to think about the view.
+              {sx.trustSubtitle || "We’re a young team obsessed with getting the details right, so you only have to think about the view."}
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {TRUST_PILLARS.map((p, i) => (
+            {trustPillars.map((p, i) => (
               <div
                 key={p.title}
                 className="lp-reveal lp-lift glass rounded-[24px] p-6"
@@ -939,38 +962,39 @@ export default function LandingPage(props: LandingContentProps = {}) {
               {/* portrait */}
               <div
                 className="relative min-h-[320px] bg-cover bg-center md:min-h-full"
-                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=1000&auto=format&fit=crop')" }}
+                style={{ backgroundImage: `url('${st.image || "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=1000&auto=format&fit=crop"}')` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#181818]/70 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-[#181818]/60" />
               </div>
 
               {/* story */}
               <div className="p-8 md:p-12 lg:p-14">
-                <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#D8FF07]">Our story</span>
+                <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#D8FF07]">{st.overline || "Our story"}</span>
                 <h2 className="mt-3 text-[clamp(24px,3vw,38px)] font-semibold leading-[1.1] tracking-[-0.02em]">
-                  We started Meet My Route to make good trips feel easy
+                  {st.title || "We started Meet My Route to make good trips feel easy"}
                 </h2>
                 <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-white/75">
-                  <p>
-                    A few years ago we were the friends who always ended up planning everyone&rsquo;s trip — the routes, the stays,
-                    the little details that turn a holiday into a story. We loved it. So we made it our job.
-                  </p>
-                  <p>
-                    Today we run small-group trails across India with local guides we trust, honest pricing, and the kind of
-                    care we&rsquo;d want for our own families. No crowds, no fine print — just the community, the road, and the view.
-                  </p>
+                  {(st.body
+                    ? st.body.split(/\n\s*\n/)
+                    : [
+                        "A few years ago we were the friends who always ended up planning everyone’s trip — the routes, the stays, the little details that turn a holiday into a story. We loved it. So we made it our job.",
+                        "Today we run small-group trails across India with local guides we trust, honest pricing, and the kind of care we’d want for our own families. No crowds, no fine print — just the community, the road, and the view.",
+                      ]
+                  ).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
                 </div>
 
                 <div className="mt-8 flex flex-wrap items-center gap-6">
                   <div>
-                    <div className="text-[15px] font-semibold text-white">Priya &amp; the community</div>
-                    <div className="text-[13px] text-white/55">Founders, Meet My Route</div>
+                    <div className="text-[15px] font-semibold text-white">{st.founderName || "Priya & the community"}</div>
+                    <div className="text-[13px] text-white/55">{st.founderRole || "Founders, Meet My Route"}</div>
                   </div>
                   <a
                     href="#trips"
                     className="inline-flex items-center gap-2 rounded-full bg-[#D8FF07] px-6 py-3 text-[14px] font-semibold text-[#181818] transition-transform hover:-translate-y-0.5"
                   >
-                    Explore our trails
+                    {st.ctaText || "Explore our trails"}
                     <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                   </a>
                 </div>
@@ -986,8 +1010,8 @@ export default function LandingPage(props: LandingContentProps = {}) {
           place: c.place,
           location: c.location,
           image: c.image,
-          x: MAP_COORDS[c.place]?.x ?? 512,
-          y: MAP_COORDS[c.place]?.y ?? 512,
+          x: c.mapX ?? 512,
+          y: c.mapY ?? 512,
         }))}
       />
 
@@ -995,7 +1019,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
       {testimonials.length > 0 && (
         <section id="community" className="overflow-hidden py-14 md:py-20">
           <div className="lp-reveal mx-auto mb-10 max-w-[1240px] px-3 text-center md:px-6">
-            <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#181818]">Community</span>
+            <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#181818]">{sx.communityOverline || "Community"}</span>
             <h2 className="mt-2 text-[clamp(26px,3.4vw,40px)] font-semibold tracking-[-0.02em]">{sx.communityTitle || "Loved by the community"}</h2>
           </div>
 
@@ -1035,7 +1059,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
         <section id="faq" className="px-3 py-14 md:px-6 md:py-20">
           <div className="mx-auto max-w-[820px]">
             <div className="lp-reveal mb-10 text-center">
-              <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#181818]">FAQ</span>
+              <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#181818]">{sx.faqOverline || "FAQ"}</span>
               <h2 className="mt-2 text-[clamp(26px,3.4vw,40px)] font-semibold tracking-[-0.02em]">{sx.faqTitle || "Good to know"}</h2>
             </div>
             <div className="flex flex-col gap-3">
@@ -1059,10 +1083,10 @@ export default function LandingPage(props: LandingContentProps = {}) {
           <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1.4fr_1fr]">
             <div>
               <h2 className="text-[clamp(30px,4.6vw,58px)] font-semibold leading-[1.05] tracking-[-0.02em] text-white">
-                Ready to <span className="text-[#D8FF07]">wander?</span>
+                {sx.ctaTitle || "Ready to wander?"}
               </h2>
               <p className="mt-4 max-w-md text-[16px] text-white/70">
-                Your next trail is one tap away. Join the community and travel with people who get it.
+                {sx.ctaSubtitle || "Your next trail is one tap away. Join the community and travel with people who get it."}
               </p>
             </div>
             <div className="flex flex-col gap-3 md:items-end">
@@ -1077,7 +1101,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
                 href="#trips"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/20 px-8 py-4 text-[16px] font-semibold text-white transition-colors hover:bg-white/10 md:w-auto"
               >
-                Browse trails
+                {sx.ctaBrowse || "Browse trails"}
               </a>
             </div>
           </div>
@@ -1092,22 +1116,22 @@ export default function LandingPage(props: LandingContentProps = {}) {
             <div className="max-w-sm">
               <LandingBrand size="md" />
               <p className="mt-4 text-[14px] leading-relaxed text-[#526200]">
-                Curated group trails across India. Travel with verified explorers, transparent pricing, and unforgettable routes.
+                {props.footer?.tagline || "Curated group trails across India. Travel with verified explorers, transparent pricing, and unforgettable routes."}
               </p>
             </div>
             <div className="md:justify-self-end">
-              <label className="mb-2 block text-[13px] font-semibold text-[#181818]">Get trail drops in your inbox</label>
+              <label className="mb-2 block text-[13px] font-semibold text-[#181818]">{props.footer?.newsletterLabel || "Get trail drops in your inbox"}</label>
               <form
                 className="flex items-center gap-2 rounded-full bg-[#F2F2F5] p-1.5"
                 onSubmit={(e) => e.preventDefault()}
               >
                 <input
                   type="email"
-                  placeholder="you@email.com"
+                  placeholder={props.footer?.emailPlaceholder || "you@email.com"}
                   className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-[14px] text-[#181818] placeholder:text-[#526200]/70 focus:outline-none"
                 />
                 <button className="lp-lime-btn inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-[14px] font-semibold">
-                  Subscribe <span className="material-symbols-outlined text-[16px]">arrow_outward</span>
+                  {props.footer?.subscribeText || "Subscribe"} <span className="material-symbols-outlined text-[16px]">arrow_outward</span>
                 </button>
               </form>
             </div>
