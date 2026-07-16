@@ -750,7 +750,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
                         {card.location}
                       </span>
                       <h3 className="mt-2 text-[17px] font-semibold leading-tight text-white md:mt-2.5 md:text-[21px]">{card.place}</h3>
-                      <p className="mt-1 line-clamp-2 text-[12px] leading-snug text-white/80 md:mt-1.5 md:text-[13px]">{card.description}</p>
+                      <p className="mt-1 line-clamp-2 text-[12px] leading-snug text-white/80 md:mt-1.5 md:text-[13px]">{card.tagline}</p>
                     </div>
                   </button>
                 );
