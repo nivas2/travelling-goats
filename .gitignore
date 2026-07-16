@@ -43,4 +43,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 nul
-/public/uploads/
+/public/uploads/*
+!/public/uploads/hero/
