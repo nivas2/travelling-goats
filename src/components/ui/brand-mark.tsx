@@ -1,6 +1,6 @@
 /**
  * Forest × lime brand lockup used in app chrome (top nav, etc.). Renders a
- * forest badge with a lime mountain glyph + the "Travelling Goats" wordmark.
+ * forest badge with a lime mountain glyph + the "Meet My Route" wordmark.
  * Non-link by design so callers can wrap it in their own <Link>.
  */
 export function BrandMark({
@@ -16,19 +16,19 @@ export function BrandMark({
   return (
     <span className="group inline-flex items-center gap-2.5">
       <span
-        className={`flex items-center justify-center bg-[#181D27] transition-transform duration-300 group-hover:-rotate-6 ${badge}`}
+        className={`flex items-center justify-center bg-primary transition-transform duration-300 group-hover:-rotate-6 ${badge}`}
       >
         <span
-          className={`material-symbols-outlined text-[#C6F135] ${icon}`}
+          className={`material-symbols-outlined text-lime ${icon}`}
           style={{ fontVariationSettings: "'FILL' 1" }}
         >
           landscape
         </span>
       </span>
       <span
-        className={`font-bold leading-none tracking-[-0.01em] ${text} ${onDark ? "text-white" : "text-[#181D27]"}`}
+        className={`font-bold leading-none tracking-[-0.01em] ${text} ${onDark ? "text-white" : "text-on-surface"}`}
       >
-        Travelling <span className={onDark ? "text-[#C6F135]" : "text-[#181D27]"}>Goats</span>
+        Meet My <span className={onDark ? "text-lime" : "text-on-surface"}>Route</span>
       </span>
     </span>
   );

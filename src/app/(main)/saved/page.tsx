@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn, formatCurrency, formatDateRange } from "@/lib/utils";
+import { cn, formatCurrency, formatDateRange, formatCategory } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
@@ -47,7 +47,7 @@ function SavedTripCard({
                 color="primary"
                 className="text-[9px] px-1.5 py-0.5"
               >
-                {trip.category}
+                {formatCategory(trip.category)}
               </Chip>
             </div>
           </div>

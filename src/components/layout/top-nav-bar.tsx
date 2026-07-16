@@ -28,13 +28,39 @@ export function TopNavBar({
 }: TopNavBarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [city, setCity] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>("India");
+  // Live avatar/name from the DB — the session token can be stale after a
+  // profile-photo update, so we read the current values from /api/users.
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  // Prefer session data over props for avatar
-  const userName = session?.user?.name;
+  useEffect(() => {
+    let active = true;
+    const loadUser = () =>
+      fetch("/api/users")
+        .then((r) => r.json())
+        .then((j) => {
+          if (active && j?.success) {
+            setAvatar(j.data?.avatar ?? null);
+            setName(j.data?.name ?? null);
+          }
+        })
+        .catch(() => {});
+    loadUser();
+    // Re-fetch when the profile is saved (dispatched by the edit page).
+    window.addEventListener("tg-profile-update", loadUser);
+    return () => {
+      active = false;
+      window.removeEventListener("tg-profile-update", loadUser);
+    };
+  }, []);
+
+  // Prefer the freshly-fetched DB values, then session, then props.
+  const userName = name ?? session?.user?.name;
   const userInitials = userInitialsProp ?? (userName ? getInitials(userName) : "U");
-  const avatarUrl = avatarUrlProp ?? session?.user?.image ?? undefined;
+  const avatarUrl = avatarUrlProp ?? avatar ?? session?.user?.image ?? undefined;
 
   // All hooks must run unconditionally before any early return (rules of hooks).
   useEffect(() => {
@@ -58,6 +84,7 @@ export function TopNavBar({
           const r = await fetch(`/api/geocode?lat=${latitude}&lng=${longitude}`);
           const d = await r.json();
           if (d?.city) setCity(d.city);
+          if (d?.country) setCountry(d.country);
         } catch {
           /* leave as "India" */
         }
@@ -69,9 +96,12 @@ export function TopNavBar({
     );
   }, []);
 
-  // Hide on trip detail pages (they have their own back/share/wishlist)
-  const isTripDetail = /^\/trips\/[^/]+$/.test(pathname);
-  if (isTripDetail) return null;
+  // Hide on trip detail + immersive trip sub-pages (chat, shepherd, hub) that
+  // carry their own header — otherwise two headers stack on top of each other.
+  const isSelfHeadered =
+    /^\/trips\/[^/]+$/.test(pathname) ||
+    /^\/trips\/[^/]+\/(chat|shepherd|hub)/.test(pathname);
+  if (isSelfHeadered) return null;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/" || pathname === "/home";
@@ -101,11 +131,19 @@ export function TopNavBar({
           </span>
           <span className="leading-tight">
             <span className="block text-[11px] font-medium text-on-surface-variant">Current location</span>
-            <span className="flex items-center gap-0.5 text-[15px] font-semibold text-on-surface">
-              {city || "India"}
-              <span className="material-symbols-outlined text-[18px] text-on-surface-variant/70">
-                keyboard_arrow_down
-              </span>
+            <span className="flex items-center gap-1 text-[15px] font-semibold text-on-surface">
+              {city ? (
+                <span>
+                  {city}
+                  {country && (
+                    <span className="text-[13px] font-medium text-on-surface-variant">
+                      , {country}
+                    </span>
+                  )}
+                </span>
+              ) : (
+                country || "India"
+              )}
             </span>
           </span>
         </Link>
@@ -138,8 +176,7 @@ export function TopNavBar({
             href="/notifications"
             className={cn(
               "relative flex items-center justify-center",
-              "h-10 w-10 rounded-full",
-              "hover:bg-surface-container-high/80 active:scale-95",
+              "h-10 w-10 rounded-full hover:bg-surface-container-high/80 active:scale-95",
               "transition-all duration-200"
             )}
           >

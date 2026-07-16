@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
+import { recordTripView } from "@/lib/recently-viewed";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { cn, formatCurrency, formatDateRange, formatDate } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
@@ -118,14 +120,16 @@ function ImageCarousel({
             <button
               key={i}
               onClick={() => setCurrentIndex(i)}
-              className={cn(
-                "rounded-full transition-all duration-200",
-                i === currentIndex
-                  ? "h-2 w-6 bg-white"
-                  : "h-2 w-2 bg-white/50"
-              )}
+              className="flex items-center justify-center p-2 -m-1"
               aria-label={`Go to image ${i + 1}`}
-            />
+            >
+              <span
+                className={cn(
+                  "block h-2 rounded-full transition-all duration-200",
+                  i === currentIndex ? "w-6 bg-white" : "w-2 bg-white/50"
+                )}
+              />
+            </button>
           ))}
         </div>
       )}
@@ -246,6 +250,11 @@ export default function TripDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
+
+  // Remember this trip for the Home "Recently viewed" rail.
+  useEffect(() => {
+    if (id) recordTripView(id);
+  }, [id]);
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -261,6 +270,8 @@ export default function TripDetailPage() {
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [canReview, setCanReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+  // Whether the trip has ended — reviews only apply to completed trips.
+  const [isCompleted, setIsCompleted] = useState(false);
   const [writeOpen, setWriteOpen] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
 
@@ -317,6 +328,11 @@ export default function TripDetailPage() {
       const json: ApiResponse<TripDetail> = await res.json();
       if (json.success && json.data) {
         setTrip(json.data);
+        // Reviews only apply once a trip has ended (or is marked completed).
+        const t = json.data as TripDetail & { status?: string };
+        setIsCompleted(
+          new Date(t.endDate).getTime() < Date.now() || t.status === "COMPLETED"
+        );
       }
     } catch {
       setFetchError(true);
@@ -349,7 +365,7 @@ export default function TripDetailPage() {
       try {
         await navigator.share({
           title: trip.title,
-          text: `Check out this trail to ${trip.destination} on Travelling Goats!`,
+          text: `Check out this trail to ${trip.destination} on Meet My Route!`,
           url: window.location.href,
         });
       } catch {
@@ -433,7 +449,7 @@ export default function TripDetailPage() {
             </button>
             {weather && (
               <div className="flex items-center gap-2 rounded-full bg-white/90 py-1.5 pl-2 pr-3.5 backdrop-blur-md">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C6F135]/25 text-on-surface">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-lime/25 text-on-surface">
                   <Icon name={weather.icon} size={18} filled />
                 </span>
                 <div className="leading-tight">
@@ -448,7 +464,7 @@ export default function TripDetailPage() {
         {/* overlaid destination title + stat + travellers */}
         <div className="absolute inset-x-5 bottom-14 z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-black/30 px-3 py-1.5 text-[12px] font-semibold text-white ring-1 ring-white/15 backdrop-blur-md">
-            <Icon name="hiking" size={15} className="text-[#C6F135]" filled />
+            <Icon name="hiking" size={15} className="text-lime" filled />
             {trip.duration}-day trip
           </span>
           <h2 className="mt-3 text-[34px] font-semibold leading-[1.04] tracking-[-0.03em] text-white text-shadow-premium">
@@ -458,7 +474,7 @@ export default function TripDetailPage() {
             <div className="flex -space-x-3">
               {TRAVELER_AVATARS.map((src) => (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img key={src} src={src} alt="" className="h-10 w-10 rounded-full border-2 border-white/80 object-cover" />
+                <img key={src} src={src} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} className="h-10 w-10 rounded-full border-2 border-white/80 object-cover" />
               ))}
               {trip.currentBookings > 0 && (
                 <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/80 bg-black/40 text-[11px] font-bold text-white backdrop-blur">
@@ -476,10 +492,13 @@ export default function TripDetailPage() {
         {/* floating wishlist */}
         <button
           onClick={toggleWishlist}
-          className="absolute -top-7 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#C6F135] shadow-[0_10px_28px_rgba(198,241,53,0.45)] ring-4 ring-background transition active:scale-95"
+          className={cn(
+            "absolute -top-7 right-5 flex h-14 w-14 items-center justify-center rounded-full ring-4 ring-background transition active:scale-95",
+            isWishlisted ? "bg-white shadow-[0_10px_28px_rgba(0,0,0,0.18)]" : "bg-lime shadow-[0_10px_28px_rgba(198,241,53,0.45)]"
+          )}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <Icon name="favorite" size={24} filled={isWishlisted} className="text-[#181D27]" />
+          <Icon name="favorite" size={24} filled={isWishlisted} className={isWishlisted ? "text-on-surface" : "text-on-surface"} />
         </button>
 
         {/* location + trending */}
@@ -489,7 +508,7 @@ export default function TripDetailPage() {
             {trip.destination}
           </span>
           {trip.isTrending && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#C6F135] px-2.5 py-1 text-[11px] font-semibold text-[#181D27]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-lime px-2.5 py-1 text-[11px] font-semibold text-on-surface">
               <Icon name="trending_up" size={13} />
               Trending
             </span>
@@ -513,10 +532,15 @@ export default function TripDetailPage() {
               key={c.icon}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[13px] font-semibold text-on-surface ring-1 ring-black/[0.06]"
             >
-              <Icon name={c.icon} size={15} filled={c.lime} className={c.lime ? "text-[#C6F135]" : "text-on-surface-variant"} />
+              <Icon name={c.icon} size={15} filled={c.lime} className={c.lime ? "text-lime" : "text-on-surface-variant"} />
               {c.text}
             </span>
           ))}
+        </div>
+
+        {/* Departure countdown — live ticking timer */}
+        <div className="mt-5">
+          <CountdownTimer date={trip.startDate} />
         </div>
 
         {/* Spots Remaining */}
@@ -535,11 +559,11 @@ export default function TripDetailPage() {
               {spotsLeft} / {trip.maxGroupSize} left
             </span>
           </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-container">
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-on-surface/15">
             <div
               className={cn(
                 "h-full rounded-full transition-all",
-                spotsLeft <= 5 ? "bg-error" : "bg-[#C6F135]"
+                spotsLeft <= 5 ? "bg-error" : "bg-lime"
               )}
               style={{ width: `${Math.max(spotsPercentage, 6)}%` }}
             />
@@ -554,8 +578,10 @@ export default function TripDetailPage() {
             { icon: "pin_drop", label: "From", value: trip.origin ?? "TBA" },
           ].map((q) => (
             <div key={q.label} className="rounded-2xl bg-white p-3 text-center ring-1 ring-black/[0.06]">
-              <span className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#C6F135]/15 text-on-surface">
-                <Icon name={q.icon} size={19} filled />
+              <span className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-xl bg-lime">
+                <span className="material-symbols-outlined filled text-[19px] text-on-surface" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  {q.icon}
+                </span>
               </span>
               <p className="text-[11px] text-on-surface-variant">{q.label}</p>
               <p className="mt-0.5 line-clamp-1 text-[12px] font-semibold text-on-surface">
@@ -572,7 +598,7 @@ export default function TripDetailPage() {
               Vehicle
             </h3>
             <div className="flex items-start gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/[0.06]">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#C6F135]/15">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lime/15">
                 <span className="material-symbols-outlined text-[22px] text-on-surface">
                   {trip.vehicleTemplate.vehicleType?.icon ?? "directions_bus"}
                 </span>
@@ -601,44 +627,47 @@ export default function TripDetailPage() {
           </section>
         )}
 
-        {/* Inclusions */}
-        {trip.inclusions.length > 0 && (
-          <section className="mt-6">
-            <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
-              Inclusions
-            </h3>
-            <div className="grid grid-cols-1 gap-2.5">
-              {trip.inclusions.map((item, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#C6F135]">
-                    <Icon name="check" size={13} className="text-[#181D27]" />
-                  </span>
-                  <span className="text-[14px] text-on-surface">{item}</span>
+        {/* Inclusions & Exclusions — side by side */}
+        {(trip.inclusions.length > 0 || trip.exclusions.length > 0) && (
+          <div className="mt-6 grid grid-cols-2 gap-4 md:gap-6">
+            {trip.inclusions.length > 0 && (
+              <section>
+                <h3 className="mb-3 text-[18px] font-semibold tracking-[-0.02em] text-on-surface">
+                  Inclusions
+                </h3>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {trip.inclusions.map((item, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-lime">
+                        <Icon name="check" size={13} className="text-on-surface" />
+                      </span>
+                      <span className="text-[14px] leading-snug text-on-surface">{item}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+              </section>
+            )}
 
-        {/* Exclusions */}
-        {trip.exclusions.length > 0 && (
-          <section className="mt-6">
-            <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
-              Exclusions
-            </h3>
-            <div className="grid grid-cols-1 gap-2.5">
-              {trip.exclusions.map((item, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-error/10">
-                    <Icon name="close" size={13} className="text-error" />
-                  </span>
-                  <span className="text-[14px] text-on-surface-variant">
-                    {item}
-                  </span>
+            {trip.exclusions.length > 0 && (
+              <section>
+                <h3 className="mb-3 text-[18px] font-semibold tracking-[-0.02em] text-on-surface">
+                  Exclusions
+                </h3>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {trip.exclusions.map((item, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-error/10">
+                        <Icon name="close" size={13} className="text-error" />
+                      </span>
+                      <span className="text-[14px] leading-snug text-on-surface-variant">
+                        {item}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
+            )}
+          </div>
         )}
 
         {/* ===== Tabs ===== */}
@@ -647,7 +676,7 @@ export default function TripDetailPage() {
             <TabList className="-mx-5 px-5">
               <Tab value="overview">Overview</Tab>
               <Tab value="itinerary">Itinerary</Tab>
-              <Tab value="reviews">Reviews</Tab>
+              {isCompleted && <Tab value="reviews">Reviews</Tab>}
               <Tab value="faqs">FAQs</Tab>
             </TabList>
 
@@ -785,7 +814,8 @@ export default function TripDetailPage() {
               )}
             </TabPanel>
 
-            {/* Reviews Tab */}
+            {/* Reviews Tab — only for completed trips */}
+            {isCompleted && (
             <TabPanel value="reviews">
               {/* Rating Summary */}
               <div className="flex items-center gap-4 mb-6">
@@ -873,6 +903,7 @@ export default function TripDetailPage() {
                 </Link>
               )}
             </TabPanel>
+            )}
 
             {/* FAQs Tab */}
             <TabPanel value="faqs">
@@ -904,7 +935,7 @@ export default function TripDetailPage() {
             onClick={toggleWishlist}
             className={cn(
               "flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition active:scale-95",
-              isWishlisted ? "bg-[#C6F135]" : "bg-surface-container hover:bg-surface-container-high"
+              isWishlisted ? "bg-white ring-1 ring-black/10" : "bg-surface-container hover:bg-surface-container-high"
             )}
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           >
@@ -912,7 +943,7 @@ export default function TripDetailPage() {
               name="favorite"
               size={22}
               filled={isWishlisted}
-              className={isWishlisted ? "text-[#181D27]" : "text-on-surface-variant"}
+              className={isWishlisted ? "text-on-surface" : "text-on-surface-variant"}
             />
           </button>
 
@@ -926,12 +957,12 @@ export default function TripDetailPage() {
             </p>
           </div>
 
-          {/* Join the Herd */}
+          {/* Join the Community */}
           <button
             onClick={startBooking}
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#C6F135] px-6 py-3.5 text-[15px] font-semibold text-[#181D27] shadow-[0_10px_26px_rgba(198,241,53,0.4)] transition active:scale-[0.98]"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-lime px-6 py-3.5 text-[15px] font-semibold text-on-surface shadow-[0_10px_26px_rgba(198,241,53,0.4)] transition active:scale-[0.98]"
           >
-            Join the Herd
+            Join the Community
             <Icon name="arrow_forward" size={18} />
           </button>
         </div>

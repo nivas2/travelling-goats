@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dropdown } from "@/components/ui/dropdown";
 import { useToast } from "@/components/ui/toast";
-import { cn } from "@/lib/utils";
+import { cn, formatCategory } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -345,7 +345,7 @@ export default function HelpPage() {
                           {ticket.subject}
                         </p>
                         <p className="text-label-sm text-on-surface-variant mt-0.5">
-                          {ticket.category} &middot;{" "}
+                          {formatCategory(ticket.category)} &middot;{" "}
                           {new Date(ticket.createdAt).toLocaleDateString(
                             "en-IN",
                             { day: "numeric", month: "short" }
@@ -401,10 +401,10 @@ export default function HelpPage() {
               className="text-on-surface-variant"
             />
             <a
-              href="mailto:support@travellinggoats.in" /* TODO: Update email domain */
+              href="mailto:support@meetmyroute.in" /* TODO: Update email domain */
               className="text-body-md text-primary"
             >
-              support@travellinggoats.in
+              support@meetmyroute.in
             </a>
           </div>
           <div className="flex items-center gap-3">

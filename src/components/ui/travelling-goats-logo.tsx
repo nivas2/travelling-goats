@@ -54,7 +54,7 @@ export function TravellingGoatsLogo({
           src="/logo-full.png"
           width={w}
           height={h}
-          alt="Travelling Goats"
+          alt="Meet My Route"
           className="h-auto max-w-full"
         />
       </span>
@@ -66,7 +66,7 @@ export function TravellingGoatsLogo({
   return (
     <span className={cn("inline-flex items-center", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo.png" width={w} height={h} alt="Travelling Goats" />
+      <img src="/logo.png" width={w} height={h} alt="Meet My Route" />
     </span>
   );
 }

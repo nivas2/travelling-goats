@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
 
 export interface Offer {
@@ -14,10 +14,22 @@ export interface Offer {
 }
 
 // Vibrant, harmonious palette — cards cycle through these so the row is
-// colourful and lively while staying cohesive.
+// colourful and lively (matches the production reference).
 const OFFER_COLORS = ["#FF385C", "#7C4DFF", "#0EA5E9", "#F97316", "#10B981"];
 
 export function OffersBanner({ offers }: { offers: Offer[] }) {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const copyCode = async (code: string, i: number) => {
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      // Clipboard unavailable (e.g. insecure context) — ignore silently.
+    }
+    setCopiedIndex(i);
+    setTimeout(() => setCopiedIndex((c) => (c === i ? null : c)), 1800);
+  };
+
   if (!offers.length) return null;
 
   return (
@@ -30,8 +42,11 @@ export function OffersBanner({ offers }: { offers: Offer[] }) {
       <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1">
         {offers.map((o, i) => {
           const color = OFFER_COLORS[i % OFFER_COLORS.length];
-          const CardInner = (
+          const copied = copiedIndex === i;
+
+          return (
             <div
+              key={i}
               className="relative flex h-[128px] w-[300px] shrink-0 snap-start overflow-hidden rounded-2xl p-4 shadow-sm md:w-[340px]"
               style={{
                 background: `linear-gradient(135deg, color-mix(in srgb, ${color} 82%, #fff) 0%, ${color} 100%)`,
@@ -50,11 +65,17 @@ export function OffersBanner({ offers }: { offers: Offer[] }) {
                 {o.subtitle && (
                   <p className="mt-0.5 text-label-md text-white/90">{o.subtitle}</p>
                 )}
-                {o.ctaText && (
-                  <span className="mt-auto inline-flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1 text-label-sm font-semibold" style={{ color }}>
-                    {o.ctaText}
-                    <Icon name="arrow_forward" size={14} />
-                  </span>
+                {o.badge && (
+                  <button
+                    type="button"
+                    onClick={() => copyCode(o.badge!, i)}
+                    aria-label={copied ? "Code copied" : `Copy code ${o.badge}`}
+                    className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-3 py-1 text-label-sm font-semibold transition-transform active:scale-95"
+                    style={{ color }}
+                  >
+                    <Icon name={copied ? "check" : "content_copy"} size={14} />
+                    {copied ? "Copied!" : "Copy code"}
+                  </button>
                 )}
               </div>
 
@@ -74,14 +95,6 @@ export function OffersBanner({ offers }: { offers: Offer[] }) {
                 />
               )}
             </div>
-          );
-
-          return o.link ? (
-            <Link key={i} href={o.link} className="shrink-0 active:scale-[0.98] transition-transform">
-              {CardInner}
-            </Link>
-          ) : (
-            <div key={i}>{CardInner}</div>
           );
         })}
       </div>

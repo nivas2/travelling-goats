@@ -242,7 +242,7 @@ export default function SeatsPage() {
             No Seat Selection
           </h2>
           <p className="mt-1 text-body-md text-on-surface-variant">
-            Seats will be assigned by the Shepherd
+            Seats will be assigned by the Trip Captain
           </p>
         </div>
         <BookingBottomBar
@@ -276,11 +276,11 @@ export default function SeatsPage() {
 
       {/* Reservation timer */}
       {timerDisplay && (
-        <div className="flex items-center gap-2 rounded-lg bg-tertiary/10 px-3 py-2">
-          <span className="material-symbols-outlined text-[18px] text-tertiary">
+        <div className="flex items-center gap-2 rounded-lg bg-lime/25 px-3 py-2">
+          <span className="material-symbols-outlined text-[18px] text-on-surface">
             timer
           </span>
-          <span className="text-label-lg font-label-lg text-tertiary">
+          <span className="text-label-lg font-label-lg text-on-surface">
             {timerDisplay} remaining
           </span>
           <span className="text-label-sm text-on-surface-variant">

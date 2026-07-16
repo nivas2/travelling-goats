@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { MultiImageUpload } from "@/components/ui/multi-image-upload";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Switch } from "@/components/ui/switch";
 
@@ -51,6 +52,8 @@ interface FaqItem {
 
 const categoryOptions = [
   { label: "Adventure", value: "ADVENTURE" },
+  { label: "Trek", value: "TREK" },
+  { label: "Camping", value: "CAMPFIRE" },
   { label: "Cultural", value: "CULTURAL" },
   { label: "Beach", value: "BEACH" },
   { label: "Mountain", value: "MOUNTAIN" },
@@ -110,7 +113,7 @@ export default function CreateTripPage() {
 
   // Media
   const [coverImage, setCoverImage] = useState("");
-  const [additionalImages, setAdditionalImages] = useState("");
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
 
   // Pricing (rupees for form display)
   const [basePrice, setBasePrice] = useState("");
@@ -407,10 +410,7 @@ export default function CreateTripPage() {
       destination,
       origin,
       coverImage,
-      images: additionalImages
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      images: galleryImages,
       basePricePaise: rupeesToPaise(Number(basePrice) || 0),
       couplePricePaise: couplePrice ? rupeesToPaise(Number(couplePrice)) : null,
       groupPricePaise: groupPrice ? rupeesToPaise(Number(groupPrice)) : null,
@@ -581,17 +581,13 @@ export default function CreateTripPage() {
           onChange={(e) => setCoverImage(e.target.value)}
           fullWidth
         />
-        <div>
-          <label className="text-label-lg font-semibold text-on-surface mb-1.5 block">
-            Additional Image URLs
-          </label>
-          <textarea
-            className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[80px] resize-y"
-            placeholder="One URL per line"
-            value={additionalImages}
-            onChange={(e) => setAdditionalImages(e.target.value)}
-          />
-        </div>
+        <MultiImageUpload
+          label="Gallery Photos"
+          value={galleryImages}
+          onChange={setGalleryImages}
+          max={6}
+          recommend="Landscape ~1200×800px — these show in the card's hover gallery"
+        />
       </FormSection>
 
       {/* Pricing */}
@@ -686,7 +682,7 @@ export default function CreateTripPage() {
       {/* Captain & Vehicle */}
       <FormSection title="Captain & Vehicle">
         <Dropdown
-          label="Trip Captain / Shepherd"
+          label="Trip Captain / Trip Captain"
           placeholder="No captain assigned"
           options={[
             { label: "No captain", value: "" },

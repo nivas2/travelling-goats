@@ -26,14 +26,14 @@ interface Particle {
 }
 
 const CONFETTI_COLORS = [
-  "#FF385C",
-  "#FF6B7D",
-  "#FF8FA0",
-  "#FFB3C1",
-  "#2e7d32",
-  "#f57c00",
-  "#222222",
-  "#717171",
+  "#D8FF07", // lime
+  "#E4FF3A", // lime bright
+  "#181818", // ink
+  "#6B7280", // muted
+  "#181818",
+  "#D8FF07",
+  "#EAEAEE",
+  "#6B7280",
 ];
 
 function generateConfetti(count: number): Particle[] {
@@ -177,10 +177,10 @@ export default function SuccessPage() {
 
   const handleShare = async () => {
     const shareData = {
-      title: "I just booked a trail on Travelling Goats!",
+      title: "I just booked a trail on Meet My Route!",
       text: booking
-        ? `I am going on ${booking.tripName}. Join me on Travelling Goats!`
-        : "Join me on Travelling Goats for amazing group trails!",
+        ? `I am going on ${booking.tripName}. Join me on Meet My Route!`
+        : "Join me on Meet My Route for amazing group trails!",
       url: `https://meetmyroute.feastigo.com/trips/${tripId}`, // TODO: Update domain to travellinggoats
     };
 

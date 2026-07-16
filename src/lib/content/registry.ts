@@ -63,7 +63,7 @@ export const CONTENT_BLOCKS: BlockDef[] = [
     label: "Logo",
     group: "Branding",
     description:
-      "Your logo — shown in the site header, footer and login screen. Leave empty to use the built-in Travelling Goats logo.",
+      "Your logo — shown in the site header, footer and login screen. Leave empty to use the built-in Meet My Route logo.",
     kind: "single",
     fields: [
       {
@@ -93,6 +93,7 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       { name: "titleLine2", label: "Headline line 2", type: "text" },
       { name: "subtitle", label: "Subtitle", type: "textarea" },
       { name: "imageUrl", label: "Background image URL", type: "image", recommend: "Wide hero photo ~2000×1200px (landscape), JPG", minWidth: 1200, minHeight: 700, aspect: "16/9" },
+      { name: "videoUrl", label: "Background video URL (optional)", type: "text", placeholder: "https://…/hero.mp4 — plays muted on loop; leave blank to use the image" },
       { name: "primaryCta", label: "Primary button text", type: "text" },
       { name: "secondaryCta", label: "Secondary button text", type: "text" },
     ],
@@ -105,6 +106,25 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       primaryCta: "Explore Trails",
       secondaryCta: "How It Works",
     },
+  },
+  {
+    key: "landing.hero.experiences",
+    label: "Hero Experience Pills",
+    group: "Landing Page",
+    description:
+      "Small pills under the hero headline showing what you organise (e.g. Guided Treks, Campfire Camps). Leave empty to hide the row.",
+    kind: "list",
+    itemLabel: "Experience",
+    max: 6,
+    fields: [
+      { name: "label", label: "Label", type: "text" },
+      { name: "icon", label: "Icon (Material Symbol)", type: "text", placeholder: "hiking" },
+    ],
+    default: [
+      { label: "Guided Treks", icon: "hiking" },
+      { label: "Campfire Camps", icon: "local_fire_department" },
+      { label: "Weekend Getaways", icon: "landscape" },
+    ],
   },
   {
     key: "landing.steps",
@@ -138,7 +158,7 @@ export const CONTENT_BLOCKS: BlockDef[] = [
     ],
     default: [
       { icon: "verified_user", label: "Verified Travelers" },
-      { icon: "local_police", label: "Verified Shepherds" },
+      { icon: "local_police", label: "Verified Trip Captains" },
       { icon: "shield", label: "Safe & Secure" },
       { icon: "payments", label: "Transparent Pricing" },
     ],
@@ -211,13 +231,13 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       howSubtitle: "Your journey from screen to summit, simplified.",
       upcomingTitle: "Upcoming Adventures",
       upcomingSubtitle: "Hand-picked routes for the next month.",
-      aboutTitle: "About Travelling Goats",
+      aboutTitle: "About Meet My Route",
       aboutBody:
-        "We started Travelling Goats to make group travel effortless, safe, and unforgettable. Every itinerary is handpicked, every captain is verified, and every price is transparent — so you can focus on the adventure and the friends you'll make along the way.",
-      communityTitle: "Loved by the Herd",
+        "We started Meet My Route to make group travel effortless, safe, and unforgettable. Every itinerary is handpicked, every captain is verified, and every price is transparent — so you can focus on the adventure and the friends you'll make along the way.",
+      communityTitle: "Loved by the Community",
       communitySubtitle: "Real stories from travelers who found new places — and new friends — with us.",
       faqTitle: "Frequently Asked Questions",
-      faqSubtitle: "Everything you need to know before you join the herd.",
+      faqSubtitle: "Everything you need to know before you join the community.",
     },
   },
   {
@@ -228,7 +248,7 @@ export const CONTENT_BLOCKS: BlockDef[] = [
     fields: [
       { name: "copyright", label: "Copyright text (© year auto-added)", type: "text" },
     ],
-    default: { copyright: "Travelling Goats. All rights reserved." },
+    default: { copyright: "Meet My Route. All rights reserved." },
   },
   // ------------------------------------------------------------------- Home --
   {
@@ -285,22 +305,26 @@ export const CONTENT_BLOCKS: BlockDef[] = [
     key: "home.categories",
     label: "Explore Categories",
     group: "Home Feed",
-    description: "Category chips in the 'Explore by Category' row.",
+    description:
+      "Category chips in the 'Explore by Category' row. 'Filters' is the trip category (or categories, comma-separated) a chip shows — e.g. Camping → CAMPFIRE, Treks → TREK,ADVENTURE,MOUNTAIN. Leave blank to match the label automatically.",
     kind: "list",
     itemLabel: "Category",
     fields: [
       { name: "label", label: "Label", type: "text" },
       { name: "icon", label: "Icon (Material Symbol)", type: "text", placeholder: "hiking" },
+      { name: "match", label: "Filters (trip categories, comma-separated)", type: "text", placeholder: "TREK,ADVENTURE,MOUNTAIN" },
     ],
     default: [
-      { label: "Adventure", icon: "hiking" },
-      { label: "Beach", icon: "beach_access" },
-      { label: "Mountain", icon: "landscape" },
-      { label: "Cultural", icon: "temple_hindu" },
-      { label: "Wildlife", icon: "pets" },
-      { label: "Road Trip", icon: "directions_car" },
-      { label: "Camping", icon: "camping" },
-      { label: "Spiritual", icon: "self_improvement" },
+      { label: "Treks", icon: "directions_walk", match: "TREK,ADVENTURE,MOUNTAIN" },
+      { label: "Camping", icon: "camping", match: "CAMPFIRE" },
+      { label: "Adventure", icon: "hiking", match: "ADVENTURE" },
+      { label: "Beach", icon: "beach_access", match: "BEACH" },
+      { label: "Mountain", icon: "landscape", match: "MOUNTAIN" },
+      { label: "Cultural", icon: "temple_hindu", match: "CULTURAL" },
+      { label: "Wildlife", icon: "pets", match: "WILDLIFE" },
+      { label: "Road Trip", icon: "directions_car", match: "ROAD_TRIP" },
+      { label: "City", icon: "location_city", match: "CITY" },
+      { label: "Spiritual", icon: "self_improvement", match: "SPIRITUAL" },
     ],
   },
   {
@@ -319,10 +343,10 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       { name: "author", label: "Author / caption", type: "text" },
     ],
     default: [
-      { img: "/inspiration/van.jpg", tag: "Curated Road Trips", icon: "directions_car", quote: "Chase the horizon.", author: "Travelling Goats" },
-      { img: "/inspiration/tent.jpg", tag: "Handpicked Campsites", icon: "camping", quote: "Wake up somewhere wild.", author: "Travelling Goats" },
-      { img: "/inspiration/mountains.jpg", tag: "Guided Mountain Treks", icon: "landscape", quote: "The peaks are waiting.", author: "Travelling Goats" },
-      { img: "/inspiration/campfire.jpg", tag: "Meet Your Crew", icon: "diversity_3", quote: "Better with your herd.", author: "Travelling Goats" },
+      { img: "/inspiration/van.jpg", tag: "Curated Road Trips", icon: "directions_car", quote: "Chase the horizon.", author: "Meet My Route" },
+      { img: "/inspiration/tent.jpg", tag: "Handpicked Campsites", icon: "camping", quote: "Wake up somewhere wild.", author: "Meet My Route" },
+      { img: "/inspiration/mountains.jpg", tag: "Guided Mountain Treks", icon: "landscape", quote: "The peaks are waiting.", author: "Meet My Route" },
+      { img: "/inspiration/campfire.jpg", tag: "Meet Your Crew", icon: "diversity_3", quote: "Better with your community.", author: "Meet My Route" },
     ],
   },
   {
@@ -386,7 +410,7 @@ export const CONTENT_BLOCKS: BlockDef[] = [
       },
     ],
     default: [
-      { title: "Flat ₹1000 OFF", subtitle: "On your first group trip", badge: "FIRST1000", color: "#181D27", ctaText: "Grab now", link: "/trips", image: "" },
+      { title: "Flat ₹1000 OFF", subtitle: "On your first group trip", badge: "FIRST1000", color: "#181818", ctaText: "Grab now", link: "/trips", image: "" },
       { title: "Weekend Getaways", subtitle: "Starting ₹2,999 per person", badge: "WEEKEND", color: "#2A3140", ctaText: "Explore", link: "/trips", image: "" },
       { title: "Refer & Earn", subtitle: "Get 50 points per friend", badge: "REFER50", color: "#232A38", ctaText: "Invite", link: "/referral", image: "" },
       { title: "Monsoon Special", subtitle: "20% off all hill stations", badge: "RAIN20", color: "#2E3646", ctaText: "Book now", link: "/trips", image: "" },

@@ -6,7 +6,7 @@ export default function SafetyPage() {
   return (
     <ContentPage title="Safety" subtitle="How we help keep you safe on every trip">
       <p>
-        Your safety is at the heart of every Travelling Goats trip. From vetted
+        Your safety is at the heart of every Meet My Route trip. From vetted
         trip captains to in-app emergency tools, we build safeguards into each
         step of your journey so you can travel with confidence.
       </p>

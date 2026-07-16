@@ -36,8 +36,7 @@ export function FavoriteButton({ tripId, size = 20, className }: FavoriteButtonP
         toggle(tripId);
       }}
       className={cn(
-        "flex items-center justify-center rounded-full bg-white/85 shadow-md backdrop-blur",
-        "transition hover:bg-white active:scale-90",
+        "flex items-center justify-center transition active:scale-90",
         className
       )}
       style={{ width: size + 16, height: size + 16 }}
@@ -46,10 +45,7 @@ export function FavoriteButton({ tripId, size = 20, className }: FavoriteButtonP
         name="favorite"
         filled={saved}
         size={size}
-        className={cn(
-          "transition-colors duration-200",
-          saved ? "text-primary" : "text-on-surface-variant"
-        )}
+        className="text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-all duration-200"
       />
     </button>
   );

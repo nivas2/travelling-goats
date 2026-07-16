@@ -33,9 +33,14 @@ export default async function RootPage() {
         titleLine2: hero.titleLine2 ?? "",
         subtitle: hero.subtitle ?? "",
         imageUrl: hero.imageUrl ?? "",
+        videoUrl: hero.videoUrl ?? "",
         primaryCta: hero.primaryCta ?? "",
         secondaryCta: hero.secondaryCta ?? "",
       }}
+      heroExperiences={asList(content["landing.hero.experiences"]).map((e) => ({
+        label: e.label,
+        icon: e.icon,
+      }))}
       steps={asList(content["landing.steps"]).map((s) => ({
         title: s.title,
         desc: s.desc,
@@ -61,6 +66,7 @@ export default async function RootPage() {
         duration: `${t.duration}D/${Math.max(t.duration - 1, 0)}N`,
         pickup: t.origin || "TBD",
         seats: `${Math.max(t.maxGroupSize - t.currentBookings, 0)} Left`,
+        currentBookings: t.currentBookings,
         price: formatCurrency(t.basePricePaise),
         rating: t.rating.toFixed(1),
         image: t.coverImage || "/placeholder-trip.jpg",

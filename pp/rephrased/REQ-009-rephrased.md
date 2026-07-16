@@ -1,10 +1,10 @@
 ---
 id: REQ-009
-original_prompt: "Rebrand MeetMyRoute to Travelling Goats with goat/mountain theme..."
+original_prompt: "Rebrand MeetMyRoute to Meet My Route with goat/mountain theme..."
 rephrased_at: 2026-07-05T03:00:00Z
 ---
 
-# Rephrased Prompt: Complete Brand Rebrand from "MeetMyRoute" to "Travelling Goats"
+# Rephrased Prompt: Complete Brand Rebrand from "MeetMyRoute" to "Meet My Route"
 
 ## Pre-Work: Safety Backup (Do This First, Before Any Other Changes)
 
@@ -21,7 +21,7 @@ Do NOT proceed to any branding changes until the backup is confirmed.
 
 ## Objective
 
-Perform a complete, application-wide rebrand of this Next.js travel application from **"MeetMyRoute"** to **"Travelling Goats"** -- a premium travel community with a subtle, sophisticated goat/mountain theme. The rebrand covers every user-facing string, metadata reference, asset path, and copy throughout the codebase.
+Perform a complete, application-wide rebrand of this Next.js travel application from **"MeetMyRoute"** to **"Meet My Route"** -- a premium travel community with a subtle, sophisticated goat/mountain theme. The rebrand covers every user-facing string, metadata reference, asset path, and copy throughout the codebase.
 
 **Brand identity:** Adventurous, community-driven, premium, friendly, modern, mountain explorer. Fun but never childish. Think premium outdoor brand, not cartoon.
 
@@ -68,22 +68,22 @@ Find and replace **every instance** of "MeetMyRoute" (and variations like "Meet 
 **Replacements:**
 | Old | New |
 |-----|-----|
-| MeetMyRoute | Travelling Goats |
-| Meet MyRoute | Travelling Goats |
+| MeetMyRoute | Meet My Route |
+| Meet MyRoute | Meet My Route |
 | meetmyroute (in URLs/domains) | travellinggoats (or leave domain URLs unchanged if they are live production URLs -- add a TODO comment instead) |
 
 **SEO Metadata updates** (`src/app/layout.tsx`):
-- Title: `"Travelling Goats -- Adventure Travel with the Herd"`
-- Template: `"%s | Travelling Goats"`
-- Description: `"Join the herd. Discover curated group trails across India. Travel with fellow goats -- verified explorers, transparent pricing, unforgettable adventures."`
-- Keywords: add `"Travelling Goats"`, `"herd travel"`, `"trail adventures"` alongside existing travel keywords
-- Authors/creator: `"Travelling Goats"`
+- Title: `"Meet My Route -- Adventure Travel with the Community"`
+- Template: `"%s | Meet My Route"`
+- Description: `"Join the community. Discover curated group trails across India. Travel with fellow goats -- verified explorers, transparent pricing, unforgettable adventures."`
+- Keywords: add `"Meet My Route"`, `"community travel"`, `"trail adventures"` alongside existing travel keywords
+- Authors/creator: `"Meet My Route"`
 - OpenGraph/Twitter: update siteName, titles, descriptions accordingly
 
 **PWA Manifest** (`public/manifest.json`):
-- name: `"Travelling Goats -- Adventure Travel with the Herd"`
-- short_name: `"Travelling Goats"`
-- description: `"Join the herd. Discover curated group trails across India."`
+- name: `"Meet My Route -- Adventure Travel with the Community"`
+- short_name: `"Meet My Route"`
+- description: `"Join the community. Discover curated group trails across India."`
 
 ### 2. Terminology Mapping (User-Facing Strings Only)
 
@@ -93,23 +93,23 @@ Apply these terminology replacements across **all user-facing text** in the appl
 | Old Term | New Term | Context |
 |----------|----------|---------|
 | Trip(s) | Trail(s) | Page titles, card labels, section headers, descriptions, empty states |
-| Trip Captain | Shepherd | Profile badges, trip detail pages, booking flow |
-| Co-host | Assistant Shepherd | Where applicable |
-| Trip Members | Herd | Member lists, counts |
+| Trip Captain | Trip Captain | Profile badges, trip detail pages, booking flow |
+| Co-host | Assistant Trip Captain | Where applicable |
+| Trip Members | Community | Member lists, counts |
 | User(s) (as community term) | Goat(s) | User-facing labels, not code/DB references |
-| Community | The Herd | Community sections |
+| Community | The Community | Community sections |
 | Booking(s) | Trail Booking(s) | Booking confirmations, my-bookings page, admin |
 | Trip Requests | Trail Requests | Request pages |
 | Wishlist / Saved | Dream Trails | Saved trips page (`src/app/(main)/saved/page.tsx`) |
 | Group Chat | Campfire Chat | Chat features if present |
-| Followers | Herd Members | Social features |
-| Invite Friends | Grow Your Herd | Referral page (`src/app/(main)/referral/page.tsx`) |
+| Followers | Community Members | Social features |
+| Invite Friends | Grow Your Community | Referral page (`src/app/(main)/referral/page.tsx`) |
 | Premium | Explorer Pass | Premium tier references |
 | Points | Trail Points | Rewards (`src/app/(main)/rewards/page.tsx`) |
 | Achievements | Goat Milestones | Rewards/achievements |
 | Solo Registration | Lone Goat | Seat selection (`src/app/(booking)/[tripId]/seats/page.tsx`) |
 | Couple Registration | Goat Pair | Seat selection |
-| Group Registration | Mountain Herd | Seat selection |
+| Group Registration | Mountain Community | Seat selection |
 
 ### 3. Button Label Updates
 
@@ -117,11 +117,11 @@ Replace these button labels wherever they appear:
 
 | Old Label | New Label | Known Locations |
 |-----------|-----------|-----------------|
-| Book Now | Join the Herd | `src/app/(main)/trips/[id]/page.tsx`, `src/components/landing/landing-page.tsx` |
+| Book Now | Join the Community | `src/app/(main)/trips/[id]/page.tsx`, `src/components/landing/landing-page.tsx` |
 | Reserve Seat | Claim Your Spot | Booking flow seat selection |
 | Continue (in booking/onboarding flows) | Keep Trekking | `src/app/(booking)/*/page.tsx`, `src/app/(onboarding)/*/page.tsx`, `src/components/booking/booking-bottom-bar.tsx` |
 | Explore Trips | Explore Trails | `src/app/(main)/my-trips/page.tsx`, `src/app/(main)/search/page.tsx`, `src/app/(main)/saved/page.tsx`, `src/components/landing/landing-page.tsx` |
-| Contact Trip Captain | Contact Shepherd | Trip detail pages |
+| Contact Trip Captain | Contact Trip Captain | Trip detail pages |
 | Complete Setup | Start Your Adventure | Onboarding permissions page |
 | Skip & Continue | Skip for Now | Onboarding |
 
@@ -137,7 +137,7 @@ Replace all empty state messages with goat-themed equivalents. Known empty state
 - **No saved/wishlist:** `"No dream trails saved yet. Start exploring!"` -- `src/app/(main)/saved/page.tsx`
 - **No reviews:** `"No trail stories yet. Be the first to share!"` -- `src/app/(main)/trips/[id]/reviews/page.tsx`
 - **No search results:** `"No trails match your search. Try a different path."` -- `src/app/(main)/search/page.tsx`
-- **No friends/referrals:** `"Every herd starts with one goat. Invite your friends!"` -- `src/app/(main)/referral/page.tsx`
+- **No friends/referrals:** `"Every community starts with one goat. Invite your friends!"` -- `src/app/(main)/referral/page.tsx`
 - **No rewards:** `"Your trail points journey begins here."` -- `src/app/(main)/rewards/page.tsx`
 - **No wallet transactions:** `"Your wallet is resting. Trail points will appear after your first adventure."` -- `src/app/(main)/wallet/page.tsx`
 - **Profile empty sections:** Use contextually appropriate goat-themed copy.
@@ -147,7 +147,7 @@ Replace all empty state messages with goat-themed equivalents. Known empty state
 Replace or add loading state text (skeleton screens, spinners, loading overlays) with rotating goat-themed messages:
 
 - `"Finding the perfect trail..."`
-- `"Gathering your herd..."`
+- `"Gathering your community..."`
 - `"Checking mountain paths..."`
 - `"Packing backpacks..."`
 - `"Sharpening hooves..."`
@@ -158,10 +158,10 @@ If the app currently uses simple spinners without text, add subtle loading text 
 ### 6. Success State Copy
 
 Update success/confirmation messages:
-- Booking success: `"Welcome to the Herd! Your trail booking is confirmed."`
+- Booking success: `"Welcome to the Community! Your trail booking is confirmed."`
 - Payment success: `"Trail Joined Successfully! Adventure awaits."`
 - Profile update: `"Profile updated. Looking good, fellow goat!"`
-- Registration/verification complete: `"You're officially part of the herd."`
+- Registration/verification complete: `"You're officially part of the community."`
 - Review submitted: `"Thanks for sharing your trail story!"`
 
 ### 7. Error State Copy
@@ -177,11 +177,11 @@ Update error messages with brand-appropriate copy (keep them helpful, not just c
 
 Update all onboarding screens (`src/app/(onboarding)/*`):
 
-- **Welcome screen** (`welcome/page.tsx`): `"Welcome to Travelling Goats"` / `"Adventure is always better with the herd."`
+- **Welcome screen** (`welcome/page.tsx`): `"Welcome to Meet My Route"` / `"Adventure is always better with the community."`
 - **Interests** (`interests/page.tsx`): `"What trails call to you?"` / `"Pick your adventure style"`
 - **Budget** (`budget/page.tsx`): `"Choose your trekking style"` (keep budget tiers functional, just rephrase labels if needed)
 - **Pickup city** (`pickup-city/page.tsx`): `"Where does your trail begin?"` / `"Select your base camp"`
-- **Permissions** (`permissions/page.tsx`): `"Stay connected with the herd"` / contextual permission descriptions
+- **Permissions** (`permissions/page.tsx`): `"Stay connected with the community"` / contextual permission descriptions
 
 ### 9. Admin Panel Terminology
 
@@ -190,12 +190,12 @@ Update all admin panel labels and headers (`src/app/admin/*`):
 | Old | New |
 |-----|-----|
 | Users | Goats |
-| Trip Captains | Shepherds |
+| Trip Captains | Trip Captains |
 | Trips | Trails |
 | Bookings | Trail Bookings |
-| Analytics (if present) | Herd Analytics |
+| Analytics (if present) | Community Analytics |
 | Reports (if present) | Trail Reports |
-| Dashboard header/title | Herd Dashboard |
+| Dashboard header/title | Community Dashboard |
 
 Also update admin sidebar/navigation labels, admin page titles, table column headers, and admin empty states to match.
 
@@ -203,14 +203,14 @@ Also update admin sidebar/navigation labels, admin page titles, table column hea
 
 If there are notification message templates (check `src/app/api/` and `src/app/(main)/notifications/`), update them:
 - `"A new trail is waiting for you."`
-- `"A new goat joined your herd."`
-- `"Your Shepherd updated the itinerary."`
+- `"A new goat joined your community."`
+- `"Your Trip Captain updated the itinerary."`
 - `"Adventure starts soon -- get ready!"`
-- `"Your herd is ready to go."`
+- `"Your community is ready to go."`
 
 ### 11. Illustration & Asset References
 
-- Add TODO comments or placeholder references where goat-themed illustrations should replace generic travel art. Use the format: `{/* TODO: Replace with Travelling Goats branded illustration -- [description] */}`
+- Add TODO comments or placeholder references where goat-themed illustrations should replace generic travel art. Use the format: `{/* TODO: Replace with Meet My Route branded illustration -- [description] */}`
 - Suggested illustration placements:
   - Empty state illustrations (goat on empty trail, goat looking through binoculars, campfire scene)
   - Onboarding screens (mountain/goat welcome illustration)
@@ -256,7 +256,7 @@ After completing all changes, verify:
 
 1. **Zero "MeetMyRoute" references remain** in any user-facing string (search the entire `src/` directory and `public/` directory).
 2. **PWA manifest** is updated with new brand name and description.
-3. **Browser tab title** shows "Travelling Goats" on all pages.
+3. **Browser tab title** shows "Meet My Route" on all pages.
 4. **All button labels** match the new terminology mapping.
 5. **All empty states** use goat-themed copy.
 6. **Admin panel** uses goat terminology consistently.

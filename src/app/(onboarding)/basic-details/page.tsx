@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,32 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
 import { useInlineOtp } from "@/hooks/use-inline-otp";
 import type { UserProfile } from "@/types";
+
+const GENDER_OPTIONS = [
+  { value: "MALE", label: "Male" },
+  { value: "FEMALE", label: "Female" },
+  { value: "PREFER_NOT_TO_SAY", label: "Prefer not to say" },
+];
+
+// Field-level validation rules — all must pass before the profile can be saved.
+function validateFields(v: {
+  name: string;
+  age: string;
+  gender: string;
+  whatsapp: string;
+}) {
+  const errors: { name?: string; age?: string; gender?: string; whatsapp?: string } = {};
+  if (v.name.trim().length < 2) errors.name = "Please enter your full name";
+  const ageNum = Number(v.age);
+  if (!v.age.trim()) errors.age = "Age is required";
+  else if (!Number.isInteger(ageNum) || ageNum < 5 || ageNum > 100)
+    errors.age = "Enter a valid age (5–100)";
+  if (!v.gender) errors.gender = "Please select your gender";
+  if (!v.whatsapp.trim()) errors.whatsapp = "WhatsApp number is required";
+  else if (!/^[6-9]\d{9}$/.test(v.whatsapp.trim()))
+    errors.whatsapp = "Enter a valid 10-digit number";
+  return errors;
+}
 
 export default function BasicDetailsPage() {
   const router = useRouter();
@@ -21,14 +48,25 @@ export default function BasicDetailsPage() {
   const [saving, setSaving] = useState(false);
 
   const [name, setName] = useState("");
-  const [verified, setVerified] = useState(false);
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    age?: string;
+    gender?: string;
+    whatsapp?: string;
+    email?: string;
+  }>({});
+  const [email, setEmail] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState("");
 
   // Determine which channel is missing after user loads
   const needsPhone = !!user && !user.phone;
   const needsEmail = !!user && !user.email;
 
   const phoneOtp = useInlineOtp("phone");
-  const emailOtp = useInlineOtp("email");
 
   const fetchUser = useCallback(async () => {
     try {
@@ -40,6 +78,13 @@ export default function BasicDetailsPage() {
       const userData: UserProfile = json.data ?? json;
       setUser(userData);
       setName(userData.name ?? "");
+      if (userData.dateOfBirth) {
+        const yrs = new Date().getFullYear() - new Date(userData.dateOfBirth).getFullYear();
+        if (yrs > 0 && yrs < 120) setAge(String(yrs));
+      }
+      setGender(userData.gender ?? "");
+      setWhatsapp(userData.whatsappNumber ?? "");
+      setEmail(userData.email ?? "");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -55,29 +100,37 @@ export default function BasicDetailsPage() {
     const ok = await phoneOtp.verify();
     if (ok) {
       toastSuccess("Phone number verified");
-      setVerified(true);
+      setVerifiedPhone(phoneOtp.value);
+      setPhoneVerified(true);
       phoneOtp.reset();
     }
   };
 
-  const handleEmailVerify = async () => {
-    const ok = await emailOtp.verify();
-    if (ok) {
-      toastSuccess("Email verified");
-      setVerified(true);
-      emailOtp.reset();
-    }
-  };
+
+  const ageNum = Number(age);
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   const handleContinue = async () => {
-    if (!name.trim()) return;
+    const errs: typeof fieldErrors = validateFields({ name, age, gender, whatsapp });
+    if (needsEmail && !emailValid) errs.email = "Enter a valid email";
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
     setSaving(true);
     try {
+      // No dedicated age column — store an approximate DOB (year of birth).
+      const dateOfBirth = new Date(new Date().getFullYear() - ageNum, 0, 1).toISOString();
       const res = await fetch("/api/users", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          dateOfBirth,
+          gender,
+          whatsappNumber: whatsapp.trim(),
+          ...(phoneVerified && verifiedPhone ? { phone: verifiedPhone } : {}),
+          ...(needsEmail && emailValid ? { email: email.trim() } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to save");
@@ -87,10 +140,6 @@ export default function BasicDetailsPage() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleSkip = () => {
-    router.push("/interests");
   };
 
   // Loading state
@@ -117,7 +166,10 @@ export default function BasicDetailsPage() {
     );
   }
 
-  const canContinue = name.trim().length >= 2 && verified;
+  const canContinue =
+    Object.keys(validateFields({ name, age, gender, whatsapp })).length === 0 &&
+    (!needsPhone || phoneVerified) &&
+    (!needsEmail || emailValid);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -130,14 +182,6 @@ export default function BasicDetailsPage() {
             className="flex items-center gap-1 text-body-md text-on-surface-variant transition-colors hover:text-on-surface"
           >
             <Icon name="arrow_back" size={20} />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSkip}
-            className="text-label-lg font-semibold text-on-surface-variant transition-colors hover:text-primary"
-          >
-            Skip
           </button>
         </div>
       </div>
@@ -159,7 +203,72 @@ export default function BasicDetailsPage() {
             label="Full Name"
             placeholder="Your full name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            error={fieldErrors.name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (fieldErrors.name) setFieldErrors((p) => ({ ...p, name: undefined }));
+            }}
+          />
+
+          {/* Age */}
+          <Input
+            label="Age"
+            type="number"
+            inputMode="numeric"
+            placeholder="Your age"
+            value={age}
+            error={fieldErrors.age}
+            onChange={(e) => {
+              setAge(e.target.value);
+              if (fieldErrors.age) setFieldErrors((p) => ({ ...p, age: undefined }));
+            }}
+          />
+
+          {/* Gender */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-label-lg font-semibold text-on-surface">
+              Gender
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {GENDER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setGender(opt.value);
+                    if (fieldErrors.gender) setFieldErrors((p) => ({ ...p, gender: undefined }));
+                  }}
+                  className={cn(
+                    "flex h-11 items-center justify-center rounded-xl border px-2 text-center text-label-lg font-medium transition-all",
+                    opt.value === "PREFER_NOT_TO_SAY" && "col-span-2",
+                    gender === opt.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-outline-variant bg-surface-container-lowest text-on-surface-variant"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {fieldErrors.gender && (
+              <p className="text-label-sm text-error">{fieldErrors.gender}</p>
+            )}
+          </div>
+
+          {/* WhatsApp — required */}
+          <Input
+            label="WhatsApp Number"
+            type="tel"
+            countryCode="+91"
+            inputMode="numeric"
+            maxLength={10}
+            placeholder="WhatsApp number"
+            value={whatsapp}
+            error={fieldErrors.whatsapp}
+            onChange={(e) => {
+              setWhatsapp(e.target.value);
+              if (fieldErrors.whatsapp) setFieldErrors((p) => ({ ...p, whatsapp: undefined }));
+            }}
           />
 
           {/* Phone — shown for Google users (missing phone) */}
@@ -169,7 +278,7 @@ export default function BasicDetailsPage() {
                 Phone Number
               </label>
 
-              {verified && !phoneOtp.editMode ? (
+              {phoneVerified && !phoneOtp.editMode ? (
                 <div className="flex items-center gap-2 h-12 rounded-xl bg-success-container/30 border border-success/30 px-4">
                   <Icon name="check_circle" size={20} className="text-success" />
                   <span className="text-body-lg text-on-surface">Phone verified</span>
@@ -226,70 +335,19 @@ export default function BasicDetailsPage() {
             </div>
           )}
 
-          {/* Email — shown for phone users (missing email) */}
+          {/* Email — plain field (no OTP needed) for users missing an email */}
           {needsEmail && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-label-lg font-semibold text-on-surface">
-                Email
-              </label>
-
-              {verified && !emailOtp.editMode ? (
-                <div className="flex items-center gap-2 h-12 rounded-xl bg-success-container/30 border border-success/30 px-4">
-                  <Icon name="check_circle" size={20} className="text-success" />
-                  <span className="text-body-lg text-on-surface">Email verified</span>
-                </div>
-              ) : (
-                <div className="space-y-3 rounded-xl border border-outline-variant p-4 bg-surface-container-lowest">
-                  <div className="flex gap-2">
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      value={emailOtp.value}
-                      onChange={(e) => emailOtp.setValue(e.target.value)}
-                      disabled={emailOtp.otpSent}
-                      fullWidth
-                    />
-                    {!emailOtp.otpSent && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={emailOtp.sendOtp}
-                        loading={emailOtp.sending}
-                        disabled={
-                          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOtp.value)
-                        }
-                      >
-                        Send OTP
-                      </Button>
-                    )}
-                  </div>
-
-                  {emailOtp.otpSent && (
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter OTP"
-                        value={emailOtp.otp}
-                        onChange={(e) => emailOtp.setOtp(e.target.value)}
-                        maxLength={6}
-                        fullWidth
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleEmailVerify}
-                        loading={emailOtp.verifying}
-                        disabled={emailOtp.otp.length !== 6}
-                      >
-                        Verify
-                      </Button>
-                    </div>
-                  )}
-
-                  {emailOtp.error && (
-                    <p className="text-label-sm text-error">{emailOtp.error}</p>
-                  )}
-                </div>
-              )}
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              error={fieldErrors.email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) setFieldErrors((p) => ({ ...p, email: undefined }));
+              }}
+            />
           )}
         </div>
       </div>

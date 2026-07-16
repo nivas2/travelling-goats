@@ -42,8 +42,8 @@ const TIERS: TierDef[] = [
     name: "Adventurer",
     icon: "landscape",
     minPoints: 500,
-    color: "text-secondary",
-    bgGradient: "from-secondary/20 to-secondary/5",
+    color: "text-on-surface",
+    bgGradient: "from-lime/25 to-lime/5",
     benefits: [
       "All Explorer benefits",
       "1.5x reward points on bookings",
@@ -55,8 +55,8 @@ const TIERS: TierDef[] = [
     name: "Voyager",
     icon: "flight_takeoff",
     minPoints: 2000,
-    color: "text-tertiary",
-    bgGradient: "from-tertiary/20 to-tertiary/5",
+    color: "text-on-surface",
+    bgGradient: "from-lime/40 to-lime/10",
     benefits: [
       "All Adventurer benefits",
       "2x reward points on bookings",
@@ -69,8 +69,8 @@ const TIERS: TierDef[] = [
     name: "Legend",
     icon: "diamond",
     minPoints: 5000,
-    color: "text-primary",
-    bgGradient: "from-primary/20 to-primary/5",
+    color: "text-on-surface",
+    bgGradient: "from-lime/60 to-lime/15",
     benefits: [
       "All Voyager benefits",
       "3x reward points on bookings",

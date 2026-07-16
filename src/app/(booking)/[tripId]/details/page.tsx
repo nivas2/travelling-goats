@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/stores/booking-store";
 import { Input } from "@/components/ui/input";
 import { RadioCard } from "@/components/ui/radio-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BookingBottomBar } from "@/components/booking/booking-bottom-bar";
 
 // ---------------------------------------------------------------------------
@@ -107,15 +108,18 @@ export default function DetailsPage() {
   } = useBookingStore();
 
   const [submitting, setSubmitting] = useState(false);
-  const [pickupPoints, setPickupPoints] = useState<PickupPointOption[]>(FALLBACK_PICKUP_POINTS);
+  const [pickupPoints, setPickupPoints] = useState<PickupPointOption[]>([]);
+  const [pickupLoading, setPickupLoading] = useState(true);
 
   // Fetch trip-specific pickup points
   useEffect(() => {
     let active = true;
+    setPickupLoading(true);
     fetch(`/api/trips/${tripId}/pickup-points`)
       .then((r) => r.json())
       .then((j) => {
-        if (active && j?.success && j.data?.length > 0) {
+        if (!active) return;
+        if (j?.success && j.data?.length > 0) {
           setPickupPoints(
             j.data.map((p: { id: string; name: string; address: string; icon?: string }) => ({
               id: p.id,
@@ -124,9 +128,16 @@ export default function DetailsPage() {
               icon: p.icon || "location_on",
             }))
           );
+        } else {
+          setPickupPoints(FALLBACK_PICKUP_POINTS);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active) setPickupPoints(FALLBACK_PICKUP_POINTS);
+      })
+      .finally(() => {
+        if (active) setPickupLoading(false);
+      });
     return () => { active = false; };
   }, [tripId]);
 
@@ -419,18 +430,27 @@ export default function DetailsPage() {
           role="radiogroup"
           aria-label="Pickup point"
         >
-          {pickupPoints.map((pp: { id: string; name: string; address: string; icon: string; pickupTime?: string | null }) => (
-            <RadioCard
-              key={pp.id}
-              selected={selectedPickup === pp.id}
-              icon={pp.icon}
-              title={pp.name}
-              description={pp.pickupTime ? `${pp.address} · ${pp.pickupTime}` : pp.address}
-              onChange={() =>
-                setValue("pickupPoint", pp.id, { shouldValidate: true })
-              }
-            />
-          ))}
+          {pickupLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  variant="rectangular"
+                  height={68}
+                  className="rounded-2xl"
+                />
+              ))
+            : pickupPoints.map((pp: { id: string; name: string; address: string; icon: string; pickupTime?: string | null }) => (
+                <RadioCard
+                  key={pp.id}
+                  selected={selectedPickup === pp.id}
+                  icon={pp.icon}
+                  title={pp.name}
+                  description={pp.pickupTime ? `${pp.address} · ${pp.pickupTime}` : pp.address}
+                  onChange={() =>
+                    setValue("pickupPoint", pp.id, { shouldValidate: true })
+                  }
+                />
+              ))}
         </div>
         {errors.pickupPoint && (
           <p className="text-label-sm text-error">{errors.pickupPoint.message}</p>

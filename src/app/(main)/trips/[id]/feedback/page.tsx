@@ -42,6 +42,11 @@ export default function TripFeedbackPage({
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);
+      } else {
+        toastError(
+          data.error ??
+            "Couldn't submit your review. You may have already reviewed this trip."
+        );
       }
     } catch {
       toastError("Failed to submit review. Please try again.");
@@ -164,16 +169,6 @@ export default function TripFeedbackPage({
             <p className="text-label-sm text-on-surface-variant text-right mt-1">
               {comment.length}/500
             </p>
-          </div>
-
-          <div>
-            <p className="text-title-lg font-title-lg text-on-surface mb-3">
-              Share a photo (optional)
-            </p>
-            <div className="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center">
-              <Icon name="add_photo_alternate" size={40} className="text-on-surface-variant/40 mx-auto mb-2" />
-              <p className="text-body-md text-on-surface-variant">Tap to upload photos</p>
-            </div>
           </div>
 
           <div className="flex gap-3">

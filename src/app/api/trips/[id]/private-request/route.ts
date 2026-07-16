@@ -100,7 +100,7 @@ export async function POST(
     });
     if (!booking) {
       return NextResponse.json(
-        { success: false, error: "You need a booking on this trip to contact your shepherd" },
+        { success: false, error: "You need a booking on this trip to contact your trip captain" },
         { status: 403 }
       );
     }

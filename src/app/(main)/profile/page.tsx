@@ -23,14 +23,16 @@ interface MenuItem {
   onClick?: () => void;
   destructive?: boolean;
   chevron?: boolean;
+  /** iOS-style colored icon-tile background. */
+  tint?: string;
 }
 
 // Reward tier → badge display (matches the Rewards page tiers).
 const TIER_BADGES: Record<string, { label: string; icon: string; className: string }> = {
   EXPLORER: { label: "Explorer", icon: "hiking", className: "bg-surface-container-high text-on-surface-variant" },
-  ADVENTURER: { label: "Adventurer", icon: "landscape", className: "bg-secondary/15 text-secondary" },
-  VOYAGER: { label: "Voyager", icon: "flight_takeoff", className: "bg-tertiary/15 text-tertiary" },
-  LEGEND: { label: "Legend", icon: "diamond", className: "bg-primary/15 text-primary" },
+  ADVENTURER: { label: "Adventurer", icon: "landscape", className: "bg-lime/25 text-on-surface" },
+  VOYAGER: { label: "Voyager", icon: "flight_takeoff", className: "bg-lime/45 text-on-surface" },
+  LEGEND: { label: "Legend", icon: "diamond", className: "bg-lime text-on-lime" },
 };
 
 // ---------------------------------------------------------------------------
@@ -91,20 +93,21 @@ export default function ProfilePage() {
 
   const MENU_ITEMS: MenuItem[] = [
     ...(isCaptain
-      ? [{ icon: "hiking", label: "Captain Dashboard", href: "/captain", chevron: true }]
+      ? [{ icon: "hiking", label: "Captain Dashboard", href: "/captain", chevron: true, tint: "#34C759" }]
       : []),
-    { icon: "edit", label: "Edit Profile", href: "/profile/edit", chevron: true },
-    { icon: "account_balance_wallet", label: "Wallet", href: "/wallet", chevron: true },
-    { icon: "stars", label: "Rewards", href: "/rewards", chevron: true },
-    { icon: "group_add", label: "Referral", href: "/referral", chevron: true },
-    { icon: "settings", label: "Settings", href: "/profile/settings", chevron: true },
-    { icon: "help", label: "Help & Support", href: "/help", chevron: true },
-    { icon: "info", label: "About Travelling Goats", href: "/about", chevron: true },
+    { icon: "edit", label: "Edit Profile", href: "/profile/edit", chevron: true, tint: "#007AFF" },
+    { icon: "account_balance_wallet", label: "Wallet", href: "/wallet", chevron: true, tint: "#30B0C7" },
+    { icon: "stars", label: "Rewards", href: "/rewards", chevron: true, tint: "#FF9500" },
+    { icon: "group_add", label: "Referral", href: "/referral", chevron: true, tint: "#FF2D55" },
+    { icon: "settings", label: "Settings", href: "/profile/settings", chevron: true, tint: "#8E8E93" },
+    { icon: "help", label: "Help & Support", href: "/help", chevron: true, tint: "#5856D6" },
+    { icon: "info", label: "About Meet My Route", href: "/about", chevron: true, tint: "#5AC8FA" },
     {
       icon: "logout",
       label: "Logout",
       onClick: handleLogout,
       destructive: true,
+      tint: "#FF3B30",
     },
   ];
 
@@ -157,7 +160,7 @@ export default function ProfilePage() {
         </div>
 
         <h1 className="mt-3 text-headline-md font-headline-md text-on-surface">
-          {user.name ?? "Travelling Goats Explorer"}
+          {user.name ?? "Meet My Route Explorer"}
         </h1>
 
         {/* Current reward tier badge */}
@@ -225,10 +228,10 @@ export default function ProfilePage() {
         </div>
         <div className="h-8 w-px bg-outline-variant" />
         <div className="text-center">
-          <p className="text-headline-md font-headline-md text-on-surface">
-            0
+          <p className="text-headline-md font-headline-md text-on-surface capitalize">
+            {(user.rewardTier ?? "Explorer").toLowerCase()}
           </p>
-          <p className="text-label-sm text-on-surface-variant">Reviews</p>
+          <p className="text-label-sm text-on-surface-variant">Tier</p>
         </div>
         <div className="h-8 w-px bg-outline-variant" />
         <div className="text-center">

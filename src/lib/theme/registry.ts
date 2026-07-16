@@ -29,7 +29,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Brand Colors",
     type: "color",
     vars: ["--brand-primary"],
-    default: "#181D27",
+    default: "#181818",
   },
   {
     key: "secondary",
@@ -38,7 +38,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Brand Colors",
     type: "color",
     vars: ["--brand-secondary"],
-    default: "#181D27",
+    default: "#181818",
   },
   {
     key: "accent",
@@ -47,7 +47,7 @@ export const THEME_TOKENS: ThemeToken[] = [
     group: "Brand Colors",
     type: "color",
     vars: ["--brand-accent"],
-    default: "#181D27",
+    default: "#181818",
   },
   // ---- Status Colors ----
   {
@@ -164,9 +164,9 @@ export const THEME_PRESETS: ThemePreset[] = [
   {
     name: "DocNow",
     hint: "Ink + lime + light-grey (current)",
-    swatch: "#181D27",
+    swatch: "#181818",
     values: {
-      primary: "#181D27", secondary: "#181D27", accent: "#181D27",
+      primary: "#181818", secondary: "#181818", accent: "#181818",
       success: "#3F7D4E", warning: "#D08A2C", error: "#DC2626",
       background: "#F2F2F5", surface: "#FFFFFF",
     },

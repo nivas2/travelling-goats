@@ -95,13 +95,13 @@ export default function ShepherdRequestPage() {
     }
   }
 
-  const shepherdName = thread?.shepherd?.name ?? "Your Shepherd";
+  const shepherdName = thread?.shepherd?.name ?? "Your Trip Captain";
   const messages = thread?.messages ?? [];
 
   return (
     <div className="flex h-dvh flex-col bg-surface">
       {/* Header */}
-      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-outline-variant bg-surface-container-lowest/95 px-4 py-3 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-outline-variant bg-surface-container-lowest/95 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm">
         <button
           onClick={() => router.back()}
           aria-label="Back"
@@ -127,7 +127,7 @@ export default function ShepherdRequestPage() {
         <div className="mx-auto mb-4 max-w-sm rounded-2xl bg-primary/5 p-3 text-center">
           <Icon name="shield" size={20} className="mx-auto mb-1 text-primary" filled />
           <p className="text-label-md text-on-surface">
-            This is a private, confidential channel with your Shepherd.
+            This is a private, confidential channel with your Trip Captain.
           </p>
           <p className="mt-0.5 text-label-sm text-on-surface-variant">
             Only you and your trip captain can see these messages. Reach out any time you
@@ -143,7 +143,7 @@ export default function ShepherdRequestPage() {
           </div>
         ) : messages.length === 0 ? (
           <p className="mt-6 text-center text-body-md text-on-surface-variant">
-            No messages yet. Start the conversation with your Shepherd below.
+            No messages yet. Start the conversation with your Trip Captain below.
           </p>
         ) : (
           <div className="space-y-2">
@@ -181,7 +181,7 @@ export default function ShepherdRequestPage() {
       </div>
 
       {/* Composer */}
-      <div className="sticky bottom-0 border-t border-outline-variant bg-surface-container-lowest px-4 py-3 pb-safe">
+      <div className="sticky bottom-0 border-t border-outline-variant bg-surface-container-lowest px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {/* Quick one-tap requests */}
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
           {QUICK_REQUESTS.map((q) => (
@@ -208,7 +208,7 @@ export default function ShepherdRequestPage() {
               }
             }}
             rows={1}
-            placeholder="Message your Shepherd privately…"
+            placeholder="Message your Trip Captain privately…"
             className="max-h-32 flex-1 resize-none rounded-2xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface outline-none focus:border-primary"
           />
           <button

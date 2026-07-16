@@ -6,7 +6,7 @@ export default function TermsPage() {
   return (
     <ContentPage title="Terms of Service" subtitle="Last updated: July 2026">
       <p>
-        Welcome to Travelling Goats. By creating an account or booking a trip,
+        Welcome to Meet My Route. By creating an account or booking a trip,
         you agree to these terms. Please read them carefully.
       </p>
 

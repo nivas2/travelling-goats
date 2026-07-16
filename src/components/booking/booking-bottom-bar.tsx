@@ -35,7 +35,7 @@ export function BookingBottomBar({
   leftContent,
 }: BookingBottomBarProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.06] bg-white/90 backdrop-blur-xl shadow-[0_-10px_30px_rgba(20,30,40,0.06)] pb-safe">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-outline-variant bg-surface/90 backdrop-blur-xl shadow-[0_-10px_30px_rgba(20,30,40,0.06)] pb-safe">
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Left side: custom content / back + price info */}
         <div className="flex flex-1 items-center gap-3">
@@ -47,7 +47,7 @@ export function BookingBottomBar({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full hover:bg-surface-container transition-colors"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-surface-container transition-colors"
                   aria-label="Go back"
                 >
                   <span className="material-symbols-outlined text-[22px] text-on-surface-variant">

@@ -33,7 +33,7 @@ const FloatingActionButton = forwardRef<
         "fixed z-50 tactile-btn",
         "bottom-24 right-4 md:bottom-8 md:right-8",
         "flex items-center justify-center gap-2",
-        "coral-gradient text-on-primary",
+        "bg-lime text-on-surface",
         "shadow-elevated hover:shadow-lg",
         "rounded-2xl",
         "transition-all duration-200",

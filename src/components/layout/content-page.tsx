@@ -36,7 +36,7 @@ export function ContentPage({
         </div>
       </div>
 
-      <div className="space-y-5 text-body-md text-on-surface-variant [&_h2]:text-title-md [&_h2]:font-title-md [&_h2]:text-on-surface [&_h2]:mt-6 [&_h2]:mb-1.5 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1">
+      <div className="space-y-5 text-body-md text-on-surface [&_h2]:text-title-md [&_h2]:font-title-md [&_h2]:text-on-surface [&_h2]:mt-6 [&_h2]:mb-1.5 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1">
         {children}
       </div>
     </div>

@@ -41,13 +41,13 @@ export function EmptyState({
     >
       {/* Icon */}
       {(icon || iconElement) && (
-        <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[26px] bg-[#C6F135]/20 ring-1 ring-[#C6F135]/40">
+        <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[26px] bg-lime/20 ring-1 ring-lime/40">
           {iconElement ?? (
             <Icon
               name={icon!}
               size={38}
               filled
-              className="text-[#181D27]"
+              className="text-on-surface"
             />
           )}
         </div>

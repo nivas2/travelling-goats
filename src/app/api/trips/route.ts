@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
           destination: true,
           origin: true,
           coverImage: true,
+          images: true,
           startDate: true,
           endDate: true,
           duration: true,

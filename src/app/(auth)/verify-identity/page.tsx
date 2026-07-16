@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
-import { GlassCard } from "@/components/ui/glass-card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { cn } from "@/lib/utils";
 import { maskAadhaar } from "@/lib/utils";
@@ -132,15 +131,15 @@ export default function VerifyIdentityPage() {
     <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6">
       {/* Decorative blobs */}
       <div
-        className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-primary-container/30 blur-3xl"
+        className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-lime/20 blur-3xl"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-secondary-container/20 blur-3xl"
+        className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-lime/12 blur-3xl"
         aria-hidden="true"
       />
 
-      <GlassCard className="w-full max-w-md space-y-6 p-6 md:max-w-xl md:p-8">
+      <div className="w-full max-w-md space-y-6 rounded-3xl border border-outline-variant bg-surface p-6 shadow-[0_20px_50px_rgba(20,30,40,0.08)] md:max-w-xl md:p-8">
         {/* Back button */}
         <button
           type="button"
@@ -291,7 +290,7 @@ export default function VerifyIdentityPage() {
             Submit Verification
           </Button>
         </form>
-      </GlassCard>
+      </div>
     </div>
   );
 }

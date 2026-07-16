@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
   { label: "Contact Requests", icon: "mail", href: "/admin/contact-requests" },
   { label: "SOS Alerts", icon: "sos", href: "/admin/sos" },
   { label: "Revenue", icon: "payments", href: "/admin/revenue" },
-  { label: "Herd Analytics", icon: "analytics", href: "/admin/analytics" },
+  { label: "Community Analytics", icon: "analytics", href: "/admin/analytics" },
   { label: "Support", icon: "support_agent", href: "/admin/support" },
   { label: "Settings", icon: "settings", href: "/admin/settings" },
 ];

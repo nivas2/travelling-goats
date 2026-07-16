@@ -273,7 +273,7 @@ export default function NotificationsPage() {
                         <p className="text-label-sm text-on-surface-variant mt-0.5 line-clamp-2">
                           {notif.body}
                         </p>
-                        <p className="text-label-sm text-on-surface-variant/70 mt-1">
+                        <p className="text-label-sm text-on-surface-variant mt-1">
                           {formatTimestamp(notif.createdAt)}
                         </p>
                       </div>

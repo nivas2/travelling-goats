@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
             Admin Panel
           </h1>
           <p className="mt-1 text-body-md text-on-surface-variant">
-            Sign in to manage Travelling Goats
+            Sign in to manage Meet My Route
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@travellinggoats.in" /* TODO: Update domain to travellinggoats.in */
+              placeholder="admin@meetmyroute.in" /* TODO: Update domain to meetmyroute.in */
               required
               className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-body-md text-on-surface outline-none transition-colors focus:border-primary"
             />

@@ -31,7 +31,12 @@ export async function GET(req: NextRequest) {
     });
 
     if (!chatRoom) {
-      return NextResponse.json({ success: false, error: "Chat room not found" }, { status: 404 });
+      // No room yet (nobody has messaged this trip) — return an empty chat so
+      // the page loads normally; the first sent message creates the room (POST).
+      return NextResponse.json({
+        success: true,
+        data: { roomId: null, messages: [], pinnedMessages: [] },
+      });
     }
 
     // Update lastSeenAt (piggyback on poll) and lastReadAt in parallel

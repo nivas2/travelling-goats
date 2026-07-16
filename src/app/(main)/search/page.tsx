@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn, formatCurrency, formatCategory } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Chip } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FavoriteButton } from "@/components/ui/favorite-button";
+import { TripCard } from "@/components/ui/trip-card";
 import {
   TripFilterSheet,
   activeFilterCount,
@@ -29,7 +27,8 @@ const CATEGORY_FILTERS = [
   { label: "Cultural", value: "Cultural" },
   { label: "Wildlife", value: "Wildlife" },
   { label: "Road Trip", value: "Road Trip" },
-  { label: "Camping", value: "Camping" },
+  { label: "City", value: "City" },
+  { label: "Spiritual", value: "Spiritual" },
 ];
 
 const RECENT_SEARCHES_KEY = "travellinggoats_recent_searches";
@@ -86,93 +85,6 @@ function clearRecentSearches() {
 }
 
 // ---------------------------------------------------------------------------
-// Search Result Card
-// ---------------------------------------------------------------------------
-
-function SearchResultCard({ trip }: { trip: TripCardData }) {
-  const spotsLeft = Math.max(0, trip.maxGroupSize - trip.currentBookings);
-
-  return (
-    <Link href={`/trips/${trip.id}`} className="lp-lift group block">
-      <div className="relative isolate h-[320px] overflow-hidden rounded-[30px] bg-[#181D27] [transform:translateZ(0)]">
-        <Image
-          src={trip.coverImage || "/placeholder-trip.jpg"}
-          alt={trip.title}
-          fill
-          className="object-cover transition-transform duration-[1.1s] group-hover:scale-105"
-          sizes="(max-width:768px) 100vw, 700px"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F16]/55 via-transparent to-[#0B0F16]/25" />
-
-        {/* Top row — category pill + favourite */}
-        <div className="absolute inset-x-4 top-4 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F135] px-3 py-1 text-[12px] font-bold text-[#181D27]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#181D27]" /> {formatCategory(trip.category)}
-          </span>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur">
-            <FavoriteButton tripId={trip.id} size={18} />
-          </span>
-        </div>
-
-        {/* Floating frosted info panel with a lime arrow button breaking out.
-            A circular notch is masked out of the panel's top edge so the arrow
-            sits inside a curved corner cut-out. */}
-        <div className="absolute inset-x-3 bottom-3 rounded-[26px] p-4 pt-4">
-          {/* masked frosted background — a circular notch is cut from the top
-              edge so the arrow button sits in a curved corner cut-out */}
-          <div
-            aria-hidden
-            className="absolute inset-0 z-0 rounded-[26px] border border-white/12 bg-[#0B0F16]/45 backdrop-blur-md"
-            style={{
-              WebkitMaskImage:
-                "radial-gradient(circle 34px at calc(100% - 44px) 0, transparent 33px, #000 34px)",
-              maskImage:
-                "radial-gradient(circle 34px at calc(100% - 44px) 0, transparent 33px, #000 34px)",
-            }}
-          />
-          {/* lime circular arrow button — nestled in the corner notch */}
-          <div className="absolute -top-7 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#C6F135] shadow-[0_10px_24px_rgba(203,238,78,0.4)] transition-transform group-hover:rotate-12">
-            <Icon name="arrow_outward" size={26} className="text-[#181D27]" />
-          </div>
-
-          <div className="relative z-10">
-          <div className="mb-2 flex items-center gap-1 text-[12px] font-medium text-white/85">
-            <Icon name="location_on" filled size={14} className="text-[#C6F135]" />
-            <span className="truncate">{trip.destination}</span>
-          </div>
-          <h3 className="max-w-[78%] text-[20px] font-bold leading-tight text-white">{trip.title}</h3>
-
-          <div className="mt-3 flex items-end justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white">
-                <Icon name="calendar_today" size={13} /> {trip.duration}D
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white">
-                <Icon name="event_seat" size={13} /> {spotsLeft}/{trip.maxGroupSize} seats
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white">
-                <Icon name="star" filled size={13} className="text-[#C6F135]" /> {trip.rating.toFixed(1)}
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
-            <div>
-              <span className="text-[11px] uppercase tracking-wide text-white/55">From</span>
-              <div className="text-[18px] font-bold text-white">{formatCurrency(trip.basePricePaise)}</div>
-            </div>
-            <span className="text-[12px] font-semibold text-[#C6F135]">
-              {spotsLeft > 0 ? `${spotsLeft} of ${trip.maxGroupSize} left` : "Fully booked"}
-            </span>
-          </div>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Search Page
 // ---------------------------------------------------------------------------
 
@@ -218,7 +130,9 @@ export default function SearchPage() {
 
       const params = new URLSearchParams();
       if (searchQuery.trim()) params.set("search", searchQuery.trim());
-      if (category) params.set("category", category);
+      // The API filters on the enum value (e.g. ROAD_TRIP), but the chips use
+      // display labels (e.g. "Road Trip") — normalise before querying.
+      if (category) params.set("category", category.toUpperCase().replace(/\s+/g, "_"));
       if (minPrice) params.set("minPrice", minPrice);
       if (maxPrice) params.set("maxPrice", maxPrice);
       // Ask for a large page so client-side duration/city filters have enough
@@ -326,9 +240,7 @@ export default function SearchPage() {
     ...clientFilters.durations.map((d) => (d >= 5 ? "5+ days" : `${d} day${d > 1 ? "s" : ""}`)),
     ...(minPrice || maxPrice
       ? [
-          `₹${minPrice ? Number(minPrice) / 100 : 0}${
-            maxPrice ? `–₹${Number(maxPrice) / 100}` : "+"
-          }`,
+          `${formatCurrency(Number(minPrice) || 0)}${maxPrice ? `–${formatCurrency(Number(maxPrice))}` : "+"}`,
         ]
       : []),
     ...(clientFilters.city ? [clientFilters.city] : []),
@@ -387,8 +299,8 @@ export default function SearchPage() {
       />
 
       {/* ===== Search Header ===== */}
-      <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur-md border-b border-outline-variant/10">
-        <div className="flex items-center gap-2 px-4 py-3">
+      <div className="sticky top-0 z-30 bg-background">
+        <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-5 py-3 md:px-6">
           <button
             onClick={() => router.back()}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"
@@ -401,7 +313,7 @@ export default function SearchPage() {
             <Icon
               name="search"
               size={20}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant"
             />
             <input
               ref={inputRef}
@@ -411,11 +323,11 @@ export default function SearchPage() {
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="Search trips, destinations..."
               className={cn(
-                "w-full rounded-xl bg-surface-container-low",
+                "w-full rounded-full bg-surface-container-low",
                 "border border-outline-variant",
-                "h-11 pl-10 pr-10 text-body-md text-on-surface",
+                "h-11 pl-11 pr-11 text-body-md text-on-surface",
                 "placeholder:text-on-surface-variant/50",
-                "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
+                "focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/10",
                 "transition-all"
               )}
             />
@@ -438,7 +350,7 @@ export default function SearchPage() {
           <button
             onClick={() => setFilterOpen(true)}
             aria-label="Filter trips"
-            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-low transition-colors hover:bg-surface-container-high"
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low transition-colors hover:bg-surface-container-high"
           >
             <Icon name="tune" size={22} className="text-on-surface" />
             {totalFilterCount > 0 && (
@@ -450,7 +362,7 @@ export default function SearchPage() {
         </div>
 
         {/* Category Quick Filters */}
-        <div className="flex gap-3 overflow-x-auto px-4 pb-3 hide-scrollbar">
+        <div className="mx-auto flex w-full max-w-7xl gap-3 overflow-x-auto px-5 pb-3 hide-scrollbar md:px-6">
           {CATEGORY_FILTERS.map((cat) => (
             <Chip
               key={cat.value}
@@ -466,7 +378,7 @@ export default function SearchPage() {
 
         {/* Active extra filters (from the home filter sheet) */}
         {extraFilters.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto px-4 pb-3 hide-scrollbar">
+          <div className="mx-auto flex w-full max-w-7xl items-center gap-2 overflow-x-auto px-5 pb-3 hide-scrollbar md:px-6">
             {extraFilters.map((label) => (
               <span
                 key={label}
@@ -487,7 +399,7 @@ export default function SearchPage() {
       </div>
 
       {/* ===== Content ===== */}
-      <div className="px-5 py-4">
+      <div className="px-5 py-4 md:px-6">
         {/* Recent Searches (show when no search/results) */}
         {!hasSearched && !loading && results.length === 0 && recentSearches.length > 0 && (
           <section>
@@ -534,9 +446,9 @@ export default function SearchPage() {
 
         {/* Loading Skeletons */}
         {loading && (
-          <div className="flex flex-col gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} variant="card" height={230} className="rounded-[24px]" />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} variant="card" height={280} className="rounded-[24px]" />
             ))}
           </div>
         )}
@@ -552,9 +464,9 @@ export default function SearchPage() {
                 {results.length} trail{results.length !== 1 ? "s" : ""}
               </span>
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
               {results.map((trip) => (
-                <SearchResultCard key={trip.id} trip={trip} />
+                <TripCard key={trip.id} trip={trip} />
               ))}
             </div>
           </div>

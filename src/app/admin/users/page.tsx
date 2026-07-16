@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
               { label: "All Roles", value: "ALL" },
               { label: "User", value: "USER" },
               { label: "Admin", value: "ADMIN" },
-              { label: "Shepherd", value: "TRIP_CAPTAIN" },
+              { label: "Trip Captain", value: "TRIP_CAPTAIN" },
               { label: "Support", value: "SUPPORT" },
             ]}
             value={roleFilter}
@@ -319,7 +319,7 @@ export default function AdminUsersPage() {
               options={[
                 { label: "User", value: "USER" },
                 { label: "Admin", value: "ADMIN" },
-                { label: "Shepherd", value: "TRIP_CAPTAIN" },
+                { label: "Trip Captain", value: "TRIP_CAPTAIN" },
                 { label: "Support", value: "SUPPORT" },
               ]}
               value={selectedRole}

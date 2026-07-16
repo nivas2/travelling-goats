@@ -41,8 +41,8 @@ export default function PrivacyPage() {
       <h2>Contact</h2>
       <p>
         For privacy questions, email{" "}
-        <a href="mailto:privacy@travellinggoats.in" className="text-primary underline">
-          privacy@travellinggoats.in
+        <a href="mailto:privacy@meetmyroute.in" className="text-primary underline">
+          privacy@meetmyroute.in
         </a>
         .
       </p>

@@ -419,8 +419,8 @@ export default function ReviewsPage({
           </div>
 
           {/* ===== Sort Options ===== */}
-          <div className="mb-6 flex items-center gap-3">
-            <p className="text-label-lg font-semibold text-on-surface mr-1">
+          <div className="mb-6 flex items-center gap-3 overflow-x-auto hide-scrollbar">
+            <p className="shrink-0 text-label-lg font-semibold text-on-surface mr-1">
               Sort:
             </p>
             {SORT_OPTIONS.map((option) => (

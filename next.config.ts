@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Keep the dev tools badge out of the bottom nav's way.
+  devIndicators: { position: "bottom-right" },
   images: {
     unoptimized: true,
     remotePatterns: [

@@ -54,7 +54,7 @@ async function main() {
         id: "user-admin-001",
         phone: "9999999999",
         email: "admin@travellinggoats.in", // TODO: Update email domain
-        name: "Travelling Goats Admin",
+        name: "Meet My Route Admin",
         passwordHash: await bcrypt.hash("123456", 12),
         avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200",
         gender: "MALE",
@@ -860,10 +860,10 @@ async function main() {
     data: [
       { category: "Booking", question: "How do I book a trip?", answer: "Simply browse trips, select one, choose your booking type, add traveler details, and complete payment. It takes less than 5 minutes!", order: 1 },
       { category: "Booking", question: "Can I book for a group?", answer: "Yes! You can book as Solo, Couple, or Group (up to the available spots). Group bookings get special pricing.", order: 2 },
-      { category: "Payment", question: "What payment methods are accepted?", answer: "We accept UPI, credit/debit cards, net banking, and wallet payments through Razorpay. You can also use your Travelling Goats wallet balance.", order: 1 },
+      { category: "Payment", question: "What payment methods are accepted?", answer: "We accept UPI, credit/debit cards, net banking, and wallet payments through Razorpay. You can also use your Meet My Route wallet balance.", order: 1 },
       { category: "Payment", question: "Is my payment secure?", answer: "Absolutely! All payments are processed through Razorpay with bank-grade encryption. We never store your card details.", order: 2 },
       { category: "Trip", question: "What if a trip gets cancelled?", answer: "If we cancel a trip, you'll receive a full refund to your wallet within 5-7 business days. You'll also get a 10% bonus for the inconvenience.", order: 1 },
-      { category: "Trip", question: "Who are Shepherds?", answer: "Shepherds are experienced trekkers vetted by Travelling Goats. They lead the herd, handle logistics, and ensure everyone has a great time.", order: 2 },
+      { category: "Trip", question: "Who are Trip Captains?", answer: "Trip Captains are experienced trekkers vetted by Meet My Route. They lead the community, handle logistics, and ensure everyone has a great time.", order: 2 },
       { category: "Account", question: "How do I verify my identity?", answer: "Go to Profile → Verify Identity. Upload your Aadhaar number and a selfie. Verification usually takes 24-48 hours.", order: 1 },
       { category: "Account", question: "How do referrals work?", answer: "Share your unique referral code. When someone signs up and completes their first trip, you both earn rewards! Earn ₹200-₹500 per referral based on your tier.", order: 2 },
       { category: "Technical", question: "The app is not loading. What should I do?", answer: "Try clearing your browser cache, disabling extensions, or switching to a different browser. If the issue persists, contact our support team.", order: 1 },

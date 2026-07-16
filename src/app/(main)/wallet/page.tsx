@@ -172,7 +172,7 @@ export default function WalletPage() {
         key,
         amount,
         currency,
-        name: "Travelling Goats",
+        name: "Meet My Route",
         description: "Wallet Top-up",
         order_id: orderId,
         handler: async (response: RazorpayResponse) => {
@@ -197,7 +197,7 @@ export default function WalletPage() {
             setAddingMoney(false);
           }
         },
-        theme: { color: "#FF385C" },
+        theme: { color: "#181818" },
         modal: {
           ondismiss: () => setAddingMoney(false),
         },
@@ -354,24 +354,24 @@ export default function WalletPage() {
         <p className="text-on-primary/70 text-label-lg font-label-lg">
           Total Balance
         </p>
-        <h1 className="mt-1 text-display font-display leading-tight">
+        <h1 className="mt-1 text-[clamp(30px,9vw,40px)] font-display leading-tight break-words">
           {formatCurrency(balance)}
         </h1>
 
         <div className="mt-5 flex gap-3">
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            className="border-white/40 text-white hover:bg-white/10 whitespace-nowrap"
+            className="border border-white/40 text-white hover:bg-white/10 whitespace-nowrap"
             icon={<Icon name="add" size={18} />}
             onClick={() => setAddMoneyOpen(true)}
           >
             Add Money
           </Button>
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            className="border-white/40 text-white hover:bg-white/10 whitespace-nowrap"
+            className="border border-white/40 text-white hover:bg-white/10 whitespace-nowrap"
             icon={<Icon name="send" size={18} />}
             onClick={() => setTransferOpen(true)}
           >
@@ -526,7 +526,7 @@ export default function WalletPage() {
         open={addMoneyOpen}
         onClose={() => { setAddMoneyOpen(false); setAddAmount(""); }}
         title="Add Money"
-        description="Top up your Travelling Goats wallet"
+        description="Top up your Meet My Route wallet"
       >
         <div className="space-y-4">
           {wallet?.isFrozen ? (
@@ -547,7 +547,7 @@ export default function WalletPage() {
                         "rounded-full px-4 py-2 text-label-lg font-label-lg border transition-colors",
                         Number(addAmount) === paise / 100
                           ? "border-primary bg-primary/10 text-primary"
-                          : "border-outline-variant/30 text-on-surface-variant hover:bg-surface-container"
+                          : "border-outline-variant text-on-surface-variant hover:bg-surface-container"
                       )}
                     >
                       {formatCurrency(paise)}
@@ -647,7 +647,7 @@ export default function WalletPage() {
           setLookupError(null);
         }}
         title="Transfer Money"
-        description="Send money to another Travelling Goats user"
+        description="Send money to another Meet My Route user"
       >
         <div className="space-y-4">
           {/* Phone lookup */}

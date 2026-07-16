@@ -20,7 +20,7 @@ export default function RefundPolicyPage() {
 
       <h2>How refunds are issued</h2>
       <p>
-        Approved refunds are credited to your Travelling Goats wallet instantly,
+        Approved refunds are credited to your Meet My Route wallet instantly,
         or to your original payment method within 5–7 business days.
       </p>
 
@@ -33,8 +33,8 @@ export default function RefundPolicyPage() {
       <h2>Questions</h2>
       <p>
         Contact{" "}
-        <a href="mailto:support@travellinggoats.in" className="text-primary underline">
-          support@travellinggoats.in
+        <a href="mailto:support@meetmyroute.in" className="text-primary underline">
+          support@meetmyroute.in
         </a>{" "}
         for help with a specific booking.
       </p>

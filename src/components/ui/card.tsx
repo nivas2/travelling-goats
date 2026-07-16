@@ -2,7 +2,7 @@ import { forwardRef, type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "elevated" | "outlined";
+  variant?: "default" | "elevated" | "outlined" | "solid";
   /** Makes the card clickable with hover effects */
   clickable?: boolean;
   /** Renders as a button element when true (for accessibility) */
@@ -15,6 +15,7 @@ const variantStyles: Record<NonNullable<CardProps["variant"]>, string> = {
   elevated:
     "bg-white ring-1 ring-black/[0.05] shadow-[0_12px_34px_rgba(20,30,40,0.10)]",
   outlined: "bg-white ring-1 ring-black/[0.08]",
+  solid: "bg-white ring-1 ring-black/[0.06] shadow-[0_1px_3px_rgba(20,30,40,0.05)]",
 };
 
 const Card = forwardRef<HTMLDivElement, CardProps>(

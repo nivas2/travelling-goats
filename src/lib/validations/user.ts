@@ -5,6 +5,7 @@ export const updateUserSchema = z.object({
   email: z.string().email().optional(),
   avatar: z.string().optional(),
   dateOfBirth: z.string().optional(),
+  whatsappNumber: z.string().max(20).optional().or(z.literal("")),
   gender: z.enum(["MALE", "FEMALE", "NON_BINARY", "PREFER_NOT_TO_SAY"]).optional(),
   bio: z.string().max(500).optional(),
   city: z.string().max(100).optional(),

@@ -1,7 +1,7 @@
 {
-  "name": "Travelling Goats — Adventure Travel with the Herd",
-  "short_name": "Travelling Goats",
-  "description": "Join the herd. Discover curated group trails across India.",
+  "name": "Meet My Route — Adventure Travel with the Community",
+  "short_name": "Meet My Route",
+  "description": "Join the community. Discover curated group trails across India.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",

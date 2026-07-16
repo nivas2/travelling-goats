@@ -61,7 +61,7 @@ export default function LoginPage() {
     <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6">
       {/* subtle brand glow */}
       <div
-        className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#C6F135]/20 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-lime/20 blur-3xl"
         aria-hidden="true"
       />
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-md space-y-6 rounded-[28px] bg-white p-6 ring-1 ring-black/[0.06] shadow-[0_20px_50px_rgba(20,30,40,0.08)] md:max-w-xl md:p-8">
+      <div className="w-full max-w-md space-y-6 rounded-[28px] bg-surface border border-outline-variant p-6 shadow-[0_20px_50px_rgba(20,30,40,0.08)] md:max-w-xl md:p-8">
         <div className="text-center">
           <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-on-surface">
             Welcome back

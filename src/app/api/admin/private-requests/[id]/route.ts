@@ -91,7 +91,7 @@ export async function POST(
       data: { status: body?.status ?? "OPEN" },
     });
 
-    // Notify the traveller that their Shepherd replied.
+    // Notify the traveller that their Trip Captain replied.
     try {
       const thread = await prisma.privateRequest.findUnique({
         where: { id },
@@ -101,7 +101,7 @@ export async function POST(
         await prisma.notification.create({
           data: {
             userId: thread.userId,
-            title: `Reply from your Shepherd · ${thread.trip.title}`,
+            title: `Reply from your Trip Captain · ${thread.trip.title}`,
             body: content.slice(0, 100),
             type: "CHAT",
             data: { tripId: thread.tripId, privateRequestId: id, kind: "private" },
@@ -118,7 +118,7 @@ export async function POST(
         id: message.id,
         content: message.content,
         isStaff: true,
-        senderName: "Shepherd",
+        senderName: "Trip Captain",
         createdAt: message.createdAt.toISOString(),
       },
     });

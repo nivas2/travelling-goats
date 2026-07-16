@@ -35,7 +35,7 @@ function QuantitySelector({
         onClick={() => onChange(Math.max(0, value - 1))}
         disabled={value <= 0}
         className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
+          "flex h-10 w-10 items-center justify-center rounded-full border transition-colors",
           value <= 0
             ? "border-outline-variant/30 text-on-surface-variant/30 cursor-not-allowed"
             : "border-primary text-primary hover:bg-primary/5",
@@ -52,7 +52,7 @@ function QuantitySelector({
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
         className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
+          "flex h-10 w-10 items-center justify-center rounded-full border transition-colors",
           value >= max
             ? "border-outline-variant/30 text-on-surface-variant/30 cursor-not-allowed"
             : "border-primary text-primary hover:bg-primary/5",

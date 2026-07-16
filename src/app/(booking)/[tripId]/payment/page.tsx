@@ -311,7 +311,7 @@ export default function PaymentPage() {
         key: razorpayKey,
         amount: order.amount ?? totalPaise,
         currency: order.currency ?? "INR",
-        name: "Travelling Goats",
+        name: "Meet My Route",
         description: `Trip Booking - ${travelerCount} traveler(s)`,
         order_id: order.orderId ?? order.payment?.razorpayOrderId,
         ...(isLiveKey && {
@@ -352,7 +352,7 @@ export default function PaymentPage() {
           email: contactEmail || undefined,
           contact: contactPhone || (travelers[0]?.phone ?? ""),
         },
-        theme: { color: "#FF385C" },
+        theme: { color: "#181818" },
         modal: {
           ondismiss: () => {
             setPaying(false);

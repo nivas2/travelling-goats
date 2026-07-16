@@ -30,6 +30,7 @@ export interface TripCardData {
   slug: string;
   destination: string;
   coverImage: string;
+  images?: string[];
   startDate: string;
   endDate: string;
   duration: number;
@@ -188,6 +189,7 @@ export interface UserProfile {
   email: string | null;
   avatar: string | null;
   dateOfBirth: string | null;
+  whatsappNumber: string | null;
   gender: string | null;
   city: string | null;
   bio: string | null;

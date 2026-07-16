@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn, formatCurrency, formatCategory } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Chip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
+import { ReferralCard } from "@/components/home/referral-card";
+import { RecentlyViewed } from "@/components/home/recently-viewed";
+import { CuratedCollections } from "@/components/home/curated-collections";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TripCarousel } from "@/components/ui/trip-carousel";
-import { InspirationCarousel } from "@/components/ui/inspiration-carousel";
+import { TripCard } from "@/components/ui/trip-card";
 import { OffersBanner } from "@/components/ui/offers-banner";
-import { FavoriteButton } from "@/components/ui/favorite-button";
 import { FavouritesFilter, type TripView } from "@/components/ui/favourites-filter";
 import { StartingCityGate } from "@/components/ui/starting-city-notice";
 import {
@@ -31,16 +30,19 @@ import type { TripCardData, ApiResponse } from "@/types";
 // Categories
 // ---------------------------------------------------------------------------
 
+// Fallback category chips (used only when the CMS "home.categories" block is
+// empty). `match` = the trip category/categories the chip filters by.
 const CATEGORIES = [
-  { label: "Treks", icon: "terrain" },
-  { label: "Adventure", icon: "hiking" },
-  { label: "Beach", icon: "beach_access" },
-  { label: "Mountain", icon: "landscape" },
-  { label: "Cultural", icon: "temple_hindu" },
-  { label: "Wildlife", icon: "pets" },
-  { label: "Road Trip", icon: "directions_car" },
-  { label: "City", icon: "location_city" },
-  { label: "Spiritual", icon: "self_improvement" },
+  { label: "Treks", icon: "directions_walk", match: "TREK,ADVENTURE,MOUNTAIN" },
+  { label: "Camping", icon: "camping", match: "CAMPFIRE" },
+  { label: "Adventure", icon: "hiking", match: "ADVENTURE" },
+  { label: "Beach", icon: "beach_access", match: "BEACH" },
+  { label: "Mountain", icon: "landscape", match: "MOUNTAIN" },
+  { label: "Cultural", icon: "temple_hindu", match: "CULTURAL" },
+  { label: "Wildlife", icon: "pets", match: "WILDLIFE" },
+  { label: "Road Trip", icon: "directions_car", match: "ROAD_TRIP" },
+  { label: "City", icon: "location_city", match: "CITY" },
+  { label: "Spiritual", icon: "self_improvement", match: "SPIRITUAL" },
 ];
 
 // Normalise category labels/enum values so "Road Trip" matches "ROAD_TRIP".
@@ -57,28 +59,28 @@ const PERKS = [
   {
     icon: "health_and_safety",
     title: "Women-Safe Travel",
-    desc: "Verified captains & women-friendly groups for worry-free trips.",
+    desc: "Verified, women-friendly groups",
     tint: "bg-primary/10",
     fg: "text-primary",
   },
   {
     icon: "diversity_3",
     title: "Meet New Friends",
-    desc: "Bond with like-minded travelers on every group journey.",
+    desc: "Bond with your travel crew",
     tint: "bg-secondary/10",
     fg: "text-secondary",
   },
   {
     icon: "map",
     title: "Fully Planned Trips",
-    desc: "Handpicked itineraries — just pack your bags and show up.",
+    desc: "Just show up & explore",
     tint: "bg-success/10",
     fg: "text-success",
   },
   {
     icon: "verified_user",
     title: "Transparent Pricing",
-    desc: "No hidden charges. Secure payments with clear inclusions.",
+    desc: "No hidden charges, ever",
     tint: "bg-tertiary/15",
     fg: "text-tertiary",
   },
@@ -88,10 +90,10 @@ const PERKS = [
 // carry icon/title/desc; the tints stay design-controlled here).
 // Consistent icon treatment across all perks: lime circle + dark icon.
 const PERK_TINTS = [
-  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
-  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
-  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
-  { tint: "bg-[#C6F135]", fg: "text-[#181D27]" },
+  { tint: "bg-lime", fg: "text-on-surface" },
+  { tint: "bg-lime", fg: "text-on-surface" },
+  { tint: "bg-lime", fg: "text-on-surface" },
+  { tint: "bg-lime", fg: "text-on-surface" },
 ];
 
 // Rotating "go travel" prompts shown under the greeting.
@@ -105,62 +107,6 @@ const PROVOCATIONS = [
 // ---------------------------------------------------------------------------
 // Trip Card Component
 // ---------------------------------------------------------------------------
-
-function TripCard({ trip }: { trip: TripCardData }) {
-  const spotsLeft = trip.maxGroupSize - trip.currentBookings;
-
-  return (
-    <Link href={`/trips/${trip.id}`} className="lp-lift group block">
-      <div className="relative h-[280px] overflow-hidden rounded-[24px] bg-[#181D27] [transform:translateZ(0)]">
-        <Image
-          src={trip.coverImage || "/placeholder-trip.jpg"}
-          alt={trip.title}
-          fill
-          className="object-cover transition-transform duration-[1.1s] group-hover:scale-105"
-          sizes="(max-width: 768px) 50vw, 25vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F16]/90 via-[#0B0F16]/15 to-[#0B0F16]/15" />
-
-        {/* top row: rating + favourite */}
-        <div className="absolute inset-x-3 top-3 flex items-center justify-between">
-          <span className="lp-glass-dark inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold text-white">
-            <Icon name="star" filled size={13} className="text-[#C6F135]" /> {trip.rating.toFixed(1)}
-          </span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 backdrop-blur">
-            <FavoriteButton tripId={trip.id} size={16} />
-          </span>
-        </div>
-
-        {/* seats-left badge — shown on every trip (left / total) */}
-        <span className="absolute left-3 top-12 inline-flex items-center gap-1 rounded-full bg-[#C6F135] px-2 py-0.5 text-[10px] font-bold text-[#181D27]">
-          <Icon name="event_seat" filled size={12} />
-          {spotsLeft > 0 ? `${spotsLeft}/${trip.maxGroupSize} left` : "Full"}
-        </span>
-
-        {/* bottom content */}
-        <div className="absolute inset-x-3 bottom-3 text-white">
-          <span className="mb-1.5 inline-flex rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold backdrop-blur">
-            {formatCategory(trip.category)}
-          </span>
-          <div className="mb-0.5 flex items-center gap-1 text-[11px] font-medium text-white/80">
-            <Icon name="location_on" filled size={12} className="text-[#C6F135]" />
-            <span className="truncate">{trip.destination}</span>
-          </div>
-          <h3 className="line-clamp-2 text-[15px] font-bold leading-tight">{trip.title}</h3>
-          <div className="mt-2 flex items-end justify-between gap-2">
-            <div>
-              <span className="text-[9px] uppercase tracking-wide text-white/55">From</span>
-              <div className="text-[15px] font-bold leading-none">{formatCurrency(trip.basePricePaise)}</div>
-            </div>
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#C6F135] text-[#181D27] transition-transform group-hover:rotate-12">
-              <Icon name="arrow_outward" size={18} />
-            </span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Skeleton Loaders
@@ -256,6 +202,42 @@ export default function HomePage() {
       ? startingCity.detectedCity
       : null;
 
+  // Live weather for the greeting chip — uses the user's ACTUAL location
+  // (geolocation → lat/lng, most accurate), falling back to the opted/detected
+  // city name only when geolocation is denied or unavailable. (Open-Meteo via /api/weather.)
+  const [weather, setWeather] = useState<{ tempC: number; icon: string } | null>(null);
+  useEffect(() => {
+    let active = true;
+    const load = (url: string) =>
+      fetch(url)
+        .then((r) => r.json())
+        .then((d) => {
+          if (active && d?.available) setWeather({ tempC: d.tempC, icon: d.icon });
+        })
+        .catch(() => {});
+
+    const place = activeStartingCity ?? startingCity.detectedCity;
+    const byPlace = () => {
+      if (place) load(`/api/weather?place=${encodeURIComponent(place)}`);
+    };
+
+    if (typeof navigator !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (active) load(`/api/weather?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`);
+        },
+        () => byPlace(), // permission denied / error → fall back to city name
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+      );
+    } else {
+      byPlace();
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [activeStartingCity, startingCity.detectedCity]);
+
   // Full record for the opted starting city (pickup points, trip count).
   const optedCity =
     startingCity.bookableCities.find(
@@ -333,7 +315,18 @@ export default function HomePage() {
   // Always surface the "Treks" category first (even if CMS categories omit it).
   const categories = baseCategories.some((c) => c.label === "Treks")
     ? baseCategories
-    : [{ label: "Treks", icon: "terrain" }, ...baseCategories];
+    : [{ label: "Treks", icon: "directions_walk", match: "TREK,ADVENTURE,MOUNTAIN" }, ...baseCategories];
+
+  // Admin-controlled map of chip label → the trip categories it filters by,
+  // read from each chip's CMS "match" field (comma-separated enum values).
+  const categoryMatch: Record<string, string[]> = {};
+  for (const c of categories) {
+    if (c.match)
+      categoryMatch[c.label] = c.match
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean);
+  }
 
   const greetingBlock = asObject(content?.["home.greeting"]);
   const greetingTemplate = greetingBlock.template || "Hey {name}, ready for your next adventure?";
@@ -351,14 +344,6 @@ export default function HomePage() {
     ctaText: o.ctaText,
     link: o.link,
     image: o.image,
-  }));
-
-  const inspirationSlides = asList(content?.["home.inspirationSlides"]).map((sl) => ({
-    img: sl.img,
-    tag: sl.tag,
-    icon: sl.icon,
-    quote: sl.quote,
-    author: sl.author,
   }));
 
   const s = asObject(content?.["home.sections"]);
@@ -398,12 +383,21 @@ export default function HomePage() {
       setLoading(true);
       const params = new URLSearchParams();
       if (originFilter) params.set("origin", originFilter);
-      const res = await fetch(`/api/trips${params.toString() ? `?${params}` : ""}`);
+      // Load a large page so the client-side category/city/favourite filters
+      // work across the full catalogue (the API defaults to just 10 trips).
+      params.set("pageSize", "100");
+      const res = await fetch(`/api/trips?${params.toString()}`);
       const json = await res.json();
       if (json.success && json.data) {
         // API returns paginated { items: [...], total, page, ... }
         const items = Array.isArray(json.data) ? json.data : (json.data.items ?? []);
-        setTrips(items);
+        // Home only browses upcoming trips — drop any whose departure has
+        // already passed (they can't be booked and show no countdown).
+        const now = Date.now();
+        const upcoming = items.filter(
+          (t: TripCardData) => new Date(t.startDate).getTime() > now
+        );
+        setTrips(upcoming);
       }
     } catch {
       // Silently handle fetch errors
@@ -425,16 +419,30 @@ export default function HomePage() {
   const citiesWithTrips = cities.filter((c) => (c.tripCount ?? 0) > 0);
   const noTripsForCity = selectedCity && !loading && trips.length === 0;
 
-  const filteredPopular = trips
-    .filter((t) => {
-      if (!selectedCategory) return true;
-      // "Treks" is a virtual category spanning trekking-style trips.
-      if (selectedCategory === "Treks")
-        return ["ADVENTURE", "MOUNTAIN"].includes(t.category.toUpperCase());
-      return normCategory(t.category) === normCategory(selectedCategory);
-    })
-    .filter((t) => (cityFilter ? cityOf(t.destination) === cityFilter : true))
-    .filter((t) => (view === "favourites" ? savedIds.has(t.id) : true));
+  // Does a trip belong to the given category label? Prefers the admin-configured
+  // "match" filters (categoryMatch); falls back to built-in aliases for known
+  // virtual chips, then to a plain label match.
+  const matchesCategory = (t: TripCardData, category: string) => {
+    const cat = t.category.toUpperCase();
+    const configured = categoryMatch[category];
+    if (configured?.length) return configured.includes(cat);
+    if (category === "Treks") return ["TREK", "ADVENTURE", "MOUNTAIN"].includes(cat);
+    if (category === "Camping" || category === "Campfire") return cat === "CAMPFIRE";
+    return normCategory(t.category) === normCategory(category);
+  };
+
+  // Trips for the selected category — shown inline right under the category
+  // chips (mirrors "Explore by destination"), so the result is next to the tap.
+  const categoryTrips = selectedCategory
+    ? trips.filter((t) => matchesCategory(t, selectedCategory))
+    : [];
+
+  // The Popular / Favourites grid is independent of the category + destination
+  // chips (those drive their own inline results) — it only reacts to the
+  // All / Favourites toggle.
+  const filteredPopular = trips.filter((t) =>
+    view === "favourites" ? savedIds.has(t.id) : true
+  );
 
   // Destination cities present in the loaded trips (for the city filter).
   const destCities = Array.from(
@@ -471,56 +479,49 @@ export default function HomePage() {
         onApply={applyFilters}
       />
 
-      {/* Location detail (mobile + desktop) — the user's current (detected)
-          location and the starting point they've opted for, with its pickup
-          points + trips. "Change" reopens the chooser. */}
+      {/* Departure city selector — pick a served city; trips re-render for it. */}
       {startingCity.bookableCities.length > 0 && (
         <div className="px-5 pt-4">
-          <div className="rounded-2xl border border-outline-variant bg-surface-container-low p-4 md:p-5">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
-              {/* Locations + meta */}
-              <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:gap-x-8 md:gap-y-2">
-                {/* Current location (from geolocation) */}
-                <div className="flex items-center gap-2">
-                  <Icon name="my_location" size={16} className="text-on-surface-variant" />
-                  <span className="text-label-sm text-on-surface-variant">Current location</span>
-                  <span className="text-label-md font-medium text-on-surface">
-                    {startingCity.detectedCity ?? "Unknown"}
-                  </span>
-                </div>
-                {/* Opted starting point */}
-                <div className="flex items-center gap-2">
-                  <Icon name="directions_bus" size={16} filled className="text-primary" />
-                  <span className="text-label-sm text-on-surface-variant">Departing from</span>
-                  <span className="text-label-md font-semibold text-on-surface">
-                    {activeStartingCity ?? "Not chosen"}
-                  </span>
-                </div>
-                {/* Pickup points + trips for the opted city */}
-                {optedCity && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-label-sm text-on-surface-variant">
-                      <Icon name="pin_drop" size={14} />
-                      {optedCity.pickupPoints?.length ?? 0} pickup point
-                      {(optedCity.pickupPoints?.length ?? 0) === 1 ? "" : "s"}
+          <div className="mb-2 flex items-center gap-1.5 text-label-sm font-semibold text-on-surface-variant">
+            <Icon name="directions_bus" size={15} filled className="text-primary" />
+            Departing from
+          </div>
+          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 hide-scrollbar">
+            {startingCity.bookableCities.map((c) => {
+              const active =
+                c.name.toLowerCase() === (activeStartingCity ?? "").toLowerCase();
+              return (
+                <button
+                  key={c.id ?? c.name}
+                  type="button"
+                  onClick={() => handleCityChange(c.name)}
+                  className={cn(
+                    "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-label-md font-medium transition-colors",
+                    active
+                      ? "border-primary bg-primary text-on-primary"
+                      : "border-outline-variant bg-surface text-on-surface hover:border-primary/40"
+                  )}
+                >
+                  <Icon
+                    name="location_city"
+                    size={16}
+                    filled
+                    className={active ? "text-on-primary" : "text-primary"}
+                  />
+                  {c.name}
+                  {typeof c.tripCount === "number" && (
+                    <span
+                      className={cn(
+                        "text-label-sm",
+                        active ? "text-on-primary/80" : "text-on-surface-variant"
+                      )}
+                    >
+                      · {c.tripCount}
                     </span>
-                    <span className="text-on-surface-variant/40">·</span>
-                    <span className="inline-flex items-center gap-1 text-label-sm text-on-surface-variant">
-                      <Icon name="hiking" size={14} />
-                      {optedCity.tripCount ?? 0} trip
-                      {(optedCity.tripCount ?? 0) === 1 ? "" : "s"} available
-                    </span>
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setCityModalOpen(true)}
-                className="shrink-0 self-start rounded-full border border-outline-variant px-4 py-1.5 text-label-md font-medium text-primary transition-colors hover:bg-surface-container md:self-auto"
-              >
-                Change
-              </button>
-            </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -554,7 +555,7 @@ export default function HomePage() {
       <section className="px-5 pt-5 md:pt-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-normal text-on-surface-variant">
+            <p className="text-[17px] font-medium text-on-surface-variant">
               {greeting} &#128075;
             </p>
             <h1 className="mt-2 text-[clamp(40px,12vw,56px)] leading-[1.02] tracking-[-0.035em] text-on-surface">
@@ -573,20 +574,21 @@ export default function HomePage() {
               })()}
             </h1>
           </div>
-          {/* Weather chip — reference element. Static placeholder; wire to a
-              weather API keyed on the user's pickup city when available. */}
-          <div className="flex shrink-0 items-center gap-2">
-            <span
-              className="material-symbols-outlined text-[26px] text-[#181D27]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              partly_cloudy_day
-            </span>
-            <div className="leading-tight">
-              <div className="text-[10px] font-medium text-on-surface-variant">Weather</div>
-              <div className="text-[14px] font-bold text-on-surface">24°C</div>
+          {/* Live weather chip — keyed on the active city; hidden until data loads. */}
+          {weather && (
+            <div className="flex shrink-0 items-center gap-2">
+              <span
+                className="material-symbols-outlined text-[26px] text-on-surface"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                {weather.icon}
+              </span>
+              <div className="leading-tight">
+                <div className="text-[10px] font-medium text-on-surface-variant">Weather</div>
+                <div className="text-[14px] font-bold text-on-surface">{weather.tempC}°C</div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Search + filter */}
@@ -596,7 +598,7 @@ export default function HomePage() {
             className="glass flex h-12 flex-1 items-center gap-3 rounded-2xl px-4 text-left transition-transform active:scale-[0.99]"
           >
             <Icon name="search" size={22} className="text-on-surface-variant" />
-            <span className="text-body-md text-on-surface-variant/60">{sect.searchPlaceholder}</span>
+            <span className="text-body-md text-on-surface-variant">{sect.searchPlaceholder}</span>
           </button>
           <button
             onClick={() => setFilterOpen(true)}
@@ -612,6 +614,32 @@ export default function HomePage() {
           </button>
         </div>
 
+        {/* ===== Trust strip — quick reassurance under the search ===== */}
+        {show("perks") && (
+          <div className="-mx-5 mt-4 flex gap-2.5 overflow-x-auto px-5 pb-1 hide-scrollbar md:mx-0 md:grid md:grid-cols-4 md:gap-3 md:overflow-visible md:px-0">
+            {perks.map((perk) => (
+              <div
+                key={perk.title}
+                className="flex w-[230px] shrink-0 items-start gap-2.5 rounded-2xl border border-outline-variant bg-surface px-3.5 py-3 md:w-auto md:shrink"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lime">
+                  <Icon name={perk.icon} filled size={18} style={{ color: "#181818" }} />
+                </span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-[13px] font-semibold leading-tight text-on-surface">
+                    {perk.title}
+                  </span>
+                  {perk.desc && (
+                    <span className="mt-0.5 text-[11px] leading-snug text-on-surface-variant">
+                      {perk.desc}
+                    </span>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* ===== Explore by destination ===== */}
         {destCities.length > 1 && (
           <div className="mt-10">
@@ -619,15 +647,6 @@ export default function HomePage() {
               Explore by destination
             </h2>
             <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-2 hide-scrollbar">
-              <Chip
-                variant={!cityFilter ? "selected" : "outlined"}
-                color="primary"
-                icon={<Icon name="public" size={16} />}
-                onClick={() => setCityFilter(null)}
-                className="shrink-0"
-              >
-                All destinations
-              </Chip>
               {destCities.map((c) => (
                 <Chip
                   key={c}
@@ -664,6 +683,50 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* ===== Explore by Category ===== */}
+        {show("categories") && (
+          <div className="mt-10">
+            <h2 className="mb-4 text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
+              {sect.categoriesTitle}
+            </h2>
+            <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-2 hide-scrollbar">
+              {categories.map((cat) => (
+                <Chip
+                  key={cat.label}
+                  variant={selectedCategory === cat.label ? "selected" : "outlined"}
+                  color="primary"
+                  icon={<Icon name={cat.icon} size={16} />}
+                  onClick={() =>
+                    setSelectedCategory(
+                      selectedCategory === cat.label ? null : cat.label
+                    )
+                  }
+                  className="shrink-0"
+                >
+                  {cat.label}
+                </Chip>
+              ))}
+            </div>
+
+            {/* Results for the selected category */}
+            {selectedCategory && (
+              <div className="mt-5">
+                {categoryTrips.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+                    {categoryTrips.map((trip) => (
+                      <TripCard key={trip.id} trip={trip} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="py-6 text-center text-body-md text-on-surface-variant">
+                    No {selectedCategory} trips right now.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Recommended — horizontal snap-scroll carousel (mobile + desktop) */}
         {recommended.length > 0 && (
           <div className="mt-10">
@@ -674,7 +737,7 @@ export default function HomePage() {
                 <Icon name="arrow_forward" size={14} />
               </span>
             </div>
-            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pt-5 pb-12 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {recommended.map((trip) => (
                 <div
                   key={trip.id}
@@ -688,46 +751,10 @@ export default function HomePage() {
         )}
 
         {/* Upcoming-trip "Pack Your Bags!" reminder now lives in Notifications. */}
-
-        {/* Promotional offer banners */}
-        {show("offers") && (
-          <div className="-mx-5 mt-5">
-            <OffersBanner offers={offers} />
-          </div>
-        )}
-
-        {/* Inspiration carousel — travel perks + quotes to provoke wanderlust */}
-        {show("inspiration") && (
-          <div className="mt-5 md:mt-6">
-            <InspirationCarousel slides={inspirationSlides} />
-          </div>
-        )}
-
-        {show("perks") && (
-        <div className="mt-5 grid grid-cols-2 gap-3 md:mt-6 md:grid-cols-4 md:gap-4">
-          {perks.map((perk) => (
-            <Card key={perk.title} className="flex flex-col gap-3 p-4">
-              <div
-                className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-xl",
-                  perk.tint
-                )}
-              >
-                <Icon name={perk.icon} filled size={24} className={perk.fg} />
-              </div>
-              <div>
-                <h3 className="text-title-md font-semibold text-on-surface">
-                  {perk.title}
-                </h3>
-                <p className="mt-1 text-body-md text-on-surface-variant">
-                  {perk.desc}
-                </p>
-              </div>
-            </Card>
-          ))}
-        </div>
-        )}
       </section>
+
+      {/* ===== Recently viewed ===== */}
+      <RecentlyViewed trips={trips} />
 
       {/* ===== Trending Now ===== */}
       <section className="mt-8">
@@ -758,6 +785,9 @@ export default function HomePage() {
         )}
       </section>
 
+      {/* ===== Browse collections ===== */}
+      {!loading && <CuratedCollections trips={trips} />}
+
       {/* ===== Weekend Getaways ===== */}
       <section className="mt-8">
         <div className="flex items-center justify-between px-5 mb-3">
@@ -765,7 +795,7 @@ export default function HomePage() {
             {sect.weekendTitle}
           </h2>
           <button
-            onClick={() => router.push("/search?duration=1-3")}
+            onClick={() => router.push("/search?duration=1,2,3")}
             className="text-label-lg font-semibold text-primary"
           >
             See All
@@ -786,44 +816,20 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* ===== Category Chips ===== */}
-      {show("categories") && (
-      <section className="mt-8 px-5">
-        <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface mb-3">
-          {sect.categoriesTitle}
-        </h2>
-        <div className="flex gap-2.5 overflow-x-auto pb-2 hide-scrollbar">
-          {categories.map((cat) => (
-            <Chip
-              key={cat.label}
-              variant={selectedCategory === cat.label ? "selected" : "outlined"}
-              color="primary"
-              icon={<Icon name={cat.icon} size={16} />}
-              onClick={() =>
-                setSelectedCategory(
-                  selectedCategory === cat.label ? null : cat.label
-                )
-              }
-              className="shrink-0"
-            >
-              {cat.label}
-            </Chip>
-          ))}
-        </div>
-      </section>
+      {/* ===== Promotional offer banners (mid-scroll break) ===== */}
+      {show("offers") && (
+        <section className="mt-8 px-5">
+          <div className="-mx-5">
+            <OffersBanner offers={offers} />
+          </div>
+        </section>
       )}
 
       {/* ===== Popular Destinations / Favourites ===== */}
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 mb-3">
           <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
-            {view === "favourites"
-              ? selectedCategory
-                ? `${selectedCategory} Favourites`
-                : "Your Favourites"
-              : selectedCategory
-                ? `${selectedCategory} Trips`
-                : sect.popularTitle}
+            {view === "favourites" ? "Your Favourites" : sect.popularTitle}
           </h2>
           <FavouritesFilter
             value={view}
@@ -845,7 +851,7 @@ export default function HomePage() {
               <div className="mt-6 flex justify-center px-5">
                 <button
                   onClick={() => setShowAllPopular((v) => !v)}
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[14px] font-semibold text-on-surface ring-1 ring-black/[0.06] shadow-[0_2px_10px_rgba(20,30,40,0.05)] transition active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 rounded-full bg-surface px-6 py-3 text-label-lg font-semibold text-on-surface border border-outline-variant shadow-[0_2px_10px_rgba(20,30,40,0.05)] transition active:scale-[0.98]"
                 >
                   {showAllPopular ? "Show less" : `Show all ${filteredPopular.length} trips`}
                   <Icon name={showAllPopular ? "expand_less" : "expand_more"} size={18} />
@@ -867,38 +873,29 @@ export default function HomePage() {
             <EmptyState
               icon="travel_explore"
               title="No trips found"
-              description={
-                cityFilter || selectedCategory
-                  ? "Nothing matches these filters yet — try clearing them."
-                  : "No trips available right now. Check back soon!"
-              }
-              action={
-                cityFilter || selectedCategory
-                  ? {
-                      label: "Clear filters",
-                      onClick: () => {
-                        setCityFilter(null);
-                        setSelectedCategory(null);
-                      },
-                    }
-                  : undefined
-              }
+              description="No trips available right now. Check back soon!"
             />
           </div>
         )}
       </section>
 
-      {/* ===== #travellingGoats footer ===== */}
+      {/* ===== Refer & earn ===== */}
+      <ReferralCard />
+
+      {/* ===== #meetMyRoute footer ===== */}
       <footer className="px-5 pb-10 pt-20 text-center">
         <h2 className="text-[clamp(38px,12vw,72px)] font-semibold leading-[0.9] tracking-[-0.045em] text-on-surface">
-          #travelling<span className="text-[#C6F135]">Goats</span>
+          Meet My{" "}
+          <span className="inline-block rounded-[0.12em] bg-lime px-[0.12em] leading-none">
+            Route
+          </span>
         </h2>
         <p className="mx-auto mt-4 max-w-sm text-[14px] leading-relaxed text-on-surface-variant">
           Curated group adventures across India — planned end to end,
           so all you have to do is show up and explore.
         </p>
         <p className="mt-8 text-[12px] text-on-surface-variant/70">
-          © 2026 Travelling Goats. All rights reserved.
+          © 2026 Meet My Route. All rights reserved.
         </p>
       </footer>
     </div>

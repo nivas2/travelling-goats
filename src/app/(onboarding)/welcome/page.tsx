@@ -7,50 +7,57 @@ import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
 interface Slide {
+  overline: string;
   title: string;
-  description: string;
-  icon: string;
-  bgGradient: string;
-  accentColor: string;
+  sub: string;
+  image: string;
 }
 
+// Full-screen slides — evocative "curiosity" lines over full-bleed travel photos.
 const slides: Slide[] = [
   {
-    title: "Roam with the herd",
-    description:
-      "Join curated group trails with like-minded trekkers. Make friends, share stories, and create memories that last a lifetime.",
-    icon: "groups",
-    bgGradient: "from-primary-container/40 to-primary-fixed/20",
-    accentColor: "bg-primary",
+    overline: "MEET MY ROUTE",
+    title: "Your next story starts where the road ends.",
+    sub: "Curated group trails across India — you bring the spirit, we handle the rest.",
+    image:
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=80&auto=format&fit=crop",
   },
   {
-    title: "Handpicked trails",
-    description:
-      "Every trail is handcrafted by local experts. From hidden gems to must-see spots, we plan so you can enjoy.",
-    icon: "explore",
-    bgGradient: "from-secondary-container/40 to-secondary-fixed/20",
-    accentColor: "bg-secondary",
+    overline: "HANDPICKED TRAILS",
+    title: "The best places aren't on any map.",
+    sub: "Local experts craft every route, so all you do is show up and wander.",
+    image:
+      "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1200&q=80&auto=format&fit=crop",
   },
   {
-    title: "Safety first",
-    description:
-      "All trekkers are ID-verified. Real-time tracking, 24/7 support, and transparent policies keep you safe on every journey.",
-    icon: "verified_user",
-    bgGradient: "from-success-container/40 to-tertiary-fixed/20",
-    accentColor: "bg-success",
+    overline: "SAFE BY DESIGN",
+    title: "Go far. Go wild. Never go alone.",
+    sub: "ID-verified crews, live tracking and 24/7 support — adventure without the worry.",
+    image:
+      "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=1200&q=80&auto=format&fit=crop",
   },
 ];
 
 export default function WelcomePage() {
   const router = useRouter();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
 
   const isLastSlide = currentSlide === slides.length - 1;
 
+  // Native scroll-snap drives the paging (iOS-style swipe); we mirror the
+  // active page into state for the dots + CTA label.
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    setCurrentSlide(Math.max(0, Math.min(i, slides.length - 1)));
+  }, []);
+
   const goToSlide = useCallback((index: number) => {
-    setCurrentSlide(Math.max(0, Math.min(index, slides.length - 1)));
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
   }, []);
 
   const handleNext = useCallback(() => {
@@ -65,151 +72,99 @@ export default function WelcomePage() {
     router.push("/interests");
   }, [router]);
 
-  // Touch / swipe handling
-  function handleTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX;
-  }
-
-  function handleTouchMove(e: React.TouchEvent) {
-    touchEndX.current = e.touches[0].clientX;
-  }
-
-  function handleTouchEnd() {
-    const diff = touchStartX.current - touchEndX.current;
-    const threshold = 50;
-
-    if (Math.abs(diff) < threshold) return;
-
-    if (diff > 0 && currentSlide < slides.length - 1) {
-      goToSlide(currentSlide + 1);
-      pauseAutoRotate();
-    } else if (diff < 0 && currentSlide > 0) {
-      goToSlide(currentSlide - 1);
-      pauseAutoRotate();
-    }
-  }
-
-  // Auto-rotate every 3 seconds, pause on touch
-  const [paused, setPaused] = useState(false);
-
+  // Keyboard navigation (desktop preview).
   useEffect(() => {
-    if (paused || slides.length <= 1) return;
-    const id = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(id);
-  }, [paused, currentSlide]);
-
-  // Pause auto-rotate on user interaction, resume after 5s
-  const pauseAutoRotate = useCallback(() => {
-    setPaused(true);
-    const id = setTimeout(() => setPaused(false), 5000);
-    return () => clearTimeout(id);
-  }, []);
-
-  // Keyboard navigation
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "ArrowRight") goToSlide(currentSlide + 1);
-      if (e.key === "ArrowLeft") goToSlide(currentSlide - 1);
-      pauseAutoRotate();
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "ArrowRight") goToSlide(Math.min(currentSlide + 1, slides.length - 1));
+      if (e.key === "ArrowLeft") goToSlide(Math.max(currentSlide - 1, 0));
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentSlide, goToSlide, pauseAutoRotate]);
-
-  const slide = slides[currentSlide];
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [currentSlide, goToSlide]);
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* Skip button */}
-      {!isLastSlide && (
-        <div className="flex justify-end px-6 pt-safe">
+    <div className="relative h-dvh w-full overflow-hidden bg-black">
+      {/* ===== Full-screen swipeable pager ===== */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="hide-scrollbar flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+      >
+        {slides.map((s, i) => (
+          <section
+            key={s.image}
+            className="relative h-full w-full shrink-0 snap-center snap-always"
+          >
+            {/* Background image */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={s.image}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            {/* Legibility gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/40" />
+
+            {/* Copy — sits above the fixed bottom controls */}
+            <div className="absolute inset-x-0 bottom-0 px-7 pb-[calc(env(safe-area-inset-bottom)+188px)]">
+              <span className="inline-flex items-center gap-2 text-label-md font-semibold tracking-[0.18em] text-lime">
+                <span className="h-[1px] w-6 bg-lime" />
+                {s.overline}
+              </span>
+              <h1 className="mt-4 max-w-[15ch] text-[clamp(30px,8.5vw,40px)] font-bold leading-[1.08] tracking-[-0.02em] text-white">
+                {s.title}
+              </h1>
+              <p className="mt-3 max-w-[34ch] text-body-lg leading-relaxed text-white/80">
+                {s.sub}
+              </p>
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {/* ===== Top bar: glass Skip pill ===== */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-end px-6 pt-[calc(env(safe-area-inset-top)+18px)]">
+        {!isLastSlide && (
           <button
             type="button"
             onClick={handleSkip}
-            className="mt-4 text-label-lg font-semibold text-on-surface-variant transition-colors hover:text-primary"
+            className="pointer-events-auto rounded-full border border-white/25 bg-white/15 px-4 py-1.5 text-label-md font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/25"
           >
             Skip
           </button>
-        </div>
-      )}
-
-      {/* Slide content area */}
-      <div
-        className="flex flex-1 flex-col items-center justify-center px-6"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Illustration placeholder */}
-        <div
-          className={cn(
-            "mb-10 flex h-64 w-64 items-center justify-center rounded-[32px] bg-gradient-to-br transition-all duration-500",
-            slide.bgGradient
-          )}
-        >
-          <div
-            className={cn(
-              "flex h-24 w-24 items-center justify-center rounded-3xl shadow-lg transition-all duration-500",
-              slide.accentColor
-            )}
-          >
-            <Icon
-              name={slide.icon}
-              size={48}
-              className="text-on-primary"
-              filled
-            />
-          </div>
-        </div>
-
-        {/* Text */}
-        <div className="max-w-sm text-center transition-all duration-500">
-          <h1 className="text-headline-lg font-headline-lg text-on-surface">
-            {slide.title}
-          </h1>
-          <p className="mt-3 text-body-lg text-on-surface-variant leading-relaxed">
-            {slide.description}
-          </p>
-        </div>
+        )}
       </div>
 
-      {/* Bottom section */}
-      <div className="px-6 pb-8 pb-safe">
+      {/* ===== Bottom controls: dots + CTA (overlay all slides) ===== */}
+      <div className="absolute inset-x-0 bottom-0 px-7 pb-[calc(env(safe-area-inset-bottom)+28px)]">
         {/* Dot indicators */}
-        <div className="mb-8 flex items-center justify-center gap-2">
+        <div className="mb-6 flex items-center gap-2">
           {slides.map((_, index) => (
             <button
               key={index}
               type="button"
-              onClick={() => { goToSlide(index); pauseAutoRotate(); }}
-              className={cn(
-                "h-2 rounded-full transition-all duration-300",
-                index === currentSlide
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-outline-variant hover:bg-outline"
-              )}
+              onClick={() => goToSlide(index)}
               aria-label={`Go to slide ${index + 1}`}
+              className={cn(
+                "h-1.5 rounded-full transition-all duration-300",
+                index === currentSlide ? "w-7 bg-lime" : "w-1.5 bg-white/40 hover:bg-white/70"
+              )}
             />
           ))}
         </div>
 
-        {/* Action button */}
+        {/* Black-on-lime CTA */}
         <Button
           type="button"
+          variant="accent"
           fullWidth
           size="lg"
           onClick={handleNext}
-          className="rounded-full"
-          iconRight={
-            <Icon
-              name={isLastSlide ? "arrow_forward" : "arrow_forward"}
-              size={20}
-            />
-          }
+          className="rounded-full text-on-surface"
+          iconRight={<Icon name="arrow_forward" size={20} />}
         >
-          {isLastSlide ? "Let's Trek" : "Next"}
+          {isLastSlide ? "Let's Trek" : "Continue"}
         </Button>
       </div>
     </div>

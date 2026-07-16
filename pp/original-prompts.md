@@ -273,7 +273,7 @@ pls understand the complete code deeply & pls use this color pallet across all p
 ```
 i am taking so risk decision, copy this exting code and create a new folder & also new git branch and keep that exsting code safe , if there any commits need to be done pls commit now itself and i want to change everthing to goat theme but dont change color and functionality You are a Senior Brand Designer, UX Designer, and Product Designer from Airbnb, Stripe, Apple, and Linear.
 
-Your task is to completely rebrand the existing application from "MeetMyRoute" to "Travelling Goats".
+Your task is to completely rebrand the existing application from "MeetMyRoute" to "Meet My Route".
 
 IMPORTANT RULES
 
@@ -288,29 +288,29 @@ IMPORTANT RULES
 
 The brand should feel like a premium travel community—not a cartoon app. The goat theme should be subtle, sophisticated, memorable, and integrated throughout the experience.
 
-BRAND: App Name: Travelling Goats. Brand Personality: Adventurous, Community Driven, Premium, Friendly, Modern, Mountain Explorer, Social Travel, Minimal, Clean. Brand Voice: Fun but never childish.
+BRAND: App Name: Meet My Route. Brand Personality: Adventurous, Community Driven, Premium, Friendly, Modern, Mountain Explorer, Social Travel, Minimal, Clean. Brand Voice: Fun but never childish.
 
-LOGO: Use the provided Travelling Goats logo everywhere. Replace every MeetMyRoute logo. Update: Splash Screen, Login, Register, Navbar, Mobile Header, Favicon, App Icon, PWA Manifest, Email Templates, Loading Screen, SEO Metadata, Browser Title, Social Share Images.
+LOGO: Use the provided Meet My Route logo everywhere. Replace every MeetMyRoute logo. Update: Splash Screen, Login, Register, Navbar, Mobile Header, Favicon, App Icon, PWA Manifest, Email Templates, Loading Screen, SEO Metadata, Browser Title, Social Share Images.
 
 TERMINOLOGY:
-User → Goat | Solo Registration → Lone Goat | Couple Registration → Goat Pair | Group Registration → Mountain Herd | Trip Captain → Shepherd | Co-host → Assistant Shepherd | Trip Members → Herd | Community → The Herd | Trips → Trails | Trip Requests → Trail Requests | Bookings → Trail Bookings | Group Chat → Campfire Chat | Wishlist → Dream Trails | Followers → Herd Members | Invite Friends → Grow Your Herd | Premium → Explorer Pass | Points → Trail Points | Achievements → Goat Milestones
+User → Goat | Solo Registration → Lone Goat | Couple Registration → Goat Pair | Group Registration → Mountain Community | Trip Captain → Trip Captain | Co-host → Assistant Trip Captain | Trip Members → Community | Community → The Community | Trips → Trails | Trip Requests → Trail Requests | Bookings → Trail Bookings | Group Chat → Campfire Chat | Wishlist → Dream Trails | Followers → Community Members | Invite Friends → Grow Your Community | Premium → Explorer Pass | Points → Trail Points | Achievements → Goat Milestones
 
 BUTTONS:
-Book Now → Join the Herd | Reserve Seat → Claim Your Spot | Continue → Keep Trekking | Explore Trips → Explore Trails | Contact Trip Captain → Contact Shepherd
+Book Now → Join the Community | Reserve Seat → Claim Your Spot | Continue → Keep Trekking | Explore Trips → Explore Trails | Contact Trip Captain → Contact Trip Captain
 
-NOTIFICATIONS: "A new trail is waiting." | "A new goat joined your herd." | "Your Shepherd updated the itinerary." | "Adventure starts soon." | "Your herd is ready."
+NOTIFICATIONS: "A new trail is waiting." | "A new goat joined your community." | "Your Trip Captain updated the itinerary." | "Adventure starts soon." | "Your community is ready."
 
-EMPTY STATES: No Trips → "Looks like this trail hasn't been explored yet." | No Bookings → "No hoofprints here yet." | No Notifications → "Your bell is quiet for now." | No Friends → "Every herd starts with one goat."
+EMPTY STATES: No Trips → "Looks like this trail hasn't been explored yet." | No Bookings → "No hoofprints here yet." | No Notifications → "Your bell is quiet for now." | No Friends → "Every community starts with one goat."
 
-LOADING STATES: Finding the perfect trail... | Gathering your herd... | Checking mountain paths... | Packing backpacks... | Sharpening hooves... | Adventure is almost ready...
+LOADING STATES: Finding the perfect trail... | Gathering your community... | Checking mountain paths... | Packing backpacks... | Sharpening hooves... | Adventure is almost ready...
 
-SUCCESS STATES: Welcome to the Herd! | Trail Joined Successfully! | Adventure Awaits! | You're officially part of the herd.
+SUCCESS STATES: Welcome to the Community! | Trail Joined Successfully! | Adventure Awaits! | You're officially part of the community.
 
 ERROR STATES: Oops! | Looks like this goat wandered off the trail. | Let's try another path.
 
-ONBOARDING: Welcome to Travelling Goats | Adventure is always better with the herd. | Meet fellow explorers. | Find incredible trails. | Travel together. | Create unforgettable memories.
+ONBOARDING: Welcome to Meet My Route | Adventure is always better with the community. | Meet fellow explorers. | Find incredible trails. | Travel together. | Create unforgettable memories.
 
-ADMIN PANEL: Users → Goats | Trip Captains → Shepherds | Trips → Trails | Bookings → Trail Bookings | Analytics → Herd Analytics | Reports → Trail Reports
+ADMIN PANEL: Users → Goats | Trip Captains → Trip Captains | Trips → Trails | Bookings → Trail Bookings | Analytics → Community Analytics | Reports → Trail Reports
 
 ILLUSTRATIONS: Replace generic travel illustrations with premium branded goat illustrations. Flat, minimal, premium, modern and consistent with the logo style.
 

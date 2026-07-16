@@ -10,7 +10,7 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<NonNullable<BadgeProps["variant"]>, string> = {
-  default: "bg-[#181D27] text-white",
+  default: "bg-primary text-white",
   secondary: "bg-surface-container text-on-surface",
   outline: "bg-white ring-1 ring-black/10 text-on-surface-variant",
   dot: "",

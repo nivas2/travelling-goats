@@ -54,7 +54,7 @@ const STATUS_STEPS: StatusStep[] = [
     key: "CONFIRMED",
     label: "Confirmed",
     icon: "verified",
-    description: "Trail confirmed by Travelling Goats team",
+    description: "Trail confirmed by Meet My Route team",
   },
   {
     key: "TRIP_DAY",
@@ -259,7 +259,7 @@ export default function StatusPage() {
                       className={cn(
                         "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
                         isCompleted && "bg-success text-on-success",
-                        isCurrent && "bg-primary text-on-primary ring-4 ring-primary-container",
+                        isCurrent && "bg-primary text-on-primary ring-4 ring-lime/50",
                         isPending && "bg-surface-container text-on-surface-variant",
                       )}
                     >
@@ -379,7 +379,7 @@ export default function StatusPage() {
           variant="secondary"
           onClick={() => {
             // Open email or support page
-            window.open("mailto:support@travellinggoats.in?subject=Booking%20Support%20-%20" + order.bookingNumber, "_blank"); // TODO: Update email domain
+            window.open("mailto:support@meetmyroute.in?subject=Booking%20Support%20-%20" + order.bookingNumber, "_blank"); // TODO: Update email domain
           }}
           icon={
             <span className="material-symbols-outlined text-[20px]">

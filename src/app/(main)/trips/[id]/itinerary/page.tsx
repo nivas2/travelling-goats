@@ -9,6 +9,7 @@ import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
+import { downloadItineraryPdf } from "@/lib/itinerary-pdf";
 import type { TripDetail, ItineraryDayData, ApiResponse } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -181,6 +182,17 @@ export default function ItineraryPage({
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!trip || pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      await downloadItineraryPdf(trip);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   const fetchTrip = useCallback(async () => {
     try {
@@ -222,13 +234,28 @@ export default function ItineraryPage({
       ) : trip && trip.itineraryDays.length > 0 ? (
         <div className="px-5 py-5">
           {/* Trip summary header */}
-          <div className="mb-6">
-            <h2 className="text-headline-md font-bold text-on-surface">
-              Day-by-Day Itinerary
-            </h2>
-            <p className="mt-1 text-body-md text-on-surface-variant">
-              {trip.duration} days in {trip.destination}
-            </p>
+          <div className="mb-6 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-headline-md font-bold text-on-surface">
+                Day-by-Day Itinerary
+              </h2>
+              <p className="mt-1 text-body-md text-on-surface-variant">
+                {trip.duration} days in {trip.destination}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={pdfLoading}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-lime px-4 py-2 text-label-md font-semibold text-on-surface shadow-sm transition active:scale-95 disabled:opacity-60"
+            >
+              <Icon
+                name={pdfLoading ? "progress_activity" : "download"}
+                size={18}
+                className={pdfLoading ? "animate-spin" : ""}
+              />
+              {pdfLoading ? "Preparing…" : "PDF"}
+            </button>
           </div>
 
           {/* Timeline */}

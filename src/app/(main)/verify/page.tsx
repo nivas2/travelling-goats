@@ -132,10 +132,10 @@ function VerifyTicketContent() {
 
   const tone =
     result?.status === "success"
-      ? { bg: "bg-success", icon: "check_circle" }
+      ? { bg: "bg-success", text: "text-white", icon: "check_circle" }
       : result?.status === "already"
-      ? { bg: "bg-warning", icon: "info" }
-      : { bg: "bg-error", icon: "cancel" };
+      ? { bg: "bg-warning", text: "text-on-surface", icon: "info" }
+      : { bg: "bg-error", text: "text-white", icon: "cancel" };
 
   return (
     <div className="mx-auto max-w-md px-5 py-6">
@@ -193,7 +193,7 @@ function VerifyTicketContent() {
       {/* Result */}
       {result && (
         <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant">
-          <div className={`flex items-center gap-2 px-4 py-3 text-white ${tone.bg}`}>
+          <div className={`flex items-center gap-2 px-4 py-3 ${tone.text} ${tone.bg}`}>
             <Icon name={tone.icon} size={24} filled />
             <span className="text-title-md font-semibold">{result.message}</span>
           </div>
@@ -237,7 +237,15 @@ function VerifyTicketContent() {
 
 export default function VerifyTicketPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-md px-5 py-6">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-md space-y-4 px-5 py-6">
+          <div className="h-8 w-40 animate-pulse rounded-lg bg-surface-container" />
+          <div className="h-4 w-full animate-pulse rounded bg-surface-container" />
+          <div className="h-64 w-full animate-pulse rounded-2xl bg-surface-container" />
+        </div>
+      }
+    >
       <VerifyTicketContent />
     </Suspense>
   );

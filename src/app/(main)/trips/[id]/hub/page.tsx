@@ -71,14 +71,16 @@ function QuickActionButton({
   label,
   color = "default",
   onClick,
+  badge = 0,
 }: {
   icon: string;
   label: string;
   color?: "default" | "red" | "blue" | "green" | "orange" | "purple";
   onClick: () => void;
+  badge?: number;
 }) {
   // All quick actions share the lime-green / black look — except SOS (red).
-  const lime = "bg-[#C6F135] text-[#181D27] hover:brightness-[1.04] shadow-[0_8px_22px_rgba(198,241,53,0.30)]";
+  const lime = "bg-lime text-on-lime hover:brightness-[1.04] shadow-[0_8px_22px_rgba(198,241,53,0.30)]";
   const colorStyles = {
     default: lime,
     red: "bg-error text-white hover:bg-error/90 shadow-[0_8px_22px_rgba(220,38,38,0.28)]",
@@ -92,10 +94,11 @@ function QuickActionButton({
     <button
       onClick={onClick}
       className={cn(
-        "tactile-btn flex flex-col items-center justify-center gap-2 rounded-2xl p-4 transition-all active:scale-[0.97]",
+        "tactile-btn relative flex flex-col items-center justify-center gap-2 rounded-2xl p-4 transition-all active:scale-[0.97]",
         colorStyles[color]
       )}
     >
+      {badge > 0 && <Badge count={badge} position="absolute" />}
       <Icon name={icon} size={28} filled />
       <span className="text-label-sm font-semibold text-center leading-tight">
         {label}
@@ -140,10 +143,10 @@ function StatusBanner({
         {/* Content overlay */}
         <div className="absolute inset-x-0 bottom-0 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F135] px-3 py-1 text-label-sm font-semibold text-[#181D27]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-lime px-3 py-1 text-label-sm font-semibold text-on-lime">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#181D27] opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#181D27]" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-on-lime opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-on-lime" />
               </span>
               Live Trip
             </span>
@@ -177,36 +180,79 @@ function StatusBanner({
 // Memory Card
 // ---------------------------------------------------------------------------
 
+const REPORT_REASONS = [
+  "Inappropriate or offensive",
+  "Nudity or sexual content",
+  "Violence or harmful",
+  "Shows someone without consent",
+  "Spam or misleading",
+];
+
 function MemoryCard({
   memory,
+  tripId,
   canDelete,
+  canReport,
   onDelete,
   onOpen,
 }: {
   memory: MemoryData;
+  tripId: string;
   canDelete?: boolean;
+  canReport?: boolean;
   onDelete?: (id: string) => void;
   onOpen?: (memory: MemoryData) => void;
 }) {
+  const { success: toastSuccess, error: toastError } = useToast();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reported, setReported] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submitReport(reason: string) {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(
+        `/api/trips/${tripId}/memories/${memory.id}/report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error ?? "Failed to report");
+      setReported(true);
+      setMenuOpen(false);
+      toastSuccess("Thanks for flagging — our team will review this photo.");
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : "Couldn't report this photo");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="overflow-hidden rounded-xl bg-surface-container-lowest shadow-card">
-      <button
-        type="button"
-        onClick={() => onOpen?.(memory)}
-        className="relative block h-48 w-full overflow-hidden"
-        aria-label="Open photo"
-      >
-        <Image
-          src={memory.imageUrl}
-          alt={memory.caption || "Trip memory"}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 50vw, 33vw"
-        />
+      <div className="relative h-48 w-full">
+        <button
+          type="button"
+          onClick={() => onOpen?.(memory)}
+          className="block h-full w-full overflow-hidden"
+          aria-label="Open photo"
+        >
+          <Image
+            src={memory.imageUrl}
+            alt={memory.caption || "Trip memory"}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 50vw, 33vw"
+          />
+        </button>
+
         {canDelete && onDelete && (
-          <span
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(memory.id);
@@ -215,9 +261,58 @@ function MemoryCard({
             className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-error"
           >
             <Icon name="delete" size={18} />
+          </button>
+        )}
+
+        {canReport && !reported && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen(true);
+            }}
+            aria-label="Report photo"
+            className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-error"
+          >
+            <Icon name="flag" size={17} />
+          </button>
+        )}
+
+        {reported && (
+          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+            <Icon name="check" size={13} /> Reported
           </span>
         )}
-      </button>
+
+        {menuOpen && (
+          <div className="absolute inset-0 z-20 flex flex-col bg-black/75 p-3 backdrop-blur-sm">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-[12px] font-semibold text-white">Report this photo</span>
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Cancel"
+                className="text-white/80 hover:text-white"
+              >
+                <Icon name="close" size={18} />
+              </button>
+            </div>
+            <div className="flex-1 space-y-1.5 overflow-y-auto">
+              {REPORT_REASONS.map((reason) => (
+                <button
+                  key={reason}
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => submitReport(reason)}
+                  className="block w-full rounded-lg bg-white/10 px-3 py-1.5 text-left text-[12px] font-medium text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
       <div className="p-3">
         {memory.caption && (
           <p className="text-body-md text-on-surface line-clamp-2 mb-2">
@@ -233,7 +328,7 @@ function MemoryCard({
           <span className="text-label-sm text-on-surface-variant truncate">
             {memory.userName}
           </span>
-          <span className="text-label-sm text-on-surface-variant/60 ml-auto shrink-0">
+          <span className="text-label-sm text-on-surface-variant ml-auto shrink-0">
             {formatDate(memory.createdAt, "relative")}
           </span>
         </div>
@@ -451,7 +546,7 @@ function SafetyInfoCard() {
           ))}
           <p className="mt-2 text-label-sm text-on-surface-variant">
             Keep your phone charged. Share your live location with your emergency
-            contact. Stay with the group and follow the Shepherd&apos;s
+            contact. Stay with the group and follow the Trip Captain&apos;s
             instructions.
           </p>
         </div>
@@ -702,7 +797,7 @@ function PlaylistSection({ tripId, onBack }: { tripId: string; onBack: () => voi
           <div className="divide-y divide-outline-variant/40">
             {tracks.map((t, idx) => (
               <div key={t.id} className="flex items-center gap-3 px-3 py-2.5">
-                <span className="w-5 text-center text-label-sm text-on-surface-variant/60">{idx + 1}</span>
+                <span className="w-5 text-center text-label-sm text-on-surface-variant">{idx + 1}</span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={t.artworkUrl ?? "/placeholder-trip.jpg"}
@@ -739,7 +834,7 @@ function PlaylistSection({ tripId, onBack }: { tripId: string; onBack: () => voi
         )}
 
         <div className="border-t border-outline-variant/40 px-4 py-3">
-          <p className="text-center text-label-sm text-on-surface-variant/70">
+          <p className="text-center text-label-sm text-on-surface-variant">
             30-second previews · powered by iTunes
           </p>
         </div>
@@ -1007,7 +1102,9 @@ export default function TripHubPage() {
               <MemoryCard
                 key={memory.id}
                 memory={memory}
+                tripId={tripId}
                 canDelete={memory.userId === myId}
+                canReport={!!myId && memory.userId !== myId}
                 onDelete={handleDeleteMemory}
                 onOpen={setPreviewMemory}
               />
@@ -1067,17 +1164,13 @@ export default function TripHubPage() {
             color="blue"
             onClick={shareLiveLocation}
           />
-          <div className="relative">
-            <QuickActionButton
-              icon="chat"
-              label="Group Chat"
-              color="orange"
-              onClick={() => router.push(`/trips/${tripId}/chat`)}
-            />
-            {chatUnread > 0 && (
-              <Badge count={chatUnread} position="absolute" />
-            )}
-          </div>
+          <QuickActionButton
+            icon="chat"
+            label="Group Chat"
+            color="orange"
+            badge={chatUnread}
+            onClick={() => router.push(`/trips/${tripId}/chat`)}
+          />
           <QuickActionButton
             icon="music_note"
             label="Playlist"
@@ -1092,12 +1185,12 @@ export default function TripHubPage() {
           />
           <QuickActionButton
             icon="call"
-            label="Shepherd"
+            label="Trip Captain"
             color="default"
             onClick={() =>
               hubData.tripCaptain.phone
                 ? window.open(`tel:${hubData.tripCaptain.phone}`)
-                : toastError("Your Shepherd's number isn't available yet")
+                : toastError("Your Trip Captain's number isn't available yet")
             }
           />
           {hubData.isCaptain && (
@@ -1176,9 +1269,9 @@ export default function TripHubPage() {
         )}
       </div>
 
-      {/* Your Shepherd */}
+      {/* Your Trip Captain */}
       <div>
-        <h3 className="text-label-sm text-on-surface-variant mb-3">Your Shepherd</h3>
+        <h3 className="text-label-sm text-on-surface-variant mb-3">Your Trip Captain</h3>
         <Card variant="outlined" className="flex items-center gap-3 p-3">
           <Avatar
             src={hubData.tripCaptain.avatar}
@@ -1186,7 +1279,7 @@ export default function TripHubPage() {
             size="md"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-label-sm text-on-surface-variant">Shepherd</p>
+            <p className="text-label-sm text-on-surface-variant">Trip Captain</p>
             <p className="text-label-lg font-semibold text-on-surface truncate">
               {hubData.tripCaptain.name}
             </p>

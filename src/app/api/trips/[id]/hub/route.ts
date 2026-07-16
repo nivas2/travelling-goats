@@ -34,7 +34,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Trip not found" }, { status: 404 });
     }
 
-    // Shepherd / trip captain (fallback to a placeholder so the UI never breaks).
+    // Trip Captain / trip captain (fallback to a placeholder so the UI never breaks).
     let captain: { id: string; name: string | null; avatar: string | null; phone: string | null; city: string | null } | null =
       null;
     if (trip.tripCaptainId) {
@@ -45,7 +45,7 @@ export async function GET(
     }
     const tripCaptain = {
       id: captain?.id ?? "",
-      name: captain?.name ?? "Shepherd (to be assigned)",
+      name: captain?.name ?? "Trip Captain (to be assigned)",
       avatar: captain?.avatar ?? null,
       phone: captain?.phone ?? "",
       city: captain?.city ?? "",

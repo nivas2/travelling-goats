@@ -98,7 +98,7 @@ export default function ReferralPage() {
     if (!data) return;
     playGoat();
     const msg = encodeURIComponent(
-      `Join Travelling Goats and get rewarded! Use my referral code: ${data.referralCode}\n${data.referralLink}`
+      `Join Meet My Route and get rewarded! Use my referral code: ${data.referralCode}\n${data.referralLink}`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
@@ -108,7 +108,7 @@ export default function ReferralPage() {
     playGoat();
     try {
       await navigator.share({
-        title: "Join Travelling Goats",
+        title: "Join Meet My Route",
         text: `Use my referral code ${data.referralCode} to sign up and earn rewards!`,
         url: data.referralLink,
       });
@@ -165,7 +165,7 @@ export default function ReferralPage() {
               Refer &amp; Earn
             </h1>
             <p className="mt-1 text-body-md text-white/80">
-              Grow your herd and earn{" "}
+              Grow your community and earn{" "}
               <span className="font-semibold text-white">{rewardPoints} points</span> per
               referral!
             </p>
@@ -197,10 +197,10 @@ export default function ReferralPage() {
         </div>
 
         {/* Share buttons */}
-        <div className="mt-4 flex gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             fullWidth
             icon={<Icon name="chat" size={18} />}
             onClick={handleShareWhatsApp}
@@ -209,7 +209,7 @@ export default function ReferralPage() {
           </Button>
           <Button
             variant="secondary"
-            size="sm"
+            size="md"
             fullWidth
             icon={<Icon name="link" size={18} />}
             onClick={handleCopyLink}
@@ -218,7 +218,9 @@ export default function ReferralPage() {
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="md"
+            fullWidth
+            className="col-span-2"
             icon={<Icon name="share" size={18} />}
             onClick={handleShareMore}
           >

@@ -16,7 +16,7 @@ export interface ChipProps extends HTMLAttributes<HTMLDivElement> {
 const colorFilled: Record<NonNullable<ChipProps["color"]>, string> = {
   primary: "bg-white text-on-surface ring-1 ring-black/[0.06]",
   secondary: "bg-white text-on-surface ring-1 ring-black/[0.06]",
-  tertiary: "bg-[#C6F135]/15 text-on-surface",
+  tertiary: "bg-lime/15 text-on-surface",
 };
 
 const colorOutlined: Record<NonNullable<ChipProps["color"]>, string> = {
@@ -26,9 +26,9 @@ const colorOutlined: Record<NonNullable<ChipProps["color"]>, string> = {
 };
 
 const colorSelected: Record<NonNullable<ChipProps["color"]>, string> = {
-  primary: "bg-[#181D27] text-white",
-  secondary: "bg-[#181D27] text-white",
-  tertiary: "bg-[#C6F135] text-[#181D27]",
+  primary: "bg-primary text-white",
+  secondary: "bg-primary text-white",
+  tertiary: "bg-lime text-on-surface",
 };
 
 // Inline color guarantee for selected variant.
@@ -37,7 +37,7 @@ const colorSelected: Record<NonNullable<ChipProps["color"]>, string> = {
 const selectedColorStyle: Record<NonNullable<ChipProps["color"]>, string> = {
   primary: "#ffffff",
   secondary: "#ffffff",
-  tertiary: "#181D27",
+  tertiary: "#181818",
 };
 
 const Chip = forwardRef<HTMLDivElement, ChipProps>(

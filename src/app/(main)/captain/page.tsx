@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { formatDateRange } from "@/lib/utils";
+import { formatDateRange, formatCategory } from "@/lib/utils";
 
 interface CaptainTrip {
   id: string;
@@ -94,7 +94,7 @@ export default function CaptainDashboardPage() {
                   <div className="flex items-center gap-2">
                     <h3 className="truncate text-title-md font-semibold text-on-surface">{t.title}</h3>
                     <span className="shrink-0 rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">
-                      {t.status}
+                      {formatCategory(t.status)}
                     </span>
                   </div>
                   <p className="mt-0.5 flex items-center gap-1 text-label-md text-on-surface-variant">
@@ -118,11 +118,11 @@ export default function CaptainDashboardPage() {
               </div>
 
               <div className="flex gap-2 p-3">
-                <Button size="sm" className="flex-1" onClick={() => router.push("/verify")}>
+                <Button size="md" className="flex-1" onClick={() => router.push("/verify")}>
                   <Icon name="qr_code_scanner" size={16} /> Verify Tickets
                 </Button>
                 <Button
-                  size="sm"
+                  size="md"
                   variant="secondary"
                   className="flex-1"
                   onClick={() => router.push(`/captain/trips/${t.id}`)}

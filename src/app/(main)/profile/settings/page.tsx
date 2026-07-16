@@ -56,11 +56,12 @@ export default function SettingsPage() {
     icon: string;
     label: string;
     description?: string;
-    type: "toggle" | "link" | "action";
+    type: "toggle" | "link" | "action" | "value";
     checked?: boolean;
     onChange?: (v: boolean) => void;
     onClick?: () => void;
     href?: string;
+    value?: string;
     destructive?: boolean;
   }
 
@@ -90,7 +91,7 @@ export default function SettingsPage() {
         {
           icon: "volume_up",
           label: "Sound Effects",
-          description: "Play goat sounds on achievements",
+          description: "Play sounds on achievements",
           type: "toggle",
           checked: soundEnabled,
           onChange: (checked: boolean) => {
@@ -101,8 +102,8 @@ export default function SettingsPage() {
         {
           icon: "language",
           label: "Language",
-          description: "English",
-          type: "link",
+          type: "value",
+          value: "English",
         },
       ],
     },
@@ -239,6 +240,11 @@ export default function SettingsPage() {
                       className="text-on-surface-variant shrink-0"
                     />
                   )}
+                  {item.type === "value" && (
+                    <span className="shrink-0 text-label-md font-medium text-on-surface-variant">
+                      {item.value}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -248,7 +254,7 @@ export default function SettingsPage() {
 
       {/* App version */}
       <p className="text-center text-label-sm text-on-surface-variant pt-2 pb-4">
-        Travelling Goats v1.0.0
+        Meet My Route v1.0.0
       </p>
 
       {/* Delete Account Modal */}

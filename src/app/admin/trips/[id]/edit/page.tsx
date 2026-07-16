@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { MultiImageUpload } from "@/components/ui/multi-image-upload";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Switch } from "@/components/ui/switch";
 
@@ -53,6 +54,8 @@ interface FaqItem {
 
 const categoryOptions = [
   { label: "Adventure", value: "ADVENTURE" },
+  { label: "Trek", value: "TREK" },
+  { label: "Camping", value: "CAMPFIRE" },
   { label: "Cultural", value: "CULTURAL" },
   { label: "Beach", value: "BEACH" },
   { label: "Mountain", value: "MOUNTAIN" },
@@ -116,7 +119,7 @@ export default function EditTripPage() {
 
   // Media
   const [coverImage, setCoverImage] = useState("");
-  const [additionalImages, setAdditionalImages] = useState("");
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
 
   // Pricing (rupees for display)
   const [basePrice, setBasePrice] = useState("");
@@ -196,7 +199,7 @@ export default function EditTripPage() {
         setDestination(t.destination);
         setOrigin(t.origin);
         setCoverImage(t.coverImage);
-        setAdditionalImages((t.images ?? []).join("\n"));
+        setGalleryImages(t.images ?? []);
         setBasePrice(String(paiseToRupees(t.basePricePaise)));
         setCouplePrice(t.couplePricePaise ? String(paiseToRupees(t.couplePricePaise)) : "");
         setGroupPrice(t.groupPricePaise ? String(paiseToRupees(t.groupPricePaise)) : "");
@@ -493,10 +496,7 @@ export default function EditTripPage() {
       destination,
       origin,
       coverImage,
-      images: additionalImages
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      images: galleryImages,
       basePricePaise: rupeesToPaise(Number(basePrice) || 0),
       couplePricePaise: couplePrice ? rupeesToPaise(Number(couplePrice)) : null,
       groupPricePaise: groupPrice ? rupeesToPaise(Number(groupPrice)) : null,
@@ -662,17 +662,13 @@ export default function EditTripPage() {
           placeholder="https://…"
           fullWidth
         />
-        <div>
-          <label className="text-label-lg font-semibold text-on-surface mb-1.5 block">
-            Additional Image URLs
-          </label>
-          <textarea
-            className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[80px] resize-y"
-            placeholder="One URL per line"
-            value={additionalImages}
-            onChange={(e) => setAdditionalImages(e.target.value)}
-          />
-        </div>
+        <MultiImageUpload
+          label="Gallery Photos"
+          value={galleryImages}
+          onChange={setGalleryImages}
+          max={6}
+          recommend="Landscape ~1200×800px — these show in the card's hover gallery"
+        />
       </FormSection>
 
       {/* Pricing */}
@@ -710,7 +706,7 @@ export default function EditTripPage() {
       {/* Captain & Vehicle */}
       <FormSection title="Captain & Vehicle">
         <Dropdown
-          label="Trip Captain / Shepherd"
+          label="Trip Captain / Trip Captain"
           placeholder="No captain assigned"
           options={[
             { label: "No captain", value: "" },

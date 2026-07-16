@@ -68,7 +68,7 @@ export async function getActiveFaqs() {
 export async function getUpcomingTrips(limit = 4) {
   try {
     return await prisma.trip.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: "PUBLISHED", startDate: { gt: new Date() } },
       orderBy: { startDate: "asc" },
       take: limit,
       select: {

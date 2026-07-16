@@ -116,7 +116,7 @@ export default function AdminPrivateRequestsPage() {
       <div>
         <h1 className="text-headline-md font-headline-md text-on-surface">Private Requests</h1>
         <p className="text-body-md text-on-surface-variant">
-          Confidential messages travellers raised privately to their shepherd.
+          Confidential messages travellers raised privately to their trip captain.
         </p>
       </div>
 
@@ -220,7 +220,7 @@ export default function AdminPrivateRequestsPage() {
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
                 rows={2}
-                placeholder="Reply as shepherd…"
+                placeholder="Reply as trip captain…"
                 className="flex-1 resize-y rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-body-md text-on-surface outline-none focus:border-primary"
               />
               <Button size="sm" loading={sending} onClick={sendReply} disabled={!reply.trim()}>

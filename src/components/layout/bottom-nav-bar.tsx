@@ -13,7 +13,7 @@ interface NavTab {
 
 const tabs: NavTab[] = [
   { label: "Explore", icon: "home", href: "/" },
-  { label: "My Trails", icon: "travel_explore", href: "/my-trips" },
+  { label: "My Trails", icon: "directions_bus", href: "/my-trips" },
   { label: "Wishlist", icon: "favorite", href: "/saved" },
   { label: "Profile", icon: "person", href: "/profile" },
 ];
@@ -38,9 +38,12 @@ export function BottomNavBar() {
     };
   }, []);
 
-  // Hide on trip detail pages (they have their own fixed bottom bar)
-  const isTripDetail = /^\/trips\/[^/]+$/.test(pathname);
-  if (isTripDetail) return null;
+  // Hide on trip detail + immersive trip sub-pages (chat, shepherd, hub) that
+  // have their own bottom bar / composer, so the floating nav doesn't overlap.
+  const isImmersive =
+    /^\/trips\/[^/]+$/.test(pathname) ||
+    /^\/trips\/[^/]+\/(chat|shepherd|hub)/.test(pathname);
+  if (isImmersive) return null;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/" || pathname === "/home";
@@ -69,19 +72,19 @@ export function BottomNavBar() {
               aria-label={tab.label}
               className={cn(
                 "flex h-12 items-center justify-center gap-1.5 rounded-full transition-all duration-300",
-                active ? "bg-[#C6F135] px-5" : "w-12 text-white/80 hover:text-white"
+                active ? "bg-lime px-5" : "w-12 text-white/75 hover:text-white"
               )}
             >
               <span
                 className={cn(
                   "material-symbols-outlined text-[24px]",
-                  active && "filled text-[#181D27]"
+                  active && "filled text-on-surface"
                 )}
               >
                 {tab.icon}
               </span>
               {active && (
-                <span className="text-[13px] font-bold text-[#181D27]">{tab.label}</span>
+                <span className="text-[13px] font-bold text-on-surface">{tab.label}</span>
               )}
             </Link>
           );

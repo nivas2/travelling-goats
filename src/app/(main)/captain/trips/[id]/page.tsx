@@ -94,6 +94,15 @@ export default function CaptainRosterPage() {
           </Button>
 
           <div className="mt-5 space-y-2">
+            {bookings.length === 0 && (
+              <Card variant="outlined" className="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                <Icon name="group_off" size={32} className="text-on-surface-variant" />
+                <p className="text-title-sm font-semibold text-on-surface">No bookings yet</p>
+                <p className="text-label-md text-on-surface-variant">
+                  Travellers who book this trip will appear here.
+                </p>
+              </Card>
+            )}
             {bookings.map((b) => (
               <Card key={b.id} variant="outlined" className="flex items-center gap-3 p-3">
                 <Avatar src={b.avatar} name={b.leadName} size="md" />

@@ -117,7 +117,7 @@ export default function PickupCityPage() {
                 className={cn(
                   "relative flex flex-col items-center gap-3 rounded-xl border-2 p-5 transition-all duration-200",
                   isSelected
-                    ? "border-primary bg-primary-fixed/20 shadow-md"
+                    ? "border-primary bg-primary-fixed shadow-md"
                     : "border-outline-variant bg-surface-container-lowest hover:border-outline hover:bg-surface-container-low"
                 )}
               >

@@ -1,6 +1,6 @@
 ---
 id: REQ-009
-title: Rebrand MeetMyRoute to Travelling Goats
+title: Rebrand MeetMyRoute to Meet My Route
 status: done
 created_at: 2026-07-05T02:30:00Z
 user_request: —
@@ -9,18 +9,18 @@ plan: pp/plans/REQ-009-plan.md
 test_url: https://meetmyroute.feastigo.com
 ---
 
-# Rebrand MeetMyRoute to Travelling Goats
+# Rebrand MeetMyRoute to Meet My Route
 
 ## What
-Complete application-wide rebrand from "MeetMyRoute" to "Travelling Goats" — replacing all brand name references, terminology (Trips→Trails, Trip Captain→Shepherd, etc.), button labels (Book Now→Join the Herd, Continue→Keep Trekking), empty/loading/success/error state copy, onboarding text, admin panel labels, and adding a new SVG logo component. Safety backup branch created first.
+Complete application-wide rebrand from "MeetMyRoute" to "Meet My Route" — replacing all brand name references, terminology (Trips→Trails, Trip Captain→Trip Captain, etc.), button labels (Book Now→Join the Community, Continue→Keep Trekking), empty/loading/success/error state copy, onboarding text, admin panel labels, and adding a new SVG logo component. Safety backup branch created first.
 
 ## Why
 The user is rebranding the travel app to a premium goat/mountain adventure theme. The brand should feel sophisticated and community-driven — "fun but never childish."
 
 ## Done When
 1. Zero "MeetMyRoute" references remain in user-facing strings
-2. All terminology mapped (Trips→Trails, Trip Captain→Shepherd, Solo→Lone Goat, etc.)
-3. All button labels updated (Book Now→Join the Herd, Continue→Keep Trekking, etc.)
+2. All terminology mapped (Trips→Trails, Trip Captain→Trip Captain, Solo→Lone Goat, etc.)
+3. All button labels updated (Book Now→Join the Community, Continue→Keep Trekking, etc.)
 4. Logo SVG component renders in navbar, login, admin sidebar, landing page
 5. All empty/loading/success/error states use goat-themed copy
 6. Onboarding slides updated with new brand copy

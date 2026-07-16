@@ -204,11 +204,11 @@ export default function OtpPage() {
     <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6">
       {/* subtle brand glow */}
       <div
-        className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[#C6F135]/20 blur-3xl"
+        className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-lime/20 blur-3xl"
         aria-hidden="true"
       />
 
-      <div className="w-full max-w-md space-y-6 rounded-[28px] bg-white p-6 ring-1 ring-black/[0.06] shadow-[0_20px_50px_rgba(20,30,40,0.08)] md:max-w-xl md:p-8">
+      <div className="w-full max-w-md space-y-6 rounded-[28px] bg-surface border border-outline-variant p-6 shadow-[0_20px_50px_rgba(20,30,40,0.08)] md:max-w-xl md:p-8">
         {/* Back button */}
         <button
           type="button"
@@ -221,8 +221,8 @@ export default function OtpPage() {
 
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#C6F135]/20">
-            <Icon name="sms" size={28} className="text-[#181D27]" filled />
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-lime/20">
+            <Icon name="sms" size={28} className="text-on-surface" filled />
           </div>
           <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-on-surface">
             Verify OTP
@@ -236,7 +236,7 @@ export default function OtpPage() {
         </div>
 
         {/* OTP Input Boxes */}
-        <div className="flex justify-center gap-2.5">
+        <div className="grid grid-cols-6 gap-2">
           {otp.map((digit, index) => (
             <input
               key={index}
@@ -251,12 +251,12 @@ export default function OtpPage() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={index === 0 ? handlePaste : undefined}
               className={cn(
-                "h-13 w-11 rounded-xl border-2 bg-white text-center text-title-lg font-semibold text-on-surface",
+                "h-13 w-full rounded-xl border-2 bg-surface text-center text-title-lg font-semibold text-on-surface",
                 "transition-all duration-200",
-                "focus:outline-none focus:ring-2 focus:ring-[#181D27]/30 focus:border-[#181D27]",
+                "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary",
                 digit
-                  ? "border-[#181D27] bg-[#C6F135]/15"
-                  : "border-black/10",
+                  ? "border-primary bg-lime/15"
+                  : "border-outline-variant",
                 error && "border-error focus:ring-error/30"
               )}
               aria-label={`OTP digit ${index + 1}`}

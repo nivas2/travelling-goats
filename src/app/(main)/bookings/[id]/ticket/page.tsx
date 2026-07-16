@@ -8,6 +8,14 @@ import { toPng } from "html-to-image";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
+import { downloadTicketPdf } from "@/lib/ticket-pdf";
+
+// Route cross-origin images through the same-origin proxy so html-to-image can
+// inline them (CSP connect-src is 'self'), otherwise the canvas is tainted and
+// the PNG/PDF capture fails.
+const proxied = (u: string) =>
+  /^https?:\/\//i.test(u) ? `/api/imgproxy?url=${encodeURIComponent(u)}` : u;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,9 +79,9 @@ function titleCase(s?: string) {
 function statusStyle(status: string) {
   switch (status) {
     case "CONFIRMED":
-      return "bg-[#C6F135] text-[#181D27]";
+      return "bg-lime text-on-surface";
     case "COMPLETED":
-      return "bg-white text-[#181D27]";
+      return "bg-white text-on-surface";
     case "CANCELLED":
     case "REFUNDED":
       return "bg-error text-white";
@@ -93,12 +101,12 @@ function Detail({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#C6F135]/15 text-[#C6F135]">
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lime text-on-surface">
         <Icon name={icon} size={18} filled />
       </span>
       <div className="min-w-0">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-white/50">{label}</p>
-        <p className="truncate text-[14px] font-semibold text-white">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant">{label}</p>
+        <p className="truncate text-[14px] font-semibold text-on-surface">
           {value || "—"}
         </p>
       </div>
@@ -113,13 +121,16 @@ function Detail({
 export default function TicketPage() {
   const params = useParams();
   const router = useRouter();
+  const { error: toastError } = useToast();
   const id = params.id as string;
 
   const [ticket, setTicket] = useState<TicketData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const ticketRef = useRef<HTMLDivElement>(null);
+  const pdfQrRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -162,7 +173,7 @@ export default function TicketPage() {
       `🐐 I'm going on *${ticket.trip.title}* to ${ticket.trip.destination}!\n` +
       `📅 ${fmtDate(ticket.trip.startDate)} – ${fmtDate(ticket.trip.endDate)} (${ticket.trip.duration}D)\n` +
       `🎟️ Booking: ${ticket.bookingNumber}\n\n` +
-      `Come along with Travelling Goats 👉 ${url}`
+      `Come along with Meet My Route 👉 ${url}`
     );
   }
 
@@ -172,6 +183,22 @@ export default function TicketPage() {
       "_blank",
       "noopener,noreferrer"
     );
+  }
+
+  // Build a professional, print-ready PDF ticket (vector text + QR + T&C +
+  // cancellation policy). jsPDF is lazy-loaded inside the generator.
+  async function downloadTicket() {
+    if (!ticket || downloading) return;
+    setDownloading(true);
+    try {
+      const canvas = pdfQrRef.current?.querySelector("canvas");
+      const qrDataUrl = canvas ? canvas.toDataURL("image/png") : null;
+      await downloadTicketPdf(ticket, qrDataUrl);
+    } catch {
+      toastError("Couldn't generate the ticket PDF. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
   }
 
   // Render the ticket to a PNG and share it as an image file. On mobile the
@@ -184,7 +211,10 @@ export default function TicketPage() {
       const dataUrl = await toPng(ticketRef.current, {
         pixelRatio: 2,
         cacheBust: true,
-        backgroundColor: "#181D27",
+        backgroundColor: "#F2F2F5",
+        // Don't try to inline the cross-origin Google Fonts stylesheet — reading
+        // its cssRules throws a SecurityError (surfaces as a dev-tools "issue").
+        skipFonts: true,
       });
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `ticket-${ticket.bookingNumber}.png`, {
@@ -259,17 +289,18 @@ export default function TicketPage() {
         <div className="mx-auto max-w-md">
           <div
             ref={ticketRef}
-            className="overflow-hidden rounded-[28px] bg-[#181D27] shadow-[0_30px_70px_rgba(20,30,40,0.28)] ring-1 ring-white/10"
+            className="overflow-hidden rounded-[28px] bg-surface-container-low shadow-[0_20px_50px_rgba(20,30,40,0.12)] ring-1 ring-black/5"
           >
             {/* ===== Header with cover ===== */}
             <div className="relative h-44">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={ticket.trip.coverImage || "/inspiration/mountains.jpg"}
+                src={proxied(ticket.trip.coverImage || "/inspiration/mountains.jpg")}
                 alt={ticket.trip.title}
+                crossOrigin="anonymous"
                 className="absolute inset-0 h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#181D27] via-[#181D27]/55 to-[#181D27]/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
               <div className="absolute inset-0 flex flex-col justify-between p-5">
                 <div className="flex items-start justify-between">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
@@ -305,42 +336,42 @@ export default function TicketPage() {
                 return (
                   <>
                     <div className="text-center">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">
                         Depart
                       </p>
-                      <p className="mt-1 text-[28px] font-bold leading-none text-white">
+                      <p className="mt-1 text-[28px] font-bold leading-none text-on-surface">
                         {s.day}
                       </p>
-                      <p className="mt-1 text-[12px] text-white/60">
+                      <p className="mt-1 text-[12px] text-on-surface-variant">
                         {s.month} · {s.weekday}
                       </p>
                     </div>
 
                     <div className="flex flex-1 flex-col items-center justify-center px-2">
-                      <span className="rounded-full bg-[#C6F135] px-2.5 py-0.5 text-[11px] font-bold text-[#181D27]">
+                      <span className="rounded-full bg-lime px-2.5 py-0.5 text-[11px] font-bold text-on-surface">
                         {ticket.trip.duration}D
                       </span>
                       <div className="relative mt-2 flex w-full items-center">
-                        <span className="h-2 w-2 rounded-full bg-[#C6F135]" />
-                        <span className="h-px flex-1 border-t-2 border-dashed border-white/25" />
+                        <span className="h-2 w-2 rounded-full bg-lime" />
+                        <span className="h-px flex-1 border-t-2 border-dashed border-black/15" />
                         <Icon
-                          name="hiking"
+                          name="directions_bus"
                           size={18}
-                          className="mx-1 text-[#C6F135]"
+                          className="mx-1 text-on-surface"
                         />
-                        <span className="h-px flex-1 border-t-2 border-dashed border-white/25" />
-                        <span className="h-2 w-2 rounded-full bg-[#C6F135]" />
+                        <span className="h-px flex-1 border-t-2 border-dashed border-black/15" />
+                        <span className="h-2 w-2 rounded-full bg-lime" />
                       </div>
                     </div>
 
                     <div className="text-center">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">
                         Return
                       </p>
-                      <p className="mt-1 text-[28px] font-bold leading-none text-white">
+                      <p className="mt-1 text-[28px] font-bold leading-none text-on-surface">
                         {e.day}
                       </p>
-                      <p className="mt-1 text-[12px] text-white/60">
+                      <p className="mt-1 text-[12px] text-on-surface-variant">
                         {e.month} · {e.weekday}
                       </p>
                     </div>
@@ -376,7 +407,7 @@ export default function TicketPage() {
 
               {/* Travellers / members */}
               <div>
-                <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">
                   Travellers · {ticket.travelerCount}
                 </p>
                 <div className="space-y-2">
@@ -384,17 +415,17 @@ export default function TicketPage() {
                     travelers.map((t, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 rounded-xl bg-white/[0.06] p-2.5"
+                        className="flex items-center gap-3 rounded-xl bg-black/[0.04] p-2.5"
                       >
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#C6F135] text-[13px] font-bold text-[#181D27]">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lime text-[13px] font-bold text-on-surface">
                           {initials(t.name)}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[14px] font-semibold text-white">
+                          <p className="truncate text-[14px] font-semibold text-on-surface">
                             {t.name}
                           </p>
                           {(t.gender || t.age) && (
-                            <p className="text-[12px] text-white/55">
+                            <p className="text-[12px] text-on-surface-variant">
                               {[titleCase(t.gender), t.age ? `${t.age} yrs` : null]
                                 .filter(Boolean)
                                 .join(" · ")}
@@ -404,13 +435,13 @@ export default function TicketPage() {
                       </div>
                     ))
                   ) : (
-                    <div className="flex items-center gap-3 rounded-xl bg-white/[0.06] p-2.5">
+                    <div className="flex items-center gap-3 rounded-xl bg-black/[0.04] p-2.5">
                       <Icon
                         name="group"
                         size={20}
-                        className="text-white/60"
+                        className="text-on-surface-variant"
                       />
-                      <p className="text-[14px] text-white/70">
+                      <p className="text-[14px] text-on-surface-variant">
                         {ticket.travelerCount} traveller
                         {ticket.travelerCount !== 1 ? "s" : ""}
                       </p>
@@ -424,12 +455,12 @@ export default function TicketPage() {
             <div className="relative">
               <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-background" />
               <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-background" />
-              <div className="mx-5 border-t-2 border-dashed border-white/20" />
+              <div className="mx-5 border-t-2 border-dashed border-black/15" />
             </div>
 
             {/* ===== QR stub ===== */}
             <div className="flex flex-col items-center px-6 py-7">
-              <div className="rounded-2xl bg-white p-3">
+              <div className="rounded-2xl bg-white p-3 ring-1 ring-black/5">
                 <QRCodeCanvas
                   value={
                     typeof window !== "undefined"
@@ -439,54 +470,74 @@ export default function TicketPage() {
                   size={148}
                   level="M"
                   marginSize={0}
-                  fgColor="#181D27"
+                  fgColor="#181818"
                   bgColor="#ffffff"
                 />
               </div>
-              <p className="mt-4 inline-flex items-center gap-1.5 text-[14px] font-semibold text-white">
-                <Icon name="qr_code_scanner" size={18} className="text-[#C6F135]" />
+              <p className="mt-4 inline-flex items-center gap-1.5 text-[14px] font-semibold text-on-surface">
+                <Icon name="qr_code_scanner" size={18} className="text-on-surface" />
                 Show this at check-in
               </p>
-              <p className="mt-1 font-mono text-[13px] tracking-widest text-white/55">
+              <p className="mt-1 font-mono text-[13px] tracking-widest text-on-surface-variant">
                 {ticket.bookingNumber}
               </p>
-              <div className="mt-4 flex w-full items-center justify-between border-t border-white/15 pt-4">
-                <span className="text-[13px] text-white/60">
+              <div className="mt-4 flex w-full items-center justify-between border-t border-black/10 pt-4">
+                <span className="text-[13px] text-on-surface-variant">
                   Total Paid
                 </span>
-                <span className="text-[18px] font-bold text-[#C6F135]">
+                <span className="text-[18px] font-bold text-on-surface">
                   {formatCurrency(ticket.totalPricePaise)}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Share ticket as an image (WhatsApp etc. via the native share sheet) */}
-          <button
-            onClick={shareTicket}
-            disabled={sharing}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 text-label-lg font-semibold text-white shadow-sm transition active:scale-[0.98] disabled:opacity-60"
-          >
-            {sharing ? (
-              <>
-                <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Preparing ticket…
-              </>
-            ) : (
-              <>
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-                Share Ticket on WhatsApp
-              </>
-            )}
-          </button>
+          {/* Hidden high-res QR — sampled into the downloadable PDF ticket */}
+          <div ref={pdfQrRef} className="pointer-events-none absolute -left-[9999px] top-0" aria-hidden>
+            <QRCodeCanvas
+              value={
+                typeof window !== "undefined"
+                  ? `${window.location.origin}/verify?t=${encodeURIComponent(ticket.qrToken)}`
+                  : ticket.qrToken
+              }
+              size={512}
+              level="M"
+              marginSize={2}
+              fgColor="#181818"
+              bgColor="#ffffff"
+            />
+          </div>
+
+          {/* Actions — share (native sheet / WhatsApp fallback) + download PDF */}
+          <div className="mt-5 flex gap-3">
+            <button
+              onClick={shareTicket}
+              disabled={sharing}
+              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-surface px-6 py-3 text-label-lg font-semibold text-on-surface ring-1 ring-black/10 transition active:scale-[0.98] disabled:opacity-60"
+            >
+              <Icon
+                name={sharing ? "progress_activity" : "share"}
+                size={20}
+                className={sharing ? "animate-spin" : ""}
+              />
+              {sharing ? "Sharing…" : "Share"}
+            </button>
+            <button
+              onClick={downloadTicket}
+              disabled={downloading}
+              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-lime px-6 py-3 text-label-lg font-semibold text-on-surface shadow-sm transition active:scale-[0.98] disabled:opacity-60"
+            >
+              <Icon
+                name={downloading ? "progress_activity" : "download"}
+                size={20}
+                className={downloading ? "animate-spin" : ""}
+              />
+              {downloading ? "Preparing…" : "Download Ticket"}
+            </button>
+          </div>
 
           <p className="mt-4 text-center text-label-sm text-on-surface-variant">
-            Keep this ticket handy — your Shepherd will scan it at the meeting point.
+            Keep this ticket handy — your Trip Captain will scan it at the meeting point.
           </p>
         </div>
       )}

@@ -27,7 +27,7 @@ interface Weather {
 function Stat({ icon, label }: { icon: string; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.08] px-3 py-1.5 text-[12px] font-medium text-white/85">
-      <Icon name={icon} size={15} className="text-[#C6F135]" filled />
+      <Icon name={icon} size={15} className="text-lime" filled />
       {label}
     </span>
   );
@@ -35,7 +35,7 @@ function Stat({ icon, label }: { icon: string; label: string }) {
 
 function MoodTag({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-[#C6F135] px-3 py-1.5 text-[12px] font-semibold text-[#181D27]">
+    <span className="inline-flex items-center gap-1 rounded-full bg-lime px-3 py-1.5 text-[12px] font-semibold text-on-surface">
       {label}
     </span>
   );
@@ -85,8 +85,8 @@ export function TripLocationWeather({ destination }: { destination: string }) {
       <div className="grid grid-cols-2 items-stretch gap-3">
       {/* Weather card */}
       {w ? (
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-[#181D27] p-5 text-white">
-          <div className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-[#C6F135]/20 blur-3xl" />
+        <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-primary p-5 text-white">
+          <div className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-lime/20 blur-3xl" />
           <div className="relative flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[11px] font-medium uppercase tracking-wide text-white/50">
@@ -100,7 +100,7 @@ export function TripLocationWeather({ destination }: { destination: string }) {
               </div>
               <p className="mt-1.5 text-[14px] text-white/85">{w.condition}</p>
             </div>
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/[0.08] text-[#C6F135]">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/[0.08] text-lime">
               <Icon name={w.icon} size={30} filled />
             </span>
           </div>
@@ -138,20 +138,20 @@ export function TripLocationWeather({ destination }: { destination: string }) {
 
           {/* center pin */}
           <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[130%]">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C6F135] text-[#181D27] shadow-[0_6px_16px_rgba(0,0,0,0.3)] ring-4 ring-[#C6F135]/25 transition-transform group-hover:-translate-y-0.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-lime text-on-surface shadow-[0_6px_16px_rgba(0,0,0,0.3)] ring-4 ring-lime/25 transition-transform group-hover:-translate-y-0.5">
               <Icon name="location_on" size={20} filled />
             </span>
           </span>
 
           {/* bottom bar */}
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/65 via-black/25 to-transparent p-4">
-            <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-white">
-              <Icon name="explore" size={16} filled />
-              {destination}
+          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/75 via-black/35 to-transparent p-3">
+            <span className="inline-flex min-w-0 items-center gap-1 text-[13px] font-semibold text-white">
+              <Icon name="explore" size={15} filled className="shrink-0 text-lime" />
+              <span className="truncate">{destination}</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-[#181D27] transition-transform group-hover:-translate-y-0.5">
+            <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[13px] font-semibold text-on-surface transition-colors group-hover:bg-lime">
+              <Icon name="map" size={16} filled />
               Open in Maps
-              <Icon name="north_east" size={14} />
             </span>
           </div>
         </div>

@@ -1,12 +1,12 @@
 import { ContentPage } from "@/components/layout/content-page";
 
-export const metadata = { title: "About Travelling Goats" };
+export const metadata = { title: "About Meet My Route" };
 
 export default function AboutPage() {
   return (
-    <ContentPage title="About Travelling Goats" subtitle="Version 1.0.0">
+    <ContentPage title="About Meet My Route" subtitle="Version 1.0.0">
       <p>
-        Travelling Goats makes group travel effortless, safe, and unforgettable.
+        Meet My Route makes group travel effortless, safe, and unforgettable.
         We host curated group trips across India — every itinerary is handpicked,
         every captain is verified, and every price is transparent, so you can
         focus on the adventure and the friends you&apos;ll make along the way.
@@ -30,14 +30,14 @@ export default function AboutPage() {
       <h2>Get in touch</h2>
       <p>
         Questions, feedback, or partnership ideas? Reach us at{" "}
-        <a href="mailto:hello@travellinggoats.in" className="text-primary underline">
-          hello@travellinggoats.in
+        <a href="mailto:hello@meetmyroute.in" className="text-primary underline">
+          hello@meetmyroute.in
         </a>
         .
       </p>
 
       <p className="pt-4 text-label-sm text-on-surface-variant">
-        &copy; {new Date().getFullYear()} Travelling Goats. All rights reserved.
+        &copy; {new Date().getFullYear()} Meet My Route. All rights reserved.
       </p>
     </ContentPage>
   );

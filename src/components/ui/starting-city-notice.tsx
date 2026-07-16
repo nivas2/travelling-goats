@@ -2,9 +2,10 @@
 
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
+import { cn } from "@/lib/utils";
 import type { ServedCity } from "@/lib/use-starting-city";
 
-/** Clickable list of the cities we currently depart from. */
+/** Selectable list of the cities we currently depart from. */
 function CityChoices({
   cities,
   selectedCity,
@@ -15,28 +16,49 @@ function CityChoices({
   onChoose: (name: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="space-y-2">
       {cities.map((c) => {
         const active = selectedCity === c.name;
+        const trips = c.tripCount ?? 0;
+        const pickups = c.pickupPoints?.length ?? 0;
         return (
           <button
             key={c.id}
             type="button"
             onClick={() => onChoose(c.name)}
-            className={
-              "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-label-md font-medium transition-colors " +
-              (active
-                ? "border-primary bg-primary text-on-primary"
-                : "border-outline-variant bg-surface-container-low text-on-surface hover:border-primary/40")
-            }
-          >
-            <Icon name="location_on" size={16} filled={active} />
-            {c.name}
-            {typeof c.tripCount === "number" && c.tripCount > 0 && (
-              <span className={active ? "opacity-80" : "text-on-surface-variant"}>
-                · {c.tripCount}
-              </span>
+            aria-pressed={active}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors",
+              active
+                ? "border-primary bg-surface-container-low ring-1 ring-primary"
+                : "border-outline-variant bg-surface hover:border-outline hover:bg-surface-container-low"
             )}
+          >
+            <span
+              className={cn(
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors",
+                active ? "bg-primary text-on-primary" : "bg-lavender text-on-surface"
+              )}
+            >
+              <Icon name="location_on" size={20} filled={active} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-body-md font-semibold text-on-surface">
+                {c.name}
+              </span>
+              <span className="mt-0.5 block truncate text-label-sm text-on-surface-variant">
+                {trips} trip{trips === 1 ? "" : "s"}
+                {pickups > 0 && (
+                  <> · {pickups} pickup point{pickups === 1 ? "" : "s"}</>
+                )}
+              </span>
+            </span>
+            <Icon
+              name={active ? "check_circle" : "chevron_right"}
+              size={active ? 22 : 20}
+              filled={active}
+              className={cn("shrink-0", active ? "text-primary" : "text-on-surface-variant")}
+            />
           </button>
         );
       })}
@@ -82,18 +104,30 @@ export function StartingCityGate({
       size="md"
     >
       <div className="space-y-4">
-        <p className="text-body-md text-on-surface-variant">
-          {detectedCity
-            ? `It looks like you're in ${detectedCity}, which we don't start trips from yet. `
-            : ""}
-          We currently depart from {cityNames(cities)}. Select the city you&apos;d
-          like to travel from to continue.
-        </p>
-        <CityChoices
-          cities={cities}
-          selectedCity={selectedCity}
-          onChoose={onChoose}
-        />
+        {/* Detected-location context */}
+        {detectedCity && (
+          <div className="flex items-start gap-2.5 rounded-2xl bg-surface-container-low p-3">
+            <Icon
+              name="my_location"
+              size={18}
+              className="mt-0.5 shrink-0 text-on-surface-variant"
+            />
+            <p className="text-body-sm text-on-surface-variant">
+              You&apos;re near{" "}
+              <span className="font-semibold text-on-surface">{detectedCity}</span>, which
+              we don&apos;t depart from yet. We currently run trips from{" "}
+              {cityNames(cities)}.
+            </p>
+          </div>
+        )}
+        {!detectedCity && (
+          <p className="text-body-md text-on-surface-variant">
+            We currently depart from {cityNames(cities)}. Pick where you&apos;d like to
+            travel from to continue.
+          </p>
+        )}
+
+        <CityChoices cities={cities} selectedCity={selectedCity} onChoose={onChoose} />
       </div>
     </Modal>
   );

@@ -58,13 +58,13 @@ const SAFETY_TIPS: SafetyTip[] = [
   {
     title: "Share Your Location",
     content:
-      "Make sure your live location is shared with your Shepherd and emergency contacts. Keep your GPS turned on.",
+      "Make sure your live location is shared with your Trip Captain and emergency contacts. Keep your GPS turned on.",
     icon: "my_location",
   },
   {
     title: "Stay With the Group",
     content:
-      "If you are lost, stay where you are and contact your Shepherd. Do not wander off alone, especially in unfamiliar terrain.",
+      "If you are lost, stay where you are and contact your Trip Captain. Do not wander off alone, especially in unfamiliar terrain.",
     icon: "group",
   },
   {
@@ -103,7 +103,7 @@ const QUICK_CALL_OPTIONS = [
     description: "Medical Emergency",
   },
   {
-    label: "Travelling Goats Helpline",
+    label: "Meet My Route Helpline",
     phone: "18001234567",
     icon: "support_agent",
     color: "bg-primary text-on-primary",
@@ -142,7 +142,7 @@ function SOSButton({
           "focus:outline-none focus-visible:ring-4 focus-visible:ring-error focus-visible:ring-offset-4",
           activated
             ? "bg-success shadow-lg"
-            : "bg-error shadow-[0_0_40px_rgba(255,56,92,0.4)] hover:shadow-[0_0_60px_rgba(255,56,92,0.6)]",
+            : "bg-error shadow-[0_0_40px_rgba(220,38,38,0.4)] hover:shadow-[0_0_60px_rgba(220,38,38,0.6)]",
           pressing && !activated && "scale-95",
           !pressing && !activated && "animate-pulse"
         )}
@@ -198,8 +198,8 @@ function SOSButton({
       {/* Description */}
       <p className="mt-4 max-w-[280px] text-center text-body-md text-on-surface-variant">
         {activated
-          ? "Your Shepherd and emergency contacts have been notified with your location."
-          : "Tap to alert Shepherd & Emergency Services"}
+          ? "Your Trip Captain and emergency contacts have been notified with your location."
+          : "Tap to alert Trip Captain & Emergency Services"}
       </p>
     </div>
   );
@@ -475,11 +475,11 @@ export default function EmergencyPage() {
         />
       </Card>
 
-      {/* Shepherd Quick Call */}
+      {/* Trip Captain Quick Call */}
       {emergencyData?.tripCaptain && (
         <div>
           <h2 className="text-label-lg font-label-lg text-on-surface-variant mb-3">
-            Shepherd
+            Trip Captain
           </h2>
           <button
             onClick={() =>
@@ -497,7 +497,7 @@ export default function EmergencyPage() {
                 {emergencyData.tripCaptain.name}
               </p>
               <p className="text-label-sm text-on-primary-fixed-variant">
-                Shepherd
+                Trip Captain
               </p>
             </div>
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-on-primary">

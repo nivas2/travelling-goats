@@ -65,7 +65,7 @@ function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <p>
         {isPartner
-          ? "Want to partner with Travelling Goats — as a stay, transport, activity or corporate partner? Tell us about you and we'll be in touch."
+          ? "Want to partner with Meet My Route — as a stay, transport, activity or corporate partner? Tell us about you and we'll be in touch."
           : "Have a question or feedback? Send us a message and our team will get back to you."}
       </p>
 
@@ -75,7 +75,7 @@ function ContactForm() {
         onChange={(e) => setName(e.target.value)}
         required
         fullWidth
-        placeholder="Jane Goat"
+        placeholder="Jane Doe"
       />
       <Input
         label="Email"
@@ -135,7 +135,15 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-2xl space-y-4 px-5 py-6">
+          <div className="h-7 w-40 animate-pulse rounded-lg bg-surface-container" />
+          <div className="h-4 w-64 animate-pulse rounded bg-surface-container" />
+          <div className="h-32 w-full animate-pulse rounded-2xl bg-surface-container" />
+        </div>
+      }
+    >
       <Wrapper />
     </Suspense>
   );
@@ -147,7 +155,7 @@ function Wrapper() {
   return (
     <ContentPage
       title={isPartner ? "Partner with Us" : "Contact Us"}
-      subtitle={isPartner ? "Grow with Travelling Goats" : "We'd love to hear from you"}
+      subtitle={isPartner ? "Grow with Meet My Route" : "We'd love to hear from you"}
     >
       <ContactForm />
     </ContentPage>

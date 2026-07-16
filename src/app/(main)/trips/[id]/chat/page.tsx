@@ -78,7 +78,7 @@ function ChatHeader({
   onInfoClick: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-outline-variant bg-surface-container-lowest/95 backdrop-blur-sm px-4 py-3">
+    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-outline-variant bg-surface-container-lowest/95 backdrop-blur-sm px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
       <button
         onClick={onBack}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"
@@ -109,7 +109,7 @@ function ChatHeader({
       <Link
         href={`/trips/${tripId}/shepherd`}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"
-        aria-label="Message Shepherd"
+        aria-label="Message Trip Captain"
       >
         <Icon name="shield" size={22} className="text-on-surface-variant" />
       </Link>
@@ -197,7 +197,7 @@ function MemberListPanel({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-label-lg font-semibold text-primary">
-              Message Shepherd Privately
+              Message Trip Captain Privately
             </p>
             <p className="text-label-sm text-on-surface-variant">
               Confidential 1:1 with your trip captain
@@ -518,7 +518,7 @@ function ChatBubble({
 
           {/* Image message */}
           {message.type === "IMAGE" && message.imageUrl && (
-            <div className="relative mb-1.5 h-48 w-56 overflow-hidden rounded-xl">
+            <div className="relative mb-1.5 h-48 w-full max-w-[224px] overflow-hidden rounded-xl">
               <Image
                 src={message.imageUrl}
                 alt="Shared image"
@@ -698,7 +698,7 @@ function MessageInputBar({
   };
 
   return (
-    <div className="sticky bottom-0 border-t border-outline-variant bg-surface-container-lowest pb-safe">
+    <div className="sticky bottom-0 border-t border-outline-variant bg-surface-container-lowest pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       {/* Announcement mode banner */}
       {announcementMode && (
         <div className="flex items-center gap-2 border-b border-outline-variant px-4 py-2 bg-warning/10">

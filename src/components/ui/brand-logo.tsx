@@ -5,7 +5,7 @@ import { TravellingGoatsLogo } from "./travelling-goats-logo";
 
 /**
  * Renders the admin-configured logo (Site Content → Branding → Logo) in the
- * header, footer and login screen. Falls back to the built-in Travelling Goats
+ * header, footer and login screen. Falls back to the built-in Meet My Route
  * logo when none is set. Result is cached module-wide so the many logo
  * instances share a single fetch.
  */

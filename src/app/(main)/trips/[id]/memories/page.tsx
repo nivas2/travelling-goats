@@ -103,7 +103,7 @@ export default function TripMemoriesPage() {
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F135] px-4 py-2.5 text-[14px] font-semibold text-[#181D27] shadow-[0_8px_22px_rgba(198,241,53,0.38)] transition active:scale-95 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-full bg-lime px-4 py-2.5 text-[14px] font-semibold text-on-surface shadow-[0_8px_22px_rgba(198,241,53,0.38)] transition active:scale-95 disabled:opacity-60"
         >
           <Icon name={uploading ? "hourglass_top" : "add_a_photo"} size={18} filled />
           {uploading ? "Uploading…" : "Add photo"}
@@ -147,7 +147,7 @@ export default function TripMemoriesPage() {
                   unoptimized={p.imageUrl.startsWith("data:")}
                 />
                 {p.isMine && (
-                  <span className="absolute left-2 top-2 rounded-full bg-[#C6F135] px-2 py-0.5 text-[10px] font-bold text-[#181D27]">
+                  <span className="absolute left-2 top-2 rounded-full bg-lime px-2 py-0.5 text-[10px] font-bold text-on-surface">
                     You
                   </span>
                 )}

@@ -26,6 +26,7 @@ export async function GET() {
         avatar: true,
         role: true,
         dateOfBirth: true,
+        whatsappNumber: true,
         gender: true,
         bio: true,
         city: true,

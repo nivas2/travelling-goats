@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn, formatDateRange, getDaysUntil, formatDate } from "@/lib/utils";
+import { cn, formatDateRange, getDaysUntil, formatDate, formatCategory } from "@/lib/utils";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -60,17 +60,17 @@ function getStatusBadgeProps(status: BookingTrip["status"]) {
     case "UPCOMING":
       return {
         label: "Upcoming",
-        className: "bg-[#181D27] text-white",
+        className: "bg-primary text-white",
       };
     case "ONGOING":
       return {
         label: "Live",
-        className: "bg-[#C6F135] text-[#181D27]",
+        className: "bg-lime text-on-surface",
       };
     case "COMPLETED":
       return {
         label: "Completed",
-        className: "bg-white text-on-surface ring-1 ring-black/[0.06]",
+        className: "bg-surface text-on-surface border border-outline-variant",
       };
     case "CANCELLED":
       return {
@@ -79,8 +79,8 @@ function getStatusBadgeProps(status: BookingTrip["status"]) {
       };
     default:
       return {
-        label: status,
-        className: "bg-white text-on-surface-variant ring-1 ring-black/[0.06]",
+        label: formatCategory(status),
+        className: "bg-surface text-on-surface-variant border border-outline-variant",
       };
   }
 }
@@ -191,10 +191,10 @@ function UpcomingTripCard({
           {booking.tripTitle}
         </h3>
 
-        <div className="mt-1.5 flex items-center gap-4 text-body-md text-on-surface-variant">
-          <span className="inline-flex items-center gap-1">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-md text-on-surface-variant">
+          <span className="inline-flex min-w-0 items-center gap-1">
             <Icon name="location_on" size={16} className="text-primary" />
-            {booking.destination}
+            <span className="truncate">{booking.destination}</span>
           </span>
           <span className="inline-flex items-center gap-1">
             <Icon name="calendar_today" size={14} />
@@ -308,7 +308,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
   );
 
   return (
-    <Card variant="elevated" className="overflow-hidden p-0 ring-2 ring-[#C6F135]/70">
+    <Card variant="elevated" className="overflow-hidden p-0">
       {/* Cover Image */}
       <div className="relative h-[180px] w-full overflow-hidden">
         <Image
@@ -320,10 +320,10 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
         />
         {/* Live Badge */}
         <div className="absolute left-3 top-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C6F135] px-3 py-1 text-label-sm font-semibold text-[#181D27]">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-lime px-3 py-1 text-label-sm font-semibold text-on-surface">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#181D27] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#181D27]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
             Day {dayNumber} of {booking.duration}
           </span>
@@ -353,7 +353,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
           </span>
         </div>
 
-        {/* Shepherd */}
+        {/* Trip Captain */}
         {booking.tripCaptain && (
           <div className="mt-3 flex items-center gap-2 rounded-xl bg-surface-container-low p-2.5">
             <Avatar
@@ -362,7 +362,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
               size="sm"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-label-sm text-on-surface-variant">Shepherd</p>
+              <p className="text-label-sm text-on-surface-variant">Trip Captain</p>
               <p className="text-label-lg font-semibold text-on-surface truncate">
                 {booking.tripCaptain.name}
               </p>
@@ -372,7 +372,7 @@ function OngoingTripCard({ booking }: { booking: BookingTrip }) {
               variant="ghost"
               icon={<Icon name="call" size={18} />}
               onClick={() => window.open(`tel:${booking.tripCaptain!.phone}`)}
-              aria-label="Call Shepherd"
+              aria-label="Call Trip Captain"
             />
           </div>
         )}
@@ -432,10 +432,10 @@ function CompletedTripCard({ booking }: { booking: BookingTrip }) {
           {booking.tripTitle}
         </h3>
 
-        <div className="mt-1.5 flex items-center gap-4 text-body-md text-on-surface-variant">
-          <span className="inline-flex items-center gap-1">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-md text-on-surface-variant">
+          <span className="inline-flex min-w-0 items-center gap-1">
             <Icon name="location_on" size={16} className="text-primary" />
-            {booking.destination}
+            <span className="truncate">{booking.destination}</span>
           </span>
           <span className="inline-flex items-center gap-1">
             <Icon name="calendar_today" size={14} />

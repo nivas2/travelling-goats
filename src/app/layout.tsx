@@ -9,38 +9,38 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Travelling Goats — Adventure Travel with the Herd",
-    template: "%s | Travelling Goats",
+    default: "Meet My Route — Adventure Travel with the Community",
+    template: "%s | Meet My Route",
   },
   description:
-    "Join the herd. Discover curated group trails across India. Travel with fellow goats — verified explorers, transparent pricing, unforgettable adventures.",
+    "Join the community. Discover curated group trails across India. Travel with fellow explorers — verified explorers, transparent pricing, unforgettable adventures.",
   keywords: [
     "group travel",
     "solo travel India",
     "curated trips",
     "weekend getaway",
     "adventure travel",
-    "Travelling Goats",
-    "herd travel",
+    "Meet My Route",
+    "community travel",
     "trail adventures",
   ],
-  authors: [{ name: "Travelling Goats" }],
-  creator: "Travelling Goats",
+  authors: [{ name: "Meet My Route" }],
+  creator: "Meet My Route",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "https://meetmyroute.feastigo.com", // TODO: Update domain to travellinggoats
-    siteName: "Travelling Goats",
-    title: "Travelling Goats — Adventure Travel with the Herd",
+    siteName: "Meet My Route",
+    title: "Meet My Route — Adventure Travel with the Community",
     description:
-      "Join the herd. Discover curated group trails across India. Travel with fellow goats.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Travelling Goats" }],
+      "Join the community. Discover curated group trails across India. Travel with fellow explorers.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Meet My Route" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Travelling Goats — Adventure Travel with the Herd",
-    description: "Join the herd. Discover curated group trails across India.",
+    title: "Meet My Route — Adventure Travel with the Community",
+    description: "Join the community. Discover curated group trails across India.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -75,9 +75,18 @@ export default async function RootLayout({
       className=""
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* display=block: keep icons invisible until the font loads instead of
+            flashing the raw ligature text (e.g. "location_on"). */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+        />
+        {/* Brand typeface — Bricolage Grotesque (Regular / Medium / Bold) */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700&display=swap"
         />
         {themeCss && <style id="tg-theme" dangerouslySetInnerHTML={{ __html: themeCss }} />}
       </head>

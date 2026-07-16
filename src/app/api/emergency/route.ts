@@ -52,7 +52,7 @@ export async function GET() {
       });
       if (captain) {
         tripCaptain = {
-          name: captain.name ?? "Shepherd",
+          name: captain.name ?? "Trip Captain",
           phone: captain.phone ?? "",
           avatar: captain.avatar ?? null,
         };

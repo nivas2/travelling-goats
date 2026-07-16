@@ -42,8 +42,7 @@ export function PageHeader({
           onClick={handleBack}
           className={cn(
             "flex items-center justify-center",
-            "h-10 w-10 rounded-full",
-            "hover:bg-surface-container-high active:scale-95",
+            "h-10 w-10 rounded-full hover:bg-surface-container-high active:scale-95",
             "transition-all duration-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           )}

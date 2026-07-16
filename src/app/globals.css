@@ -4,18 +4,18 @@
 /* Non-inline so color/radius utilities reference the CSS vars, enabling the
    admin Theme Manager to override them at runtime. */
 @theme {
-  /* ===== FONT FAMILIES — SF Pro (native Apple system font) ===== */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* ===== FONT FAMILIES — Bricolage Grotesque (loaded via Google Fonts) ===== */
+  --font-sans: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   /* ===== ACCENT VARS (DocNow: ink × lime × light-grey) ===== */
-  --lp-forest: #181D27;
-  --lp-forest-2: #0E121A;
-  --lp-lime: #C6F135;
-  --lp-lime-bright: #D0F754;
+  --lp-forest: #181818;
+  --lp-forest-2: #101010;
+  --lp-lime: #D8FF07;
+  --lp-lime-bright: #E4FF3A;
   --lp-sage: #F2F2F5;
   --lp-sage-2: #EAEAEE;
-  --lp-ink: #181D27;
+  --lp-ink: #181818;
   --lp-muted: #6B7280;
 
   /* ===== COLOR TOKENS — Ink (navy-black) × Lime × Light-grey =====
@@ -23,34 +23,34 @@
      white cards on a light cool-grey ground. */
 
   /* Primary — near-black navy ink (text, dark buttons, active states) */
-  --color-primary: var(--brand-primary, #181D27);
+  --color-primary: var(--brand-primary, #181818);
   --color-on-primary: #ffffff;
-  --color-primary-container: var(--brand-primary, #181D27);
+  --color-primary-container: var(--brand-primary, #181818);
   --color-on-primary-container: #ffffff;
-  --color-inverse-primary: #C6F135;
+  --color-inverse-primary: #D8FF07;
   --color-primary-fixed: #E9EAEE;
   --color-primary-fixed-dim: #C3C6CF;
-  --color-on-primary-fixed: #181D27;
+  --color-on-primary-fixed: #181818;
   --color-on-primary-fixed-variant: #3A4150;
 
   /* Secondary — ink */
-  --color-secondary: var(--brand-secondary, #181D27);
+  --color-secondary: var(--brand-secondary, #181818);
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #0E121A;
+  --color-secondary-container: #101010;
   --color-on-secondary-container: #ffffff;
   --color-secondary-fixed: #E9EAEE;
   --color-secondary-fixed-dim: #C3C6CF;
-  --color-on-secondary-fixed: #181D27;
+  --color-on-secondary-fixed: #181818;
   --color-on-secondary-fixed-variant: #3A4150;
 
   /* Tertiary — ink (lime is a dedicated accent below) */
-  --color-tertiary: var(--brand-accent, #181D27);
+  --color-tertiary: var(--brand-accent, #181818);
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #EDEDF1;
-  --color-on-tertiary-container: #181D27;
+  --color-on-tertiary-container: #181818;
   --color-tertiary-fixed: #EDEDF1;
   --color-tertiary-fixed-dim: #D4D4DB;
-  --color-on-tertiary-fixed: #181D27;
+  --color-on-tertiary-fixed: #181818;
   --color-on-tertiary-fixed-variant: #3A4150;
 
   /* Error */
@@ -59,12 +59,17 @@
   --color-error-container: #FCE4E4;
   --color-on-error-container: #5C1414;
 
-  /* Accent — lime CTA + neutral tints */
-  --color-lime: #C6F135;
-  --color-on-lime: #181D27;
-  --color-forest: #181D27;
+  /* Accent — lime CTA + olive + neutral tints (brand palette:
+     D8FF07 lime · FFFFFF white · D3D6DB grey · 181818 ink · 526200 olive) */
+  --color-lime: #D8FF07;
+  --color-on-lime: #181818;
+  --color-lime-bright: #E4FF3A;
+  --color-olive: #526200;
+  --color-on-olive: #FFFFFF;
+  --color-hairline: #D3D6DB;
+  --color-forest: #181818;
   --color-lavender: #EDEDF1;
-  --color-on-lavender: #181D27;
+  --color-on-lavender: #181818;
   --color-sage: #EDEDF1;
   --color-blush: #F3F3F6;
   --color-sky: #E7EBF2;
@@ -79,11 +84,11 @@
   --color-surface-container: #F0F0F3;
   --color-surface-container-high: #E9E9ED;
   --color-surface-container-highest: #E2E2E7;
-  --color-on-surface: #181D27;
+  --color-on-surface: #181818;
   --color-on-surface-variant: #6B7280;
   --color-surface-variant: #E9E9ED;
-  --color-surface-tint: var(--brand-primary, #181D27);
-  --color-inverse-surface: #181D27;
+  --color-surface-tint: var(--brand-primary, #181818);
+  --color-inverse-surface: #181818;
   --color-inverse-on-surface: #F0F0F3;
 
   /* Outline */
@@ -92,7 +97,7 @@
 
   /* Background — light cool grey */
   --color-background: var(--brand-background, #F2F2F5);
-  --color-on-background: #181D27;
+  --color-on-background: #181818;
 
   /* Success */
   --color-success: var(--brand-success, #2e7d32);
@@ -162,18 +167,18 @@ body.modal-open .app-bottom-nav {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--color-background, #F2F2F5);
-  color: var(--color-on-background, #181D27);
+  color: var(--color-on-background, #181818);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-weight: 400;
   letter-spacing: -0.01em;
 }
 
-/* Headings use SF Pro Display (larger optical size). */
+/* Headings use Bricolage Grotesque (larger optical size). */
 h1, h2, h3, h4, .font-display {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   letter-spacing: -0.022em;
 }
 
@@ -194,7 +199,7 @@ h1, h2, h3, h4, .font-display {
 /* Dark liquid glass (forest-tinted) — for the bottom nav & dark chips.
    Kept fairly opaque so white icons stay legible over any content behind. */
 .glass-dark {
-  background: color-mix(in srgb, var(--color-primary, #181D27) 88%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #181818) 88%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -210,6 +215,17 @@ h1, h2, h3, h4, .font-display {
 
 .material-symbols-outlined.filled {
   font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* ===== BLACK ON LIME =====
+   Lime is a light accent, so its content must always be dark ink — never white.
+   Uses an attribute selector (NOT the `.bg-lime` utility name, which Lightning
+   CSS silently drops on collision) + !important so it beats text-white even for
+   lime badges nested inside photo cards. Opacity tints (bg-lime/15 …) have a
+   different class token and are intentionally left untouched. */
+[class~="bg-lime"],
+[class~="bg-lime"] * {
+  color: #181818 !important;
 }
 
 /* ===== CUSTOM UTILITY CLASSES ===== */
@@ -482,6 +498,24 @@ h1, h2, h3, h4, .font-display {
   }
 }
 
+/* Hero title swap — fades/rises in when the cued rail card changes */
+@keyframes lp-hero-title {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes lp-hero-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-hero-title {
+    animation: lp-hero-title 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .lp-hero-fade {
+    animation: lp-hero-fade 0.55s ease-out both;
+  }
+}
+
 /* Scroll cue dot */
 @keyframes lp-scroll-dot {
   0% { transform: translateY(0); opacity: 1; }
@@ -519,12 +553,10 @@ h1, h2, h3, h4, .font-display {
 
 /* Card that lifts on hover */
 .lp-lift {
-  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.4s ease;
-  will-change: transform;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .lp-lift:hover {
   transform: translateY(-6px);
-  box-shadow: 0 28px 56px rgba(20, 40, 30, 0.18);
 }
 
 /* Reveal on scroll (staggered) */
@@ -583,7 +615,7 @@ h1, h2, h3, h4, .font-display {
 .lp-hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ------------------------------------------------------------------ */
-/*  Travelling Goats — Brand Animation Stubs                          */
+/*  Meet My Route — Brand Animation Stubs                          */
 /* ------------------------------------------------------------------ */
 @keyframes goat-hop {
   0%, 100% { transform: translateY(0); }

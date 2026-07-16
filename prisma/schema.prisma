@@ -18,6 +18,7 @@ model User {
   image            String?
   avatar           String?
   dateOfBirth      DateTime?
+  whatsappNumber   String?
   gender           Gender?
   bio              String?
   city             String?
@@ -60,6 +61,7 @@ model User {
   supportTickets         SupportTicket[]
   ticketMessages         TicketMessage[]
   memoryEntries          MemoryEntry[]
+  memoryReports          MemoryReport[]
   tripCompanions         TripCompanion[]
   savingsGoals           SavingsGoal[]
   privateRequests        PrivateRequest[]
@@ -778,10 +780,27 @@ model MemoryEntry {
   isPublic  Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
+  reports MemoryReport[]
 
   @@index([userId, tripId])
   @@map("memory_entries")
+}
+
+model MemoryReport {
+  id           String   @id @default(cuid())
+  memoryId     String
+  reportedById String
+  reason       String
+  status       String   @default("PENDING") // PENDING / REVIEWED / DISMISSED
+  createdAt    DateTime @default(now())
+
+  memory     MemoryEntry @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  reportedBy User        @relation(fields: [reportedById], references: [id])
+
+  @@unique([memoryId, reportedById])
+  @@index([status])
+  @@map("memory_reports")
 }
 
 // ===== FAQ =====
@@ -971,6 +990,8 @@ enum TripCategory {
   PHOTOGRAPHY
   WEEKEND
   INTERNATIONAL
+  TREK
+  CAMPFIRE
 }
 
 enum TripDifficulty {

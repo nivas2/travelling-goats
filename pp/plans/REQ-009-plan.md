@@ -1,8 +1,8 @@
-# Plan: Rebrand "MeetMyRoute" to "Travelling Goats"
+# Plan: Rebrand "MeetMyRoute" to "Meet My Route"
 
 ## Context
 
-The user wants to rebrand the entire app from "MeetMyRoute" to "Travelling Goats" — a premium travel community with a sophisticated goat/mountain theme. This is a **text-only rebrand**: NO changes to colors (#FF385C/#FFFFFF/#222222), functionality, layouts, navigation routes, or component architecture.
+The user wants to rebrand the entire app from "MeetMyRoute" to "Meet My Route" — a premium travel community with a sophisticated goat/mountain theme. This is a **text-only rebrand**: NO changes to colors (#FF385C/#FFFFFF/#222222), functionality, layouts, navigation routes, or component architecture.
 
 The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING" (dark) + "GOATS" (coral #FF385C) text in the navbar.
 
@@ -35,8 +35,8 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 | File | Changes |
 |------|---------|
-| `src/app/layout.tsx` | 9 "MeetMyRoute" → "Travelling Goats" (title, template, keywords, authors, creator, siteName, OG, twitter). Domain URL → add TODO comment |
-| `public/manifest.json` | name + short_name → "Travelling Goats" |
+| `src/app/layout.tsx` | 9 "MeetMyRoute" → "Meet My Route" (title, template, keywords, authors, creator, siteName, OG, twitter). Domain URL → add TODO comment |
+| `public/manifest.json` | name + short_name → "Meet My Route" |
 | `public/sw.js` | Cache name → `travellinggoats-v2` |
 | `package.json` | name → `travellinggoats-app` |
 
@@ -48,7 +48,7 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 |------|---------|
 | `src/components/layout/top-nav-bar.tsx` | Lines 60-62: Replace `Meet<span>MyRoute</span>` with `<TravellingGoatsLogo size="sm" />`. NAV_LINKS "My Trips" → "My Trails" |
 | `src/components/layout/bottom-nav-bar.tsx` | "My Trips" → "My Trails" |
-| `src/components/layout/admin-sidebar.tsx` | Lines 91-93: Replace logo with `<TravellingGoatsLogo />` + "Admin" badge. navItems: "Trips" → "Trails", "Analytics" → "Herd Analytics" |
+| `src/components/layout/admin-sidebar.tsx` | Lines 91-93: Replace logo with `<TravellingGoatsLogo />` + "Admin" badge. navItems: "Trips" → "Trails", "Analytics" → "Community Analytics" |
 
 ---
 
@@ -56,9 +56,9 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 | File | Changes |
 |------|---------|
-| `src/app/(auth)/login/page.tsx` | Replace logo text with `<TravellingGoatsLogo size="lg" />`. Tagline → "Roam with the herd" |
-| `src/app/admin/login/page.tsx` | "manage MeetMyRoute" → "manage Travelling Goats". Email placeholder → travellinggoats.in |
-| `src/app/(auth)/verification-complete/page.tsx` | "MeetMyRoute experience" → "Travelling Goats experience" |
+| `src/app/(auth)/login/page.tsx` | Replace logo text with `<TravellingGoatsLogo size="lg" />`. Tagline → "Roam with the community" |
+| `src/app/admin/login/page.tsx` | "manage MeetMyRoute" → "manage Meet My Route". Email placeholder → travellinggoats.in |
+| `src/app/(auth)/verification-complete/page.tsx` | "MeetMyRoute experience" → "Meet My Route experience" |
 
 ---
 
@@ -67,9 +67,9 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 `src/components/landing/landing-page.tsx`:
 - Replace logo with `<TravellingGoatsLogo />`
 - "Explore Trips" → "Explore Trails"
-- "Trip Captain" → "Shepherd"
-- "Book Now" → "Join the Herd"
-- Footer "MeetMyRoute" → "Travelling Goats"
+- "Trip Captain" → "Trip Captain"
+- "Book Now" → "Join the Community"
+- Footer "MeetMyRoute" → "Meet My Route"
 
 ---
 
@@ -78,12 +78,12 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 | File | Changes |
 |------|---------|
 | `src/components/booking/booking-bottom-bar.tsx` | Default `nextLabel` "Continue" → "Keep Trekking" (line 30) — cascades everywhere |
-| `src/app/(booking)/[tripId]/seats/page.tsx` | "trip captain" → "Shepherd" |
-| `src/app/(booking)/[tripId]/travelers/page.tsx` | "Solo" → "Lone Goat", "Couple" → "Goat Pair", "Group" → "Mountain Herd". Descriptions updated |
-| `src/app/(booking)/[tripId]/payment/page.tsx` | Razorpay name → "Travelling Goats" |
-| `src/app/(booking)/[tripId]/success/page.tsx` | Share text "MeetMyRoute" → "Travelling Goats", "trip" → "trail". Domain URL → TODO |
-| `src/app/(booking)/[tripId]/ticket/page.tsx` | "MeetMyRoute" branding → "Travelling Goats" |
-| `src/app/(booking)/[tripId]/status/page.tsx` | "MeetMyRoute team" → "Travelling Goats team". Email → TODO |
+| `src/app/(booking)/[tripId]/seats/page.tsx` | "trip captain" → "Trip Captain" |
+| `src/app/(booking)/[tripId]/travelers/page.tsx` | "Solo" → "Lone Goat", "Couple" → "Goat Pair", "Group" → "Mountain Community". Descriptions updated |
+| `src/app/(booking)/[tripId]/payment/page.tsx` | Razorpay name → "Meet My Route" |
+| `src/app/(booking)/[tripId]/success/page.tsx` | Share text "MeetMyRoute" → "Meet My Route", "trip" → "trail". Domain URL → TODO |
+| `src/app/(booking)/[tripId]/ticket/page.tsx` | "MeetMyRoute" branding → "Meet My Route" |
+| `src/app/(booking)/[tripId]/status/page.tsx` | "MeetMyRoute team" → "Meet My Route team". Email → TODO |
 
 ---
 
@@ -91,10 +91,10 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 | File | Changes |
 |------|---------|
-| `src/app/(main)/trips/[id]/page.tsx` | "MeetMyRoute" in reviews/share → "Travelling Goats". "Book Now" → "Join the Herd" |
-| `src/app/(main)/trips/[id]/reviews/page.tsx` | 3 hardcoded review comments: "MeetMyRoute" → "Travelling Goats" |
-| `src/app/(main)/trips/[id]/hub/page.tsx` | "Trip Captain" rendered text → "Shepherd" (3 instances) |
-| `src/app/(main)/my-trips/page.tsx` | Header "My Trips" → "My Trails". "Trip Captain" → "Shepherd". "Explore Trips" → "Explore Trails". Empty states: "trips" → "trails" |
+| `src/app/(main)/trips/[id]/page.tsx` | "MeetMyRoute" in reviews/share → "Meet My Route". "Book Now" → "Join the Community" |
+| `src/app/(main)/trips/[id]/reviews/page.tsx` | 3 hardcoded review comments: "MeetMyRoute" → "Meet My Route" |
+| `src/app/(main)/trips/[id]/hub/page.tsx` | "Trip Captain" rendered text → "Trip Captain" (3 instances) |
+| `src/app/(main)/my-trips/page.tsx` | Header "My Trips" → "My Trails". "Trip Captain" → "Trip Captain". "Explore Trips" → "Explore Trails". Empty states: "trips" → "trails" |
 | `src/app/(main)/saved/page.tsx` | "Saved Trips" → "Dream Trails". Empty state → goat-themed. "Explore Trips" → "Explore Trails" |
 | `src/app/(main)/search/page.tsx` | localStorage key → travellinggoats. "Explore Trips" → "Explore Trails". "trips found" → "trails found" |
 | `src/app/(main)/notifications/page.tsx` | "No notifications yet" → "Your bell is quiet for now." |
@@ -105,8 +105,8 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 | File | Changes |
 |------|---------|
-| `src/app/(main)/profile/page.tsx` | "About MeetMyRoute" → "About Travelling Goats". Fallback name → "Travelling Goats Explorer" |
-| `src/app/(main)/profile/settings/page.tsx` | "MeetMyRoute v1.0.0" → "Travelling Goats v1.0.0" |
+| `src/app/(main)/profile/page.tsx` | "About MeetMyRoute" → "About Meet My Route". Fallback name → "Meet My Route Explorer" |
+| `src/app/(main)/profile/settings/page.tsx` | "MeetMyRoute v1.0.0" → "Meet My Route v1.0.0" |
 
 ---
 
@@ -114,10 +114,10 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 | File | Changes |
 |------|---------|
-| `src/app/(main)/help/page.tsx` | Emails → travellinggoats.in with TODO. FAQ "MeetMyRoute wallet" → "Travelling Goats wallet". "Trip Captains" → "Shepherds" |
-| `src/app/(main)/emergency/page.tsx` | "Trip Captain" → "Shepherd" (6 instances). "MeetMyRoute Helpline" → "Travelling Goats Helpline" |
-| `src/app/(main)/referral/page.tsx` | "Join MeetMyRoute" → "Join Travelling Goats". "Invite friends" → "Grow Your Herd" |
-| `src/app/(main)/wallet/page.tsx` | "MeetMyRoute wallet" → "Travelling Goats wallet" |
+| `src/app/(main)/help/page.tsx` | Emails → travellinggoats.in with TODO. FAQ "MeetMyRoute wallet" → "Meet My Route wallet". "Trip Captains" → "Trip Captains" |
+| `src/app/(main)/emergency/page.tsx` | "Trip Captain" → "Trip Captain" (6 instances). "MeetMyRoute Helpline" → "Meet My Route Helpline" |
+| `src/app/(main)/referral/page.tsx` | "Join MeetMyRoute" → "Join Meet My Route". "Invite friends" → "Grow Your Community" |
+| `src/app/(main)/wallet/page.tsx` | "MeetMyRoute wallet" → "Meet My Route wallet" |
 
 ---
 
@@ -125,7 +125,7 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 | File | Changes |
 |------|---------|
-| `src/app/(onboarding)/welcome/page.tsx` | Slide 1: "Travel with a tribe" → "Roam with the herd", "travelers" → "trekkers". Slide 2: "Curated experiences" → "Handpicked trails". Slide 3: "travelers" → "trekkers". "Get Started" → "Let's Trek" |
+| `src/app/(onboarding)/welcome/page.tsx` | Slide 1: "Travel with a tribe" → "Roam with the community", "travelers" → "trekkers". Slide 2: "Curated experiences" → "Handpicked trails". Slide 3: "travelers" → "trekkers". "Get Started" → "Let's Trek" |
 | `src/app/(onboarding)/interests/page.tsx` | "Continue" → "Keep Trekking" |
 | `src/app/(onboarding)/budget/page.tsx` | "Continue" → "Keep Trekking" |
 | `src/app/(onboarding)/pickup-city/page.tsx` | "Continue" → "Keep Trekking" |
@@ -137,11 +137,11 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 | File | Changes |
 |------|---------|
-| `src/app/admin/users/page.tsx` | "Trip Captain" dropdown label → "Shepherd" (keep value TRIP_CAPTAIN) |
+| `src/app/admin/users/page.tsx` | "Trip Captain" dropdown label → "Trip Captain" (keep value TRIP_CAPTAIN) |
 | `src/app/admin/trips/page.tsx` | "Trip Management" → "Trail Management" |
 | `src/app/admin/bookings/page.tsx` | "Booking Management" → "Trail Booking Management" |
-| `src/app/admin/analytics/page.tsx` | "Analytics Dashboard" → "Herd Analytics" |
-| `src/app/admin/dashboard/page.tsx` | "Dashboard" heading → "Herd Dashboard" |
+| `src/app/admin/analytics/page.tsx` | "Analytics Dashboard" → "Community Analytics" |
+| `src/app/admin/dashboard/page.tsx` | "Dashboard" heading → "Community Dashboard" |
 
 ---
 
@@ -149,8 +149,8 @@ The user provided a goat-in-map-pin logo (PNG). It appears as icon + "TRAVELLING
 
 `prisma/seed.ts`:
 - Admin email → travellinggoats.in with TODO
-- Admin name → "Travelling Goats Admin"
-- FAQ answers: "MeetMyRoute" → "Travelling Goats", "Trip Captains" → "Shepherds"
+- Admin name → "Meet My Route Admin"
+- FAQ answers: "MeetMyRoute" → "Meet My Route", "Trip Captains" → "Trip Captains"
 
 ---
 

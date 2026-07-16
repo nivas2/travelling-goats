@@ -14,7 +14,7 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
-import { cn } from "@/lib/utils";
+import { cn, formatCategory } from "@/lib/utils";
 import { useInlineOtp } from "@/hooks/use-inline-otp";
 import type { UserProfile } from "@/types";
 
@@ -202,6 +202,10 @@ export default function EditProfilePage() {
       }
 
       toastSuccess("Profile updated successfully");
+      // Tell the nav (and anything else listening) to refresh the avatar/name.
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("tg-profile-update"));
+      }
       router.push("/profile");
     } catch (err) {
       toastError(
@@ -526,7 +530,7 @@ export default function EditProfilePage() {
                   color="primary"
                   onClick={() => toggleInterest(interest)}
                 >
-                  {interest}
+                  {formatCategory(interest)}
                 </Chip>
               );
             })}

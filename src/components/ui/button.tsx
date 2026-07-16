@@ -37,9 +37,9 @@ const Spinner = ({ className }: { className?: string }) => (
 
 const variantStyles: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-[#181D27] text-white shadow-[0_6px_18px_rgba(24,29,39,0.18)] hover:bg-[#181D27]/90",
+    "bg-primary text-white shadow-[0_6px_18px_rgba(24,29,39,0.18)] hover:bg-primary/90",
   accent:
-    "bg-[#C6F135] text-[#181D27] shadow-[0_8px_22px_rgba(198,241,53,0.38)] hover:brightness-[1.04]",
+    "bg-lime text-on-surface shadow-[0_8px_22px_rgba(198,241,53,0.38)] hover:brightness-[1.04]",
   secondary:
     "bg-white text-on-surface ring-1 ring-black/10 hover:bg-surface-container",
   ghost:
