@@ -21,7 +21,7 @@ export function RecentlyViewed({ trips }: { trips: TripCardData[] }) {
         <span className="material-symbols-outlined text-[24px] text-on-surface">history</span>
         <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-on-surface">Recently viewed</h2>
       </div>
-      <div className="flex gap-3 overflow-x-auto px-5 pb-2 hide-scrollbar md:gap-4">
+      <div className="flex gap-3 overflow-x-auto px-5 pt-1.5 pb-4 hide-scrollbar md:gap-4">
         {items.map((t) => (
           <div key={t.id} className="w-[200px] shrink-0 md:w-[240px]">
             <TripCard trip={t} />

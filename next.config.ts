@@ -4,7 +4,9 @@ const nextConfig: NextConfig = {
   // Keep the dev tools badge out of the bottom nav's way.
   devIndicators: { position: "bottom-right" },
   images: {
-    unoptimized: true,
+    // Optimize on: serve AVIF/WebP with automatic resizing. sharp is installed.
+    formats: ["image/avif", "image/webp"],
+    qualities: [75],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },

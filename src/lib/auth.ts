@@ -55,8 +55,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const phone = credentials.phone as string;
         const otp = credentials.otp as string;
 
-        // In dev mode, accept mock OTP
+        // In dev mode, accept mock OTP. Hard-gated on NODE_ENV so a stray
+        // OTP_MOCK_ENABLED=true in a production env can never bypass real OTP.
         if (
+          process.env.NODE_ENV !== "production" &&
           process.env.OTP_MOCK_ENABLED === "true" &&
           otp === (process.env.OTP_MOCK_CODE ?? "123456")
         ) {
@@ -91,8 +93,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           orderBy: { createdAt: "desc" },
         });
 
-        if (!otpRecord || otpRecord.code !== otp) return null;
+        if (!otpRecord) return null;
+        // Lockout: too many wrong guesses on this code (brute-force guard).
         if (otpRecord.attempts >= 3) return null;
+
+        if (otpRecord.code !== otp) {
+          // Count the failed guess so the lockout above can actually trigger.
+          await prisma.otpCode.update({
+            where: { id: otpRecord.id },
+            data: { attempts: { increment: 1 } },
+          });
+          return null;
+        }
 
         // Mark OTP as verified
         await prisma.otpCode.update({

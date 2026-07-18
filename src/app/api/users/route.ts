@@ -78,6 +78,14 @@ export async function PUT(req: NextRequest) {
       data.dateOfBirth = new Date(data.dateOfBirth as string);
     }
 
+    // Identity verification is server-controlled: a user cannot flip `idVerified`
+    // directly (mass-assignment). We only mark it verified when the KYC payload
+    // (aadhaar + selfie) is present in this request.
+    // ponytail: real KYC provider verification is deferred — presence-only for now.
+    if (data.aadhaarNumber && data.selfieUrl) {
+      data.idVerified = true;
+    }
+
     const user = await prisma.user.update({
       where: { id: session.user.id },
       data,

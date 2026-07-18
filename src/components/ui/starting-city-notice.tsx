@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
+import { cityLandmark } from "@/lib/city-landmarks";
 import type { ServedCity } from "@/lib/use-starting-city";
 
 /** Selectable list of the cities we currently depart from. */
@@ -21,6 +23,7 @@ function CityChoices({
         const active = selectedCity === c.name;
         const trips = c.tripCount ?? 0;
         const pickups = c.pickupPoints?.length ?? 0;
+        const landmark = cityLandmark(c.name, 128);
         return (
           <button
             key={c.id}
@@ -34,14 +37,26 @@ function CityChoices({
                 : "border-outline-variant bg-surface hover:border-outline hover:bg-surface-container-low"
             )}
           >
-            <span
-              className={cn(
-                "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors",
-                active ? "bg-primary text-on-primary" : "bg-lavender text-on-surface"
-              )}
-            >
-              <Icon name="location_on" size={20} filled={active} />
-            </span>
+            {landmark ? (
+              /* Iconic city landmark (e.g. Charminar, Vidhana Soudha) */
+              <span
+                className={cn(
+                  "relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl ring-1 transition",
+                  active ? "ring-2 ring-primary" : "ring-black/10"
+                )}
+              >
+                <Image src={landmark} alt="" fill sizes="56px" className="object-cover" />
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors",
+                  active ? "bg-primary text-on-primary" : "bg-lavender text-on-surface"
+                )}
+              >
+                <Icon name="location_on" size={20} filled={active} />
+              </span>
+            )}
             <span className="min-w-0 flex-1">
               <span className="block truncate text-body-md font-semibold text-on-surface">
                 {c.name}

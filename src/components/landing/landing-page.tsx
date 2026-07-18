@@ -2,8 +2,23 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { CookieConsent, SubscribeModal, LiveActivityToast } from "@/components/landing/site-popups";
 import { IndiaMap } from "@/components/landing/india-map";
+import {
+  ScrollProgress,
+  Stagger,
+  StaggerItem,
+  AuroraBackdrop,
+  HeroHeadline,
+} from "@/components/landing/motion";
+import {
+  StepCard,
+  PillarCard,
+  TripCard,
+  TestimonialCard,
+  FaqItem,
+} from "@/components/landing/sections";
 
 /* ------------------------------------------------------------------ */
 /*  Fallback hero image — self-hosted moody misty-forest photo          */
@@ -186,25 +201,21 @@ function useScrolled(y = 24) {
 function CountUp({ value, className }: { value: string; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
 
-  // Split "12k+" → prefix "", num 12, suffix "k+"; "4.9" → 4.9, ""
-  const parsed = useMemo(() => {
-    const m = value.match(/^([^\d]*)([\d.]+)(.*)$/);
-    if (!m) return { prefix: "", numStr: value, target: 0, decimals: 0, suffix: "" };
-    const numStr = m[2];
-    return {
-      prefix: m[1] ?? "",
-      numStr,
-      target: parseFloat(numStr),
-      decimals: numStr.includes(".") ? (numStr.split(".")[1]?.length ?? 0) : 0,
-      suffix: m[3] ?? "",
-    };
-  }, [value]);
+  // Split "12k+" → prefix "", num 12, suffix "k+"; "4.9" → 4.9, "".
+  // Cheap enough to derive on render — no useMemo (keeps the compiler happy).
+  const m = value.match(/^([^\d]*)([\d.]+)(.*)$/);
+  const prefix = m?.[1] ?? "";
+  const numStr = m?.[2] ?? value;
+  const target = m ? parseFloat(numStr) : 0;
+  const decimals = numStr.includes(".") ? (numStr.split(".")[1]?.length ?? 0) : 0;
+  const suffix = m?.[3] ?? "";
 
-  const [display, setDisplay] = useState(parsed.numStr);
+  // Defaults to the final number, so it's always correct even if the
+  // observer/animation never runs (no-JS, reduced motion, prerender).
+  const [display, setDisplay] = useState(numStr);
 
   useEffect(() => {
     const el = ref.current;
-    setDisplay(parsed.numStr);
     if (!el || typeof IntersectionObserver === "undefined") return;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
@@ -222,13 +233,13 @@ function CountUp({ value, className }: { value: string; className?: string }) {
         const tick = (now: number) => {
           const p = Math.min(1, (now - t0) / dur);
           const eased = 1 - Math.pow(1 - p, 3);
-          setDisplay((parsed.target * eased).toFixed(parsed.decimals));
+          setDisplay((target * eased).toFixed(decimals));
           if (p < 1) raf = requestAnimationFrame(tick);
-          else setDisplay(parsed.numStr);
+          else setDisplay(numStr);
         };
         raf = requestAnimationFrame(tick);
         // Safety: guarantee the final value lands even if rAF is throttled.
-        timer = setTimeout(() => setDisplay(parsed.numStr), dur + 250);
+        timer = setTimeout(() => setDisplay(numStr), dur + 250);
       },
       { threshold: 0.4 }
     );
@@ -238,13 +249,13 @@ function CountUp({ value, className }: { value: string; className?: string }) {
       cancelAnimationFrame(raf);
       if (timer) clearTimeout(timer);
     };
-  }, [parsed]);
+  }, [numStr, target, decimals]);
 
   return (
     <span ref={ref} className={className}>
-      {parsed.prefix}
+      {prefix}
       {display}
-      {parsed.suffix}
+      {suffix}
     </span>
   );
 }
@@ -303,7 +314,7 @@ export interface LandingContentProps {
   sections?: Record<string, string>;
   story?: Record<string, string>;
   footer?: Record<string, string>;
-  showcase?: { place: string; experience: string; tagline: string; location: string; quote: string; image: string; video: string; mapX: number; mapY: number }[];
+  showcase?: { place: string; experience: string; tagline: string; location: string; quote: string; description?: string; image: string; video: string; mapX: number; mapY: number }[];
   trustPillars?: { icon: string; title: string; desc: string }[];
   filterCategories?: string[];
 }
@@ -374,6 +385,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
           tagline: c.tagline,
           location: c.location,
           quote: c.quote,
+          description: c.description,
           image: uns(c.photo, 1280),
           video: c.video,
           mapX: MAP_COORDS[c.place]?.x ?? 512,
@@ -461,7 +473,8 @@ export default function LandingPage(props: LandingContentProps = {}) {
   }, [activeCard]);
 
   return (
-    <div ref={rootRef} className="scroll-smooth text-[#181818] antialiased">
+    <div ref={rootRef} className="lp-page scroll-smooth text-[#181818] antialiased">
+      <ScrollProgress />
       {/* ===== NAV ===== */}
       <nav className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6 md:pt-4">
         <div
@@ -616,15 +629,13 @@ export default function LandingPage(props: LandingContentProps = {}) {
               {active.tagline}
             </span>
 
-            {/* quotation-style headline — "Unforgettable {place} / {experience} Experience" */}
-            <h1
-              key={`title-${activeCard}`}
-              className="lp-hero-title mx-auto mt-4 max-w-[22ch] text-[clamp(29px,5.4vw,66px)] font-light leading-[1.04] tracking-[-0.03em] text-white"
-              style={{ textShadow: "0 2px 34px rgba(0,0,0,0.4)" }}
-            >
-              <span className="block">Unforgettable {active.place}</span>
-              <span className="block text-white/65">{active.experience} Experience</span>
-            </h1>
+            {/* quotation-style headline — blur-rises on each showcase change */}
+            <HeroHeadline
+              activeKey={activeCard}
+              place={active.place}
+              experience={active.experience}
+              className="mt-4 text-[clamp(29px,5.4vw,66px)] font-light leading-[1.04] tracking-[-0.03em] text-white"
+            />
 
             {/* location line, below the heading */}
             <span
@@ -666,7 +677,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2.5">
                     {["/uploads/avatar1.jpg", "/uploads/avatar2.jpg", "/uploads/avatar3.jpg", "/uploads/avatar4.jpg"].map((src) => (
-                      <img key={src} src={src} alt="" className="h-9 w-9 rounded-full border-2 border-[#181818] object-cover" />
+                      <Image key={src} src={src} alt="" width={36} height={36} className="h-9 w-9 rounded-full border-2 border-[#181818] object-cover" />
                     ))}
                     <span
                       key={`joined-${activeCard}`}
@@ -795,64 +806,13 @@ export default function LandingPage(props: LandingContentProps = {}) {
 
           {/* trips grid */}
           {visibleTrips.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleTrips.map((trip, i) => (
-                <article
-                  key={trip.id ?? trip.title}
-                  className="lp-reveal lp-lift group relative flex h-[420px] flex-col justify-end overflow-hidden rounded-[26px] bg-[#181818] [transform:translateZ(0)]"
-                  style={{ transitionDelay: `${(i % 3) * 0.08}s` }}
-                >
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-[1.2s] group-hover:scale-105"
-                    style={{ backgroundImage: `url('${trip.image}')` }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#181818]/85 via-[#181818]/20 to-transparent" />
-
-                  {/* top row: save */}
-                  <div className="absolute inset-x-4 top-4 flex items-center justify-end">
-                    <button className="flex h-9 w-9 items-center justify-center rounded-full bg-white/85 text-[#181818] transition-transform hover:scale-105">
-                      <span className="material-symbols-outlined text-[18px]">bookmark</span>
-                    </button>
-                  </div>
-
-                  {/* content */}
-                  <div className="relative p-5 text-white">
-                    {trip.category && (
-                      <span className="mb-2 inline-flex rounded-full bg-[#D8FF07] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#181818]">
-                        {trip.category.replace(/_/g, " ")}
-                      </span>
-                    )}
-                    <div className="mb-2 flex items-center gap-1.5 text-[13px] font-medium text-white/80">
-                      <span className="material-symbols-outlined text-[16px]">location_on</span>
-                      {trip.destination || trip.pickup}
-                    </div>
-                    <h3 className="text-[21px] font-bold leading-tight">{trip.title}</h3>
-
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <span className="lp-glass-dark inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] text-white">
-                        <span className="material-symbols-outlined text-[14px]">schedule</span> {trip.duration}
-                      </span>
-                      <span className="lp-glass-dark inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] text-white">
-                        <span className="material-symbols-outlined text-[14px]">event_seat</span> {trip.seats}
-                      </span>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between">
-                      <div>
-                        <div className="text-[11px] uppercase tracking-wide text-white/60">From</div>
-                        <div className="text-[20px] font-bold">{trip.price}</div>
-                      </div>
-                      <Link
-                        href="/login"
-                        className="lp-lime-btn inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-[14px] font-semibold"
-                      >
-                        Join <span className="material-symbols-outlined text-[16px]">arrow_outward</span>
-                      </Link>
-                    </div>
-                  </div>
-                </article>
+            <Stagger className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {visibleTrips.map((trip) => (
+                <StaggerItem key={trip.id ?? trip.title}>
+                  <TripCard trip={trip} />
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           ) : (
             <div className="lp-reveal rounded-[26px] bg-white/60 py-16 text-center">
               <span className="material-symbols-outlined mb-3 block text-[44px] text-[#181818]/40">explore</span>
@@ -866,7 +826,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
       <section id="about" className="px-3 py-6 md:px-6">
         <div className="mx-auto max-w-[1240px]">
           <div className="lp-reveal relative overflow-hidden rounded-[32px] bg-[#181818] px-6 py-12 md:px-14 md:py-16">
-            <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#D8FF07]/10 blur-3xl" aria-hidden />
+            <AuroraBackdrop />
             <div className="relative mx-auto mb-10 max-w-2xl text-center">
               <h2 className="text-[clamp(26px,3.4vw,40px)] font-semibold tracking-[-0.02em] text-white">
                 {sx.aboutTitle || "Built for people who'd rather wander"}
@@ -878,7 +838,7 @@ export default function LandingPage(props: LandingContentProps = {}) {
             </div>
             <div className="relative grid grid-cols-2 gap-4 md:grid-cols-4">
               {stats.map((s) => (
-                <div key={s.label} className="rounded-[22px] bg-white/[0.06] p-6 text-center ring-1 ring-white/10">
+                <div key={s.label} className="lp-stat rounded-[22px] p-6 text-center">
                   <CountUp value={s.value} className="block text-[clamp(30px,4vw,48px)] font-bold leading-none text-[#D8FF07]" />
                   <div className="mt-2 text-[13px] font-medium text-white/70">{s.label}</div>
                 </div>
@@ -892,32 +852,25 @@ export default function LandingPage(props: LandingContentProps = {}) {
       <section id="how-it-works" className="px-3 py-14 md:px-6 md:py-20">
         <div className="mx-auto max-w-[1240px]">
           <div className="lp-reveal mb-12 max-w-2xl">
-            <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#181818]">How it works</span>
-            <h2 className="mt-2 text-[clamp(26px,3.4vw,40px)] font-semibold tracking-[-0.02em]">
+            {/* Hide the eyebrow when it just repeats the title (e.g. CMS howTitle
+                is also "How it works") so we never show the heading twice. */}
+            {(sx.howOverline || "How it works").trim().toLowerCase() !==
+              (sx.howTitle || "From screen to summit in four steps").trim().toLowerCase() && (
+              <span className="mb-2 inline-block text-[13px] font-semibold uppercase tracking-[0.14em] text-[#181818]">
+                {sx.howOverline || "How it works"}
+              </span>
+            )}
+            <h2 className="text-[clamp(26px,3.4vw,40px)] font-semibold tracking-[-0.02em]">
               {sx.howTitle || "From screen to summit in four steps"}
             </h2>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, i) => (
-              <div
-                key={step.title}
-                className={`lp-reveal lp-lift rounded-[24px] p-6 ${
-                  i === 0 ? "bg-[#181818] text-white" : "glass"
-                }`}
-                style={{ transitionDelay: `${i * 0.08}s` }}
-              >
-                <div
-                  className={`mb-8 flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-bold ${
-                    i === 0 ? "bg-[#D8FF07] text-[#181818]" : "bg-[#F2F2F5] text-[#181818]"
-                  }`}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </div>
-                <h3 className={`text-[19px] font-bold ${i === 0 ? "text-white" : "text-[#181818]"}`}>{step.title}</h3>
-                <p className={`mt-2 text-[14px] ${i === 0 ? "text-white/70" : "text-[#526200]"}`}>{step.desc}</p>
-              </div>
+              <StaggerItem key={step.title} className="h-full">
+                <StepCard n={i + 1} title={step.title} desc={step.desc} />
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 
@@ -934,23 +887,13 @@ export default function LandingPage(props: LandingContentProps = {}) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {trustPillars.map((p, i) => (
-              <div
-                key={p.title}
-                className="lp-reveal lp-lift glass rounded-[24px] p-6"
-                style={{ transitionDelay: `${i * 0.06}s` }}
-              >
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#D8FF07]">
-                  <span className="material-symbols-outlined text-[22px] text-[#181818]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    {p.icon}
-                  </span>
-                </div>
-                <h3 className="text-[16px] font-bold leading-snug text-[#181818]">{p.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-[#526200]">{p.desc}</p>
-              </div>
+          <Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5" stagger={0.06}>
+            {trustPillars.map((p) => (
+              <StaggerItem key={p.title} className="h-full">
+                <PillarCard icon={p.icon} title={p.title} desc={p.desc} />
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 
@@ -1027,27 +970,13 @@ export default function LandingPage(props: LandingContentProps = {}) {
             {/* edge fades */}
             <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#F2F2F5] to-transparent md:w-32" />
             <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#F2F2F5] to-transparent md:w-32" />
-            <div className="lp-marquee-track flex w-max flex-nowrap gap-4 px-2">
+            <div className="lp-marquee-track lp-marquee-pausable flex w-max flex-nowrap gap-4 px-2">
               {(() => {
                 // Fill at least one screen-width before duplicating for a seamless loop.
                 const base = Array.from({ length: Math.max(6, testimonials.length) }, (_, i) => testimonials[i % testimonials.length]);
                 return [...base, ...base];
               })().map((t, i) => (
-                <figure key={i} className="glass w-[340px] shrink-0 rounded-[24px] p-7">
-                  <span className="material-symbols-outlined text-[28px] text-[#D8FF07]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    format_quote
-                  </span>
-                  <blockquote className="mt-3 text-[15px] leading-relaxed text-[#181818]">&ldquo;{t.quote}&rdquo;</blockquote>
-                  <figcaption className="mt-5 flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#181818] text-[14px] font-bold text-[#D8FF07]">
-                      {t.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-semibold">{t.name}</div>
-                      <div className="text-[13px] text-[#526200]">{t.trip}</div>
-                    </div>
-                  </figcaption>
-                </figure>
+                <TestimonialCard key={i} quote={t.quote} name={t.name} trip={t.trip} />
               ))}
             </div>
           </div>
@@ -1062,25 +991,22 @@ export default function LandingPage(props: LandingContentProps = {}) {
               <span className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#181818]">{sx.faqOverline || "FAQ"}</span>
               <h2 className="mt-2 text-[clamp(26px,3.4vw,40px)] font-semibold tracking-[-0.02em]">{sx.faqTitle || "Good to know"}</h2>
             </div>
-            <div className="flex flex-col gap-3">
+            <Stagger className="flex flex-col gap-3">
               {faqs.map((faq, i) => (
-                <details key={`${faq.question}-${i}`} className="lp-reveal group glass rounded-[20px] px-6 py-5">
-                  <summary className="flex cursor-pointer list-none items-center justify-between text-[16px] font-semibold [&::-webkit-details-marker]:hidden">
-                    {faq.question}
-                    <span className="material-symbols-outlined text-[#181818] transition-transform duration-300 group-open:rotate-45">add</span>
-                  </summary>
-                  <p className="mt-3 text-[15px] leading-relaxed text-[#526200]">{faq.answer}</p>
-                </details>
+                <StaggerItem key={`${faq.question}-${i}`}>
+                  <FaqItem q={faq.question} a={faq.answer} />
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           </div>
         </section>
       )}
 
       {/* ===== CTA BAND ===== */}
       <section className="px-3 pb-6 md:px-6">
-        <div className="lp-reveal mx-auto max-w-[1240px] overflow-hidden rounded-[32px] bg-[#101010] px-6 py-14 md:px-14 md:py-20">
-          <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1.4fr_1fr]">
+        <div className="lp-reveal relative mx-auto max-w-[1240px] overflow-hidden rounded-[32px] bg-[#101010] px-6 py-14 md:px-14 md:py-20">
+          <AuroraBackdrop />
+          <div className="relative z-10 grid grid-cols-1 items-center gap-8 md:grid-cols-[1.4fr_1fr]">
             <div>
               <h2 className="text-[clamp(30px,4.6vw,58px)] font-semibold leading-[1.05] tracking-[-0.02em] text-white">
                 {sx.ctaTitle || "Ready to wander?"}

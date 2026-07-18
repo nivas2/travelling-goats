@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { getThemeCss } from "@/lib/theme/server";
 import "./globals.css";
 
-// Typography = SF Pro Display / Text via the native Apple system stack
-// (renders SF Pro on iOS/macOS; graceful system fallback elsewhere). No web
-// font is loaded — SF Pro is a system font. Family stacks live in globals.css.
+// Brand typeface — Bricolage Grotesque, self-hosted via next/font: no
+// render-blocking external request, preloaded, and zero layout shift. Exposed
+// as --font-bricolage, consumed by --font-sans/--font-display in globals.css.
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-bricolage",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -53,7 +59,8 @@ export const viewport: Viewport = {
   themeColor: "#FFFFFF",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // No maximumScale / user-scalable lock — users must be able to pinch-zoom
+  // (WCAG 1.4.4 Resize Text). iOS input auto-zoom is handled with ≥16px inputs.
   viewportFit: "cover",
   // When the on-screen keyboard opens, resize the layout viewport (and `dvh`)
   // so sticky-bottom inputs (e.g. the chat composer) ride above the keyboard
@@ -72,21 +79,18 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className=""
+      className={bricolage.variable}
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* display=block: keep icons invisible until the font loads instead of
-            flashing the raw ligature text (e.g. "location_on"). */}
+        {/* Material Symbols icon font — axis range narrowed to what the app
+            actually uses (single weight 400, FILL 0..1, no GRAD/negative grades)
+            to shrink the download. display=block keeps icons invisible until load
+            instead of flashing the raw ligature text (e.g. "location_on"). */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
-        />
-        {/* Brand typeface — Bricolage Grotesque (Regular / Medium / Bold) */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@20..48,400,0..1&display=block"
         />
         {themeCss && <style id="tg-theme" dangerouslySetInnerHTML={{ __html: themeCss }} />}
       </head>

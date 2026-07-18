@@ -140,6 +140,15 @@ export async function POST(req: NextRequest) {
 
     // Test mode — skip Razorpay, auto-confirm booking
     if (isTestMode || !razorpay) {
+      // Fail closed in production: if the gateway keys are missing there, do NOT
+      // silently confirm the booking for free — a partial deploy must not sell trips.
+      if (process.env.NODE_ENV === "production") {
+        logger.error("Razorpay keys missing in production — refusing to auto-confirm booking");
+        return NextResponse.json(
+          { success: false, error: "Payment gateway is not configured" },
+          { status: 503 }
+        );
+      }
       const testResult = await prisma.$transaction(async (tx) => {
         const testPayment = await tx.payment.create({
           data: {

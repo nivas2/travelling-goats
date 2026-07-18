@@ -33,7 +33,7 @@ export function CuratedCollections({ trips }: { trips: TripCardData[] }) {
       <h2 className="mb-3 px-5 text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
         Browse collections
       </h2>
-      <div className="flex gap-3 overflow-x-auto px-5 pt-2 pb-2 hide-scrollbar md:gap-4">
+      <div className="flex gap-3 overflow-x-auto px-5 pt-2 pb-4 hide-scrollbar md:gap-4">
         {shelves.map((c) => (
           <Link
             key={c.title}

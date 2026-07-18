@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+import { cityLandmark } from "@/lib/city-landmarks";
 import { asList, type ContentMap } from "@/lib/content/registry";
 
 interface City {
@@ -106,6 +108,7 @@ export default function PickupCityPage() {
         <div className="grid grid-cols-2 gap-3">
           {cities.map((city) => {
             const isSelected = selected === city.id;
+            const landmark = cityLandmark(city.name, 160);
             return (
               <button
                 key={city.id}
@@ -121,17 +124,29 @@ export default function PickupCityPage() {
                     : "border-outline-variant bg-surface-container-lowest hover:border-outline hover:bg-surface-container-low"
                 )}
               >
-                {/* City icon */}
-                <div
-                  className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
-                    isSelected
-                      ? "bg-primary text-on-primary"
-                      : "bg-surface-container text-on-surface-variant"
-                  )}
-                >
-                  <Icon name={city.icon} size={24} />
-                </div>
+                {/* City landmark image (Charminar, Vidhana Soudha, …) — falls
+                    back to the generic city icon when we have no landmark. */}
+                {landmark ? (
+                  <span
+                    className={cn(
+                      "relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl ring-1 transition",
+                      isSelected ? "ring-2 ring-primary" : "ring-black/10"
+                    )}
+                  >
+                    <Image src={landmark} alt="" fill sizes="64px" className="object-cover" />
+                  </span>
+                ) : (
+                  <div
+                    className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+                      isSelected
+                        ? "bg-primary text-on-primary"
+                        : "bg-surface-container text-on-surface-variant"
+                    )}
+                  >
+                    <Icon name={city.icon} size={24} />
+                  </div>
+                )}
 
                 {/* City name */}
                 <span

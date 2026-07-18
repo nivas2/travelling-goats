@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { cityLandmark } from "@/lib/city-landmarks";
 import { Chip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
@@ -490,24 +492,38 @@ export default function HomePage() {
             {startingCity.bookableCities.map((c) => {
               const active =
                 c.name.toLowerCase() === (activeStartingCity ?? "").toLowerCase();
+              const landmark = cityLandmark(c.name, 64);
               return (
                 <button
                   key={c.id ?? c.name}
                   type="button"
                   onClick={() => handleCityChange(c.name)}
                   className={cn(
-                    "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-label-md font-medium transition-colors",
+                    "inline-flex shrink-0 items-center gap-1.5 rounded-full border py-1.5 pr-3.5 text-label-md font-medium transition-colors",
+                    landmark ? "pl-1.5" : "pl-3.5",
                     active
                       ? "border-primary bg-primary text-on-primary"
                       : "border-outline-variant bg-surface text-on-surface hover:border-primary/40"
                   )}
                 >
-                  <Icon
-                    name="location_city"
-                    size={16}
-                    filled
-                    className={active ? "text-on-primary" : "text-primary"}
-                  />
+                  {landmark ? (
+                    /* Iconic city landmark (Charminar, Vidhana Soudha, …) */
+                    <span
+                      className={cn(
+                        "relative h-7 w-7 shrink-0 overflow-hidden rounded-full ring-1",
+                        active ? "ring-on-primary/40" : "ring-black/10"
+                      )}
+                    >
+                      <Image src={landmark} alt="" fill sizes="28px" className="object-cover" />
+                    </span>
+                  ) : (
+                    <Icon
+                      name="location_city"
+                      size={16}
+                      filled
+                      className={active ? "text-on-primary" : "text-primary"}
+                    />
+                  )}
                   {c.name}
                   {typeof c.tripCount === "number" && (
                     <span
@@ -646,7 +662,7 @@ export default function HomePage() {
             <h2 className="mb-4 text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
               Explore by destination
             </h2>
-            <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-2 hide-scrollbar">
+            <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pt-1.5 pb-4 hide-scrollbar">
               {destCities.map((c) => (
                 <Chip
                   key={c}
@@ -689,7 +705,7 @@ export default function HomePage() {
             <h2 className="mb-4 text-[30px] font-semibold tracking-[-0.02em] text-on-surface">
               {sect.categoriesTitle}
             </h2>
-            <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-2 hide-scrollbar">
+            <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pt-1.5 pb-4 hide-scrollbar">
               {categories.map((cat) => (
                 <Chip
                   key={cat.label}

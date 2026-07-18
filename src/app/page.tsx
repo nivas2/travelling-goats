@@ -47,6 +47,7 @@ export default async function RootPage() {
         tagline: s.tagline,
         location: s.location,
         quote: s.quote,
+        description: s.description ?? "",
         image: s.image,
         video: s.video,
         mapX: Number(s.mapX) || 512,

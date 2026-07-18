@@ -15,5 +15,6 @@ export const updateUserSchema = z.object({
   isOnboarded: z.boolean().optional(),
   aadhaarNumber: z.string().optional(),
   selfieUrl: z.string().optional(),
-  idVerified: z.boolean().optional(),
+  // NOTE: `idVerified` is intentionally NOT client-settable — it is a trust flag.
+  // The server derives it in PUT /api/users when aadhaar + selfie are submitted.
 });

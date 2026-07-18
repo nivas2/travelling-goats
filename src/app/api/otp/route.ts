@@ -27,11 +27,16 @@ export async function POST(req: NextRequest) {
     const ipRateLimit = applyRateLimit("otpBurst", ip);
     if (ipRateLimit) return ipRateLimit;
 
+    // Mock OTP is only ever honoured outside production, so a leftover
+    // OTP_MOCK_ENABLED=true in prod can neither fix the code nor leak it below.
+    const mockEnabled =
+      process.env.NODE_ENV !== "production" &&
+      process.env.OTP_MOCK_ENABLED === "true";
+
     // Generate 6-digit OTP
-    const code =
-      process.env.OTP_MOCK_ENABLED === "true"
-        ? (process.env.OTP_MOCK_CODE ?? "123456")
-        : String(Math.floor(100000 + Math.random() * 900000));
+    const code = mockEnabled
+      ? (process.env.OTP_MOCK_CODE ?? "123456")
+      : String(Math.floor(100000 + Math.random() * 900000));
 
     // Store OTP (expires in 5 minutes) — email stored in phone column (no migration)
     await prisma.otpCode.create({
@@ -49,7 +54,7 @@ export async function POST(req: NextRequest) {
       : target.slice(0, 4) + "****";
 
     const response: Record<string, unknown> = { success: true, message: "OTP sent successfully" };
-    if (process.env.OTP_MOCK_ENABLED === "true") {
+    if (mockEnabled) {
       response.otp = code;
     }
 
